@@ -88,7 +88,10 @@ async function loadActivities() {
             start_time,
             end_time,
             min_players,
-            max_players
+            max_players,
+            location,
+            is_event,
+            image_url
         `)
         .eq("status", "approved")
         .gte("date", startDate)
@@ -650,40 +653,54 @@ function createActivityElement(
         `activity-${activity.id}`;
 
 
-    const title =
-        document.createElement("h3");
+    if (activity.image_url) {
+        const image = document.createElement("img");
+        image.className = "calendar-activity-image";
+        image.src = activity.image_url;
+        image.alt = `Illustration de ${activity.title}`;
+        image.loading = "lazy";
+        article.appendChild(image);
+    }
 
-    title.textContent =
-        activity.title;
+    const header = document.createElement("div");
+    header.className = "calendar-activity-header";
 
-    article.appendChild(title);
+    const title = document.createElement("h3");
+    title.textContent = activity.title;
+    header.appendChild(title);
 
+    if (activity.is_event) {
+        const eventBadge = document.createElement("span");
+        eventBadge.className = "calendar-event-badge";
+        eventBadge.textContent = "Événement";
+        header.appendChild(eventBadge);
+    }
 
-    const time =
-        document.createElement("p");
+    article.appendChild(header);
 
-    time.textContent =
-        `${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`;
+    const details = document.createElement("div");
+    details.className = "calendar-activity-details";
 
-    article.appendChild(time);
+    const time = document.createElement("p");
+    time.textContent = `🕐 ${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`;
+    details.appendChild(time);
 
+    const players = document.createElement("p");
+    players.textContent = `👥 ${activity.min_players} à ${activity.max_players} joueurs`;
+    details.appendChild(players);
 
-    const players =
-        document.createElement("p");
+    if (activity.location) {
+        const location = document.createElement("p");
+        location.textContent = `📍 ${activity.location}`;
+        details.appendChild(location);
+    }
 
-    players.textContent =
-        `${activity.min_players} à ${activity.max_players} joueurs`;
-
-    article.appendChild(players);
-
+    article.appendChild(details);
 
     if (activity.description) {
-        const description =
-            document.createElement("p");
-
-        description.textContent =
-            activity.description;
-
+        const description = document.createElement("p");
+        description.className = "calendar-activity-description";
+        description.textContent = activity.description;
         article.appendChild(description);
     }
 

@@ -199,6 +199,9 @@ async function loadProposals() {
             end_time,
             min_players,
             max_players,
+            location,
+            is_event,
+            image_url,
             status,
             created_at,
             created_by
@@ -308,6 +311,27 @@ async function loadProposals() {
 
         article.appendChild(players);
 
+        if (activity.location) {
+            const location = document.createElement("p");
+            location.textContent = `Lieu : ${activity.location}`;
+            article.appendChild(location);
+        }
+
+        const eventInfo = document.createElement("p");
+        eventInfo.textContent = activity.is_event
+            ? "Événement important : Oui"
+            : "Événement important : Non";
+        article.appendChild(eventInfo);
+
+        if (activity.image_url) {
+            const image = document.createElement("img");
+            image.className = "admin-activity-image";
+            image.src = activity.image_url;
+            image.alt = `Illustration de ${activity.title}`;
+            image.loading = "lazy";
+            article.appendChild(image);
+        }
+
         const creatorElement = document.createElement("p");
         creatorElement.textContent =
             `Proposé par : ${creator?.pseudo ?? "Utilisateur inconnu"}`;
@@ -382,6 +406,9 @@ async function loadApprovedActivities() {
             end_time,
             min_players,
             max_players,
+            location,
+            is_event,
+            image_url,
             created_at,
             created_by
         `)
@@ -472,6 +499,27 @@ async function loadApprovedActivities() {
             `Joueurs : ${activity.min_players} à ${activity.max_players}`;
 
         article.appendChild(players);
+
+        if (activity.location) {
+            const location = document.createElement("p");
+            location.textContent = `Lieu : ${activity.location}`;
+            article.appendChild(location);
+        }
+
+        const eventInfo = document.createElement("p");
+        eventInfo.textContent = activity.is_event
+            ? "Événement important : Oui"
+            : "Événement important : Non";
+        article.appendChild(eventInfo);
+
+        if (activity.image_url) {
+            const image = document.createElement("img");
+            image.className = "admin-activity-image";
+            image.src = activity.image_url;
+            image.alt = `Illustration de ${activity.title}`;
+            image.loading = "lazy";
+            article.appendChild(image);
+        }
 
 
         const actions =
@@ -705,6 +753,40 @@ function openEditActivityForm(activity) {
 
 
     /*
+     * Lieu
+     */
+    const locationLabel = document.createElement("label");
+    locationLabel.textContent = "Lieu";
+
+    const locationInput = document.createElement("input");
+    locationInput.type = "text";
+    locationInput.value = activity.location ?? "";
+    locationLabel.appendChild(locationInput);
+    form.appendChild(locationLabel);
+
+    /*
+     * Événement important
+     */
+    const eventLabel = document.createElement("label");
+    eventLabel.className = "admin-edit-checkbox";
+
+    const eventInput = document.createElement("input");
+    eventInput.type = "checkbox";
+    eventInput.checked = Boolean(activity.is_event);
+
+    eventLabel.appendChild(eventInput);
+    eventLabel.appendChild(document.createTextNode(" Événement important"));
+    form.appendChild(eventLabel);
+
+    if (activity.image_url) {
+        const currentImage = document.createElement("img");
+        currentImage.className = "admin-activity-image";
+        currentImage.src = activity.image_url;
+        currentImage.alt = `Illustration de ${activity.title}`;
+        form.appendChild(currentImage);
+    }
+
+    /*
      * Bouton enregistrer
      */
 
@@ -751,7 +833,10 @@ function openEditActivityForm(activity) {
                 startInput.value,
                 endInput.value,
                 Number(minInput.value),
-                Number(maxInput.value)
+                Number(maxInput.value),
+                locationInput.value.trim(),
+                eventInput.checked,
+                activity.image_url ?? null
             );
         }
     );
@@ -771,7 +856,10 @@ async function saveActivityChanges(
     startTime,
     endTime,
     minPlayers,
-    maxPlayers
+    maxPlayers,
+    location,
+    isEvent,
+    imageUrl
 ) {
 
     if (!title) {
@@ -835,7 +923,10 @@ async function saveActivityChanges(
             p_start_time: startTime,
             p_end_time: endTime,
             p_min_players: minPlayers,
-            p_max_players: maxPlayers
+            p_max_players: maxPlayers,
+            p_location: location || null,
+            p_is_event: Boolean(isEvent),
+            p_image_url: imageUrl || null
         }
     );
 
