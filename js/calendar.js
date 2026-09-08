@@ -663,5 +663,37 @@ async function init() {
     }
 }
 
+/*
+ * Écoute les changements en temps réel
+ * sur les participants.
+ */
+function subscribeToParticipationChanges() {
+    supabase
+        .channel("calendar-participations")
+        .on(
+            "postgres_changes",
+            {
+                event: "*",
+                schema: "public",
+                table: "participations"
+            },
+            async (payload) => {
+                console.log(
+                    "Changement de participation reçu :",
+                    payload
+                );
+
+                await init();
+            }
+        )
+        .subscribe((status) => {
+            console.log(
+                "Statut Realtime :",
+                status
+            );
+        });
+}
+
 
 init();
+subscribeToParticipationChanges();
