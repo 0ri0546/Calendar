@@ -915,6 +915,9 @@ async function deleteActivity(activity) {
 /*
  * Modifie le statut d'une proposition.
  */
+/*
+ * Modifie le statut d'une proposition.
+ */
 async function updateProposalStatus(activityId, newStatus) {
     const action =
         newStatus === "approved"
@@ -932,12 +935,17 @@ async function updateProposalStatus(activityId, newStatus) {
     adminMessage.textContent =
         "Modification de la proposition...";
 
-    const { error } = await supabase
-        .from("activities")
-        .update({
-            status: newStatus
-        })
-        .eq("id", activityId);
+    const functionName =
+        newStatus === "approved"
+            ? "approve_activity"
+            : "reject_activity";
+
+    const { error } = await supabase.rpc(
+        functionName,
+        {
+            p_activity_id: activityId
+        }
+    );
 
     if (error) {
         console.error(
