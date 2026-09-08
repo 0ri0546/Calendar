@@ -56,3 +56,20 @@ button:disabled {
 main {
     padding: 1rem;
 }
+
+.avatar-preview {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.avatar-preview-item {
+    text-align: center;
+}
+
+.avatar-preview img {
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
+}

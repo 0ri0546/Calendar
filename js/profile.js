@@ -1,9 +1,9 @@
 import { supabase } from "./supabase.js";
 
 
-// --------------------------------------------------
-// Éléments HTML
-// --------------------------------------------------
+// ==================================================
+// ÉLÉMENTS HTML
+// ==================================================
 
 const form = document.getElementById("profile-form");
 
@@ -12,22 +12,25 @@ const emailInput = document.getElementById("email");
 const roleInput = document.getElementById("role");
 
 const avatar = document.getElementById("profile-avatar");
+
 const avatarFileInput = document.getElementById("avatar-file");
 
-const newAvatarPreviewContainer = document.getElementById(
-    "new-avatar-preview-container"
-);
+const newAvatarPreviewContainer =
+    document.getElementById("new-avatar-preview-container");
 
-const newAvatarPreview = document.getElementById(
-    "new-avatar-preview"
-);
+const newAvatarPreview =
+    document.getElementById("new-avatar-preview");
 
-const message = document.getElementById("profile-message");
+const avatarPreviewArrow =
+    document.getElementById("avatar-preview-arrow");
+
+const message =
+    document.getElementById("profile-message");
 
 
-// --------------------------------------------------
-// Récupérer l'utilisateur connecté
-// --------------------------------------------------
+// ==================================================
+// UTILISATEUR CONNECTÉ
+// ==================================================
 
 async function getCurrentUser() {
 
@@ -60,9 +63,9 @@ async function getCurrentUser() {
 }
 
 
-// --------------------------------------------------
-// Charger le profil
-// --------------------------------------------------
+// ==================================================
+// CHARGEMENT DU PROFIL
+// ==================================================
 
 async function loadProfile() {
 
@@ -73,11 +76,11 @@ async function loadProfile() {
     }
 
 
-    // Email provenant de Supabase Auth
+    // Email
     emailInput.value = user.email ?? "";
 
 
-    // Récupération du profil
+    // Profil
     const {
         data: profile,
         error: profileError
@@ -110,7 +113,7 @@ async function loadProfile() {
     roleInput.value = profile.role ?? "member";
 
 
-    // Avatar
+    // Avatar actuel
     if (profile.avatar_url) {
 
         avatar.src = profile.avatar_url;
@@ -120,19 +123,21 @@ async function loadProfile() {
 }
 
 
-// --------------------------------------------------
-// Aperçu de la nouvelle photo
-// --------------------------------------------------
+// ==================================================
+// APERÇU DE LA NOUVELLE PHOTO
+// ==================================================
 
 function previewAvatar() {
 
     const file = avatarFileInput.files[0];
 
 
-    // Aucun fichier sélectionné
+    // Aucun fichier
     if (!file) {
 
         newAvatarPreviewContainer.hidden = true;
+
+        avatarPreviewArrow.hidden = true;
 
         newAvatarPreview.removeAttribute("src");
 
@@ -154,12 +159,14 @@ function previewAvatar() {
 
         newAvatarPreviewContainer.hidden = true;
 
+        avatarPreviewArrow.hidden = true;
+
         newAvatarPreview.removeAttribute("src");
+
+        avatarFileInput.value = "";
 
         message.textContent =
             "Format d'image non supporté.";
-
-        avatarFileInput.value = "";
 
         return;
     }
@@ -173,52 +180,60 @@ function previewAvatar() {
 
         newAvatarPreviewContainer.hidden = true;
 
+        avatarPreviewArrow.hidden = true;
+
         newAvatarPreview.removeAttribute("src");
+
+        avatarFileInput.value = "";
 
         message.textContent =
             "La photo ne doit pas dépasser 2 Mo.";
-
-        avatarFileInput.value = "";
 
         return;
     }
 
 
-    // Création d'un aperçu local
-    const previewUrl = URL.createObjectURL(file);
+    // Création de l'aperçu local
+    const previewUrl =
+        URL.createObjectURL(file);
+
 
     newAvatarPreview.src = previewUrl;
 
+
+    // Afficher l'aperçu
     newAvatarPreviewContainer.hidden = false;
+
+    avatarPreviewArrow.hidden = false;
+
 
     message.textContent = "";
 
 }
 
 
-// Écouter la sélection d'une image
+// Écoute du changement de fichier
 avatarFileInput.addEventListener(
     "change",
     previewAvatar
 );
 
 
-// --------------------------------------------------
-// Upload de l'avatar
-// --------------------------------------------------
+// ==================================================
+// UPLOAD DE L'AVATAR
+// ==================================================
 
 async function uploadAvatar(user) {
 
     const file = avatarFileInput.files[0];
 
 
-    // Aucun nouveau fichier
     if (!file) {
         return null;
     }
 
 
-    // Sécurité supplémentaire
+    // Sécurité taille
     const maxSize = 2 * 1024 * 1024;
 
 
@@ -231,6 +246,7 @@ async function uploadAvatar(user) {
     }
 
 
+    // Sécurité format
     const allowedTypes = [
         "image/jpeg",
         "image/png",
@@ -247,15 +263,17 @@ async function uploadAvatar(user) {
     }
 
 
-    // Extension du fichier
-    const extension = file.name
-        .split(".")
-        .pop()
-        .toLowerCase();
+    // Extension
+    const extension =
+        file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
 
 
-    // Chemin dans Storage
-    const filePath = `${user.id}/avatar.${extension}`;
+    // Chemin Storage
+    const filePath =
+        `${user.id}/avatar.${extension}`;
 
 
     // Upload
@@ -280,7 +298,7 @@ async function uploadAvatar(user) {
     }
 
 
-    // Récupération de l'URL publique
+    // URL publique
     const {
         data: { publicUrl }
     } = supabase.storage
@@ -292,9 +310,9 @@ async function uploadAvatar(user) {
 }
 
 
-// --------------------------------------------------
-// Enregistrement du profil
-// --------------------------------------------------
+// ==================================================
+// ENREGISTREMENT
+// ==================================================
 
 form.addEventListener(
     "submit",
@@ -309,8 +327,9 @@ form.addEventListener(
 
         try {
 
-            // Utilisateur connecté
-            const user = await getCurrentUser();
+            // Utilisateur
+            const user =
+                await getCurrentUser();
 
 
             if (!user) {
@@ -319,7 +338,8 @@ form.addEventListener(
 
 
             // Pseudo
-            const pseudo = pseudoInput.value.trim();
+            const pseudo =
+                pseudoInput.value.trim();
 
 
             if (!pseudo) {
@@ -331,24 +351,21 @@ form.addEventListener(
             }
 
 
-            // --------------------------------------------------
-            // Upload de la nouvelle photo si nécessaire
-            // --------------------------------------------------
-
+            // Upload éventuel
             let avatarUrl = null;
 
 
-            if (avatarFileInput.files.length > 0) {
+            if (
+                avatarFileInput.files.length > 0
+            ) {
 
-                avatarUrl = await uploadAvatar(user);
+                avatarUrl =
+                    await uploadAvatar(user);
 
             }
 
 
-            // --------------------------------------------------
-            // Préparer les données à modifier
-            // --------------------------------------------------
-
+            // Données à modifier
             const updateData = {
                 pseudo: pseudo
             };
@@ -356,15 +373,13 @@ form.addEventListener(
 
             if (avatarUrl) {
 
-                updateData.avatar_url = avatarUrl;
+                updateData.avatar_url =
+                    avatarUrl;
 
             }
 
 
-            // --------------------------------------------------
-            // Mise à jour du profil
-            // --------------------------------------------------
-
+            // Mise à jour profil
             const {
                 error
             } = await supabase
@@ -380,10 +395,7 @@ form.addEventListener(
             }
 
 
-            // --------------------------------------------------
-            // Mise à jour de l'affichage
-            // --------------------------------------------------
-
+            // Mettre à jour l'image actuelle
             if (avatarUrl) {
 
                 avatar.src = avatarUrl;
@@ -391,12 +403,14 @@ form.addEventListener(
             }
 
 
-            // Réinitialiser le sélecteur
+            // Nettoyer le champ fichier
             avatarFileInput.value = "";
 
 
-            // Masquer l'aperçu
+            // Cacher l'aperçu
             newAvatarPreviewContainer.hidden = true;
+
+            avatarPreviewArrow.hidden = true;
 
             newAvatarPreview.removeAttribute("src");
 
@@ -423,8 +437,8 @@ form.addEventListener(
 );
 
 
-// --------------------------------------------------
-// Initialisation
-// --------------------------------------------------
+// ==================================================
+// INITIALISATION
+// ==================================================
 
 loadProfile();
