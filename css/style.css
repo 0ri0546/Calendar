@@ -174,3 +174,97 @@ main {
         right: 1rem;
     }
 }
+
+/* Activity form - nouveaux champs activité / événement / image */
+.activity-form-section {
+    width: min(760px, 100%);
+    margin: 0 auto;
+}
+
+.activity-form {
+    display: grid;
+    gap: 1.1rem;
+    margin-top: 1.5rem;
+}
+
+.form-field {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.form-field label {
+    font-weight: 600;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid #cfc7c4;
+    border-radius: 8px;
+    font: inherit;
+    background: #fff;
+}
+
+.form-field textarea {
+    resize: vertical;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.8rem;
+    border: 1px solid #ddd3d0;
+    border-radius: 8px;
+    background: #faf8f7;
+    cursor: pointer;
+}
+
+.form-checkbox input {
+    width: auto;
+}
+
+.form-field small {
+    color: #6d6461;
+}
+
+.activity-image-preview-container {
+    min-height: 0;
+}
+
+.activity-image-preview {
+    display: block;
+    width: min(100%, 520px);
+    max-height: 320px;
+    margin-top: 0.75rem;
+    object-fit: cover;
+    border: 1px solid #ddd3d0;
+    border-radius: 10px;
+}
+
+.form-message {
+    min-height: 1.4em;
+    margin: 0;
+}
+
+.form-message.success {
+    color: #276749;
+}
+
+.form-message.error {
+    color: #b42318;
+}
+
+@media (max-width: 700px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
