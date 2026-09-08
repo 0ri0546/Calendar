@@ -3,6 +3,8 @@ import { supabase } from "./supabase.js";
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
 
+let realtimeChannel = null;
+
 
 /*
  * Date -> YYYY-MM-DD
@@ -108,7 +110,8 @@ async function loadActivities() {
 
 
 /*
- * Récupère les participations de toutes les activités.
+ * Récupère toutes les participations
+ * des activités affichées.
  */
 async function loadParticipations(activityIds) {
     if (activityIds.length === 0) {
@@ -143,6 +146,54 @@ async function loadParticipations(activityIds) {
 
 
 /*
+ * Récupère les suivis de l'utilisateur connecté.
+ *
+ * On ne récupère QUE ses propres suivis.
+ */
+async function loadMyFollows(currentUser, activityIds) {
+    if (!currentUser || activityIds.length === 0) {
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from("followers")
+        .select("activity_id")
+        .eq("user_id", currentUser.id)
+        .in("activity_id", activityIds);
+
+    if (error) {
+        console.error(
+            "Erreur récupération suivis :",
+            error
+        );
+
+        throw error;
+    }
+
+    return data;
+}
+
+
+/*
+ * Transforme les suivis en Set.
+ *
+ * Exemple :
+ *
+ * Set {
+ *   "id-activité-1",
+ *   "id-activité-4"
+ * }
+ */
+function createFollowSet(follows) {
+    return new Set(
+        follows.map(
+            follow => follow.activity_id
+        )
+    );
+}
+
+
+/*
  * Groupe les participations par activité.
  */
 function groupParticipations(participations) {
@@ -165,11 +216,7 @@ function groupParticipations(participations) {
 /*
  * Formate une heure.
  *
- * Supabase peut renvoyer :
- * 20:53:00
- *
- * On affiche :
- * 20:53
+ * 20:53:00 -> 20:53
  */
 function formatTime(time) {
     if (!time) {
@@ -181,7 +228,7 @@ function formatTime(time) {
 
 
 /*
- * Crée l'affichage des participants.
+ * Affiche les participants.
  */
 function createParticipantsElement(
     activity,
@@ -193,6 +240,7 @@ function createParticipantsElement(
     container.className =
         "calendar-participants";
 
+
     const title =
         document.createElement("h4");
 
@@ -202,9 +250,6 @@ function createParticipantsElement(
     container.appendChild(title);
 
 
-    /*
-     * Aucun participant.
-     */
     if (participants.length === 0) {
         const empty =
             document.createElement("p");
@@ -218,11 +263,9 @@ function createParticipantsElement(
     }
 
 
-    /*
-     * Liste des participants.
-     */
     const list =
         document.createElement("ul");
+
 
     for (const participant of participants) {
         const item =
@@ -234,6 +277,7 @@ function createParticipantsElement(
 
         list.appendChild(item);
     }
+
 
     container.appendChild(list);
 
@@ -247,13 +291,15 @@ function createParticipantsElement(
 function createActivityActions(
     activity,
     participants,
-    currentUser
+    currentUser,
+    followedActivityIds
 ) {
     const actions =
         document.createElement("div");
 
     actions.className =
         "calendar-actions";
+
 
     /*
      * Pas connecté.
@@ -304,32 +350,85 @@ function createActivityActions(
 
 
     /*
-     * Partie complète.
+     * La partie est pleine.
      */
-    if (
+    const isFull =
         participants.length >=
-        activity.max_players
-    ) {
-        const fullMessage =
-            document.createElement("p");
+        activity.max_players;
 
-        fullMessage.textContent =
-            "Partie complète.";
 
-        actions.appendChild(fullMessage);
+    if (isFull) {
+        const isFollowing =
+            followedActivityIds.has(activity.id);
+
+
+        /*
+         * L'utilisateur suit déjà cette partie.
+         */
+        if (isFollowing) {
+            const unfollowButton =
+                document.createElement("button");
+
+            unfollowButton.textContent =
+                "🔕 Ne plus me prévenir";
+
+
+            unfollowButton.addEventListener(
+                "click",
+                async () => {
+                    await unfollowActivity(
+                        activity.id
+                    );
+                }
+            );
+
+
+            actions.appendChild(
+                unfollowButton
+            );
+
+            return actions;
+        }
+
+
+        /*
+         * L'utilisateur ne suit pas encore.
+         */
+        const followButton =
+            document.createElement("button");
+
+        followButton.textContent =
+            "🔔 Me prévenir si une place se libère";
+
+
+        followButton.addEventListener(
+            "click",
+            async () => {
+                await followActivity(
+                    activity.id
+                );
+            }
+        );
+
+
+        actions.appendChild(
+            followButton
+        );
 
         return actions;
     }
 
 
     /*
-     * Il reste de la place.
+     * Partie non pleine :
+     * on propose simplement de rejoindre.
      */
     const joinButton =
         document.createElement("button");
 
     joinButton.textContent =
         "Rejoindre";
+
 
     joinButton.addEventListener(
         "click",
@@ -339,6 +438,7 @@ function createActivityActions(
             );
         }
     );
+
 
     actions.appendChild(joinButton);
 
@@ -359,6 +459,7 @@ async function joinActivity(activityId) {
                 }
             );
 
+
         if (error) {
             console.error(
                 "Erreur rejoindre activité :",
@@ -372,9 +473,7 @@ async function joinActivity(activityId) {
             return;
         }
 
-        /*
-         * Recharge entièrement le calendrier.
-         */
+
         await init();
 
     } catch (error) {
@@ -400,6 +499,7 @@ async function leaveActivity(activityId) {
                 }
             );
 
+
         if (error) {
             console.error(
                 "Erreur quitter activité :",
@@ -412,6 +512,87 @@ async function leaveActivity(activityId) {
 
             return;
         }
+
+
+        await init();
+
+    } catch (error) {
+        console.error(error);
+
+        alert(
+            "Une erreur est survenue."
+        );
+    }
+}
+
+
+/*
+ * Active le suivi d'une activité.
+ */
+async function followActivity(activityId) {
+    try {
+        const { error } =
+            await supabase.rpc(
+                "follow_activity",
+                {
+                    p_activity_id: activityId
+                }
+            );
+
+
+        if (error) {
+            console.error(
+                "Erreur suivi activité :",
+                error
+            );
+
+            alert(
+                `Impossible d'activer le suivi : ${error.message}`
+            );
+
+            return;
+        }
+
+
+        await init();
+
+    } catch (error) {
+        console.error(error);
+
+        alert(
+            "Une erreur est survenue."
+        );
+    }
+}
+
+
+/*
+ * Désactive le suivi d'une activité.
+ */
+async function unfollowActivity(activityId) {
+    try {
+        const { error } =
+            await supabase.rpc(
+                "unfollow_activity",
+                {
+                    p_activity_id: activityId
+                }
+            );
+
+
+        if (error) {
+            console.error(
+                "Erreur désactivation suivi :",
+                error
+            );
+
+            alert(
+                `Impossible de désactiver le suivi : ${error.message}`
+            );
+
+            return;
+        }
+
 
         await init();
 
@@ -431,7 +612,8 @@ async function leaveActivity(activityId) {
 function createActivityElement(
     activity,
     participants,
-    currentUser
+    currentUser,
+    followedActivityIds
 ) {
     const article =
         document.createElement("article");
@@ -490,7 +672,8 @@ function createActivityElement(
         createActivityActions(
             activity,
             participants,
-            currentUser
+            currentUser,
+            followedActivityIds
         )
     );
 
@@ -525,10 +708,12 @@ function groupActivitiesByDate(activities) {
 function renderCalendar(
     activities,
     participations,
-    currentUser
+    currentUser,
+    followedActivityIds
 ) {
     const { today, endDate } =
         getCalendarPeriod();
+
 
     calendarContainer.replaceChildren();
 
@@ -540,8 +725,11 @@ function renderCalendar(
     const groupedActivities =
         groupActivitiesByDate(activities);
 
+
     const groupedParticipations =
-        groupParticipations(participations);
+        groupParticipations(
+            participations
+        );
 
 
     const currentDate =
@@ -550,7 +738,9 @@ function renderCalendar(
 
     while (currentDate <= endDate) {
         const dateString =
-            formatDateForDatabase(currentDate);
+            formatDateForDatabase(
+                currentDate
+            );
 
 
         const dayElement =
@@ -564,14 +754,17 @@ function renderCalendar(
             document.createElement("h2");
 
         heading.textContent =
-            formatDateForDisplay(dateString);
+            formatDateForDisplay(
+                dateString
+            );
 
         dayElement.appendChild(heading);
 
 
         const activitiesForDay =
-            groupedActivities.get(dateString)
-            ?? [];
+            groupedActivities.get(
+                dateString
+            ) ?? [];
 
 
         if (activitiesForDay.length === 0) {
@@ -599,7 +792,8 @@ function renderCalendar(
                 createActivityElement(
                     activity,
                     participantsForActivity,
-                    currentUser
+                    currentUser,
+                    followedActivityIds
                 )
             );
         }
@@ -618,7 +812,7 @@ function renderCalendar(
 
 
 /*
- * Initialisation.
+ * Initialise / recharge le calendrier.
  */
 async function init() {
     try {
@@ -646,10 +840,22 @@ async function init() {
             );
 
 
+        const follows =
+            await loadMyFollows(
+                currentUser,
+                activityIds
+            );
+
+
+        const followedActivityIds =
+            createFollowSet(follows);
+
+
         renderCalendar(
             activities,
             participations,
-            currentUser
+            currentUser,
+            followedActivityIds
         );
 
     } catch (error) {
@@ -663,37 +869,51 @@ async function init() {
     }
 }
 
+
 /*
- * Écoute les changements en temps réel
- * sur les participants.
+ * Abonnement Realtime aux changements
+ * de participants.
  */
 function subscribeToParticipationChanges() {
-    supabase
-        .channel("calendar-participations")
-        .on(
-            "postgres_changes",
-            {
-                event: "*",
-                schema: "public",
-                table: "participations"
-            },
-            async (payload) => {
-                console.log(
-                    "Changement de participation reçu :",
-                    payload
-                );
+    if (realtimeChannel) {
+        return;
+    }
 
-                await init();
-            }
-        )
-        .subscribe((status) => {
-            console.log(
-                "Statut Realtime :",
-                status
+
+    realtimeChannel =
+        supabase
+            .channel(
+                "calendar-participations"
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "participations"
+                },
+                async (payload) => {
+                    console.log(
+                        "Changement de participation :",
+                        payload
+                    );
+
+                    await init();
+                }
+            )
+            .subscribe(
+                (status) => {
+                    console.log(
+                        "Statut Realtime :",
+                        status
+                    );
+                }
             );
-        });
 }
 
 
+/*
+ * Initialisation.
+ */
 init();
 subscribeToParticipationChanges();
