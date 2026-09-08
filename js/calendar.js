@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { humanizeError, showToast } from "./ui.js";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
@@ -280,54 +281,103 @@ function formatTime(time) {
 }
 
 
-function createParticipantsElement(activity, participants) {
-    const container = document.createElement("div");
-    container.className = "calendar-participants";
 
-    const title = document.createElement("h4");
-    title.textContent = `Participants (${participants.length}/${activity.max_players})`;
-    container.appendChild(title);
 
-    if (participants.length === 0) {
-        const empty = document.createElement("p");
-        empty.textContent = "Aucun participant pour le moment.";
-        container.appendChild(empty);
-        return container;
+async function joinActivity(activityId) {
+    try {
+        const { error } = await supabase.rpc("join_activity", { p_activity_id: activityId });
+        if (error) {
+            showToast(humanizeError(error, "Impossible de rejoindre la partie."));
+            return;
+        }
+        await init();
+    } catch (error) {
+        console.error(error);
+        showToast(humanizeError(error));
     }
-
-    const list = document.createElement("ul");
-
-    for (const participant of participants) {
-        const item = document.createElement("li");
-        item.textContent = participant.profiles?.pseudo ?? "Utilisateur";
-        list.appendChild(item);
-    }
-
-    container.appendChild(list);
-    return container;
 }
 
 
-function createWaitingQueueElement(followers) {
-    const container = document.createElement("div");
-    container.className = "calendar-waiting-queue";
-
-    const title = document.createElement("h4");
-    title.textContent = `File d'attente (${followers.length})`;
-    container.appendChild(title);
-
-    const list = document.createElement("ol");
-
-    for (const follower of followers) {
-        const item = document.createElement("li");
-        item.textContent = follower.profiles?.pseudo ?? "Utilisateur";
-        list.appendChild(item);
+async function leaveActivity(activityId) {
+    try {
+        const { error } = await supabase.rpc("leave_activity", { p_activity_id: activityId });
+        if (error) {
+            showToast(humanizeError(error, "Impossible de quitter la partie."));
+            return;
+        }
+        await init();
+    } catch (error) {
+        console.error(error);
+        showToast(humanizeError(error));
     }
-
-    container.appendChild(list);
-    return container;
 }
 
+
+async function followActivity(activityId) {
+    try {
+        const { error } = await supabase.rpc("follow_activity", { p_activity_id: activityId });
+        if (error) {
+            showToast(humanizeError(error, "Impossible d’activer le suivi."));
+            return;
+        }
+        await init();
+    } catch (error) {
+        console.error(error);
+        showToast(humanizeError(error));
+    }
+}
+
+
+async function unfollowActivity(activityId) {
+    try {
+        const { error } = await supabase.rpc("unfollow_activity", { p_activity_id: activityId });
+        if (error) {
+            showToast(humanizeError(error, "Impossible de désactiver le suivi."));
+            return;
+        }
+        await init();
+    } catch (error) {
+        console.error(error);
+        showToast(humanizeError(error));
+    }
+}
+
+
+function getAvailability(activity, participantCount, followerCount) {
+    const remaining = Math.max(activity.max_players - participantCount, 0);
+    let label = `🟢 ${remaining} places disponibles`;
+    let className = "availability-open";
+
+    if (remaining === 0) {
+        label = "🔴 Complet";
+        className = "availability-full";
+    } else if (remaining === 1) {
+        label = "🟠 1 place restante";
+        className = "availability-last";
+    }
+
+    return { label, className, queueLabel: followerCount > 0 ? `👥 ${followerCount} ${followerCount === 1 ? "personne" : "personnes"} en attente` : null };
+}
+
+function createAvailabilityElement(activity, participantCount, followerCount) {
+    const availability = getAvailability(activity, participantCount, followerCount);
+    const container = document.createElement("div");
+    container.className = "calendar-availability";
+
+    const status = document.createElement("span");
+    status.className = `calendar-availability-status ${availability.className}`;
+    status.textContent = availability.label;
+    container.appendChild(status);
+
+    if (availability.queueLabel) {
+        const queue = document.createElement("span");
+        queue.className = "calendar-availability-queue";
+        queue.textContent = availability.queueLabel;
+        container.appendChild(queue);
+    }
+
+    return container;
+}
 
 function createActivityActions(activity, participants, currentUser, followedActivityIds) {
     const actions = document.createElement("div");
@@ -345,7 +395,10 @@ function createActivityActions(activity, participants, currentUser, followedActi
     if (isParticipant) {
         const button = document.createElement("button");
         button.textContent = "Quitter";
-        button.addEventListener("click", async () => await leaveActivity(activity.id));
+        button.addEventListener("click", async event => {
+            event.stopPropagation();
+            await leaveActivity(activity.id);
+        });
         actions.appendChild(button);
         return actions;
     }
@@ -355,10 +408,9 @@ function createActivityActions(activity, participants, currentUser, followedActi
     if (isFull) {
         const isFollowing = followedActivityIds.has(activity.id);
         const button = document.createElement("button");
-        button.textContent = isFollowing
-            ? "🔕 Ne plus me prévenir"
-            : "🔔 Me prévenir si une place se libère";
-        button.addEventListener("click", async () => {
+        button.textContent = isFollowing ? "🔕 Ne plus me prévenir" : "🔔 Me prévenir si une place se libère";
+        button.addEventListener("click", async event => {
+            event.stopPropagation();
             if (isFollowing) await unfollowActivity(activity.id);
             else await followActivity(activity.id);
         });
@@ -368,138 +420,179 @@ function createActivityActions(activity, participants, currentUser, followedActi
 
     const button = document.createElement("button");
     button.textContent = "Rejoindre";
-    button.addEventListener("click", async () => await joinActivity(activity.id));
+    button.addEventListener("click", async event => {
+        event.stopPropagation();
+        await joinActivity(activity.id);
+    });
     actions.appendChild(button);
-
     return actions;
 }
 
-
-async function joinActivity(activityId) {
-    try {
-        const { error } = await supabase.rpc("join_activity", { p_activity_id: activityId });
-        if (error) {
-            alert(`Impossible de rejoindre la partie : ${error.message}`);
-            return;
-        }
-        await init();
-    } catch (error) {
-        console.error(error);
-        alert("Une erreur est survenue.");
+function createParticipantsElement(activity, participants) {
+    const container = document.createElement("div");
+    container.className = "calendar-participants";
+    const title = document.createElement("h4");
+    title.textContent = `Participants (${participants.length}/${activity.max_players})`;
+    container.appendChild(title);
+    if (participants.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "Aucun participant pour le moment.";
+        container.appendChild(empty);
+        return container;
     }
+    const list = document.createElement("ul");
+    for (const participant of participants) {
+        const item = document.createElement("li");
+        item.textContent = participant.profiles?.pseudo ?? "Utilisateur";
+        list.appendChild(item);
+    }
+    container.appendChild(list);
+    return container;
 }
 
-
-async function leaveActivity(activityId) {
-    try {
-        const { error } = await supabase.rpc("leave_activity", { p_activity_id: activityId });
-        if (error) {
-            alert(`Impossible de quitter la partie : ${error.message}`);
-            return;
-        }
-        await init();
-    } catch (error) {
-        console.error(error);
-        alert("Une erreur est survenue.");
+function createWaitingQueueElement(followers) {
+    const container = document.createElement("div");
+    container.className = "calendar-waiting-queue";
+    const title = document.createElement("h4");
+    title.textContent = `File d'attente (${followers.length})`;
+    container.appendChild(title);
+    const list = document.createElement("ol");
+    for (const follower of followers) {
+        const item = document.createElement("li");
+        item.textContent = follower.profiles?.pseudo ?? "Utilisateur";
+        list.appendChild(item);
     }
+    container.appendChild(list);
+    return container;
 }
-
-
-async function followActivity(activityId) {
-    try {
-        const { error } = await supabase.rpc("follow_activity", { p_activity_id: activityId });
-        if (error) {
-            alert(`Impossible d'activer le suivi : ${error.message}`);
-            return;
-        }
-        await init();
-    } catch (error) {
-        console.error(error);
-        alert("Une erreur est survenue.");
-    }
-}
-
-
-async function unfollowActivity(activityId) {
-    try {
-        const { error } = await supabase.rpc("unfollow_activity", { p_activity_id: activityId });
-        if (error) {
-            alert(`Impossible de désactiver le suivi : ${error.message}`);
-            return;
-        }
-        await init();
-    } catch (error) {
-        console.error(error);
-        alert("Une erreur est survenue.");
-    }
-}
-
 
 function createActivityElement(activity, participants, followers, currentUser, followedActivityIds) {
     const article = document.createElement("article");
-    article.className = "calendar-activity";
+    article.className = "calendar-activity calendar-activity-compact";
     article.id = `activity-${activity.id}`;
-
-    if (activity.image_url) {
-        const image = document.createElement("img");
-        image.className = "calendar-activity-image";
-        image.src = activity.image_url;
-        image.alt = `Illustration de ${activity.title}`;
-        image.loading = "lazy";
-        article.appendChild(image);
-    }
+    article.tabIndex = 0;
+    article.setAttribute("role", "button");
+    article.setAttribute("aria-label", `Voir les détails de ${activity.title}`);
 
     const header = document.createElement("div");
     header.className = "calendar-activity-header";
-
     const title = document.createElement("h3");
     title.textContent = activity.title;
     header.appendChild(title);
-
     if (activity.is_event) {
         const badge = document.createElement("span");
         badge.className = "calendar-event-badge";
         badge.textContent = "Événement";
         header.appendChild(badge);
     }
-
     article.appendChild(header);
 
     const details = document.createElement("div");
-    details.className = "calendar-activity-details";
-
+    details.className = "calendar-activity-details calendar-activity-quick-details";
     const time = document.createElement("p");
     time.textContent = `🕐 ${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`;
     details.appendChild(time);
-
-    const players = document.createElement("p");
-    players.textContent = `👥 ${activity.min_players} à ${activity.max_players} joueurs`;
-    details.appendChild(players);
-
     if (activity.location) {
         const location = document.createElement("p");
         location.textContent = `📍 ${activity.location}`;
         details.appendChild(location);
     }
-
     article.appendChild(details);
+    article.appendChild(createAvailabilityElement(activity, participants.length, followers.length));
+
+    const hint = document.createElement("span");
+    hint.className = "calendar-activity-details-hint";
+    hint.textContent = "Voir les détails →";
+    article.appendChild(hint);
+
+    const open = event => {
+        if (event.target.closest("button")) return;
+        openActivityModal(activity, participants, followers, currentUser, followedActivityIds);
+    };
+    article.addEventListener("click", open);
+    article.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            open(event);
+        }
+    });
+    return article;
+}
+
+function openActivityModal(activity, participants, followers, currentUser, followedActivityIds) {
+    closeActivityModal();
+
+    const overlay = document.createElement("div");
+    overlay.className = "activity-modal-overlay";
+    overlay.addEventListener("click", event => {
+        if (event.target === overlay) closeActivityModal();
+    });
+
+    const dialog = document.createElement("section");
+    dialog.className = "activity-modal";
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-labelledby", "activity-modal-title");
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "activity-modal-close";
+    close.textContent = "×";
+    close.setAttribute("aria-label", "Fermer");
+    close.addEventListener("click", closeActivityModal);
+    dialog.appendChild(close);
+
+    if (activity.image_url) {
+        const image = document.createElement("img");
+        image.className = "activity-modal-image";
+        image.src = activity.image_url;
+        image.alt = `Illustration de ${activity.title}`;
+        dialog.appendChild(image);
+    }
+
+    const content = document.createElement("div");
+    content.className = "activity-modal-content";
+    const title = document.createElement("h2");
+    title.id = "activity-modal-title";
+    title.textContent = activity.title;
+    content.appendChild(title);
+
+    if (activity.is_event) {
+        const badge = document.createElement("span");
+        badge.className = "calendar-event-badge";
+        badge.textContent = "Événement";
+        content.appendChild(badge);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "activity-modal-meta";
+    meta.appendChild(document.createTextNode(`📅 ${formatDateForDisplay(activity.date)}`));
+    meta.appendChild(document.createTextNode(`🕐 ${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`));
+    meta.appendChild(document.createTextNode(`👥 ${activity.min_players} à ${activity.max_players} joueurs`));
+    if (activity.location) meta.appendChild(document.createTextNode(`📍 ${activity.location}`));
+    content.appendChild(meta);
+
+    content.appendChild(createAvailabilityElement(activity, participants.length, followers.length));
 
     if (activity.description) {
         const description = document.createElement("p");
-        description.className = "calendar-activity-description";
+        description.className = "activity-modal-description";
         description.textContent = activity.description;
-        article.appendChild(description);
+        content.appendChild(description);
     }
+    content.appendChild(createParticipantsElement(activity, participants));
+    if (followers.length > 0) content.appendChild(createWaitingQueueElement(followers));
+    content.appendChild(createActivityActions(activity, participants, currentUser, followedActivityIds));
+    dialog.appendChild(content);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    document.body.classList.add("modal-open");
+    close.focus();
+}
 
-    article.appendChild(createParticipantsElement(activity, participants));
-
-    if (followers.length > 0) {
-        article.appendChild(createWaitingQueueElement(followers));
-    }
-
-    article.appendChild(createActivityActions(activity, participants, currentUser, followedActivityIds));
-
-    return article;
+function closeActivityModal() {
+    document.querySelector(".activity-modal-overlay")?.remove();
+    document.body.classList.remove("modal-open");
 }
 
 
@@ -628,7 +721,7 @@ function renderLargeWeek(weekStart, activities, participations, followers, curre
 }
 
 
-function renderMiniMonth(monthDate, activities, onSelectWeek) {
+function renderMiniMonth(monthDate, activities, selectedWeekStart, onSelectWeek) {
     const { startDate, endDate } = getCalendarPeriod();
     const month = document.createElement("section");
     month.className = "calendar-mini-month";
@@ -693,6 +786,12 @@ function renderMiniMonth(monthDate, activities, onSelectWeek) {
             button.title = saturdayType;
         }
 
+        const selectedWeekEnd = endOfWeek(selectedWeekStart);
+        if (date >= selectedWeekStart && date <= selectedWeekEnd) {
+            button.classList.add("is-selected-week");
+            button.title = "Semaine affichée ci-dessus";
+        }
+
         if (dateString === formatDateForDatabase(new Date())) {
             button.classList.add("is-today");
         }
@@ -734,6 +833,15 @@ function renderCalendar(activities, participations, followers, currentUser, foll
     const navigation = document.createElement("div");
     navigation.className = "calendar-week-navigation";
 
+    const todayButton = document.createElement("button");
+    todayButton.type = "button";
+    todayButton.textContent = "Aujourd'hui";
+    todayButton.className = "calendar-today-button";
+    todayButton.addEventListener("click", () => {
+        renderCalendar(activities, participations, followers, currentUser, followedActivityIds, startOfWeek(today));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
     const previous = document.createElement("button");
     previous.type = "button";
     previous.textContent = "← Semaine précédente";
@@ -756,7 +864,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
         scrollToActivityFromUrl();
     });
 
-    navigation.append(previous, next);
+    navigation.append(todayButton, previous, next);
     calendarContainer.appendChild(navigation);
 
     const miniTitle = document.createElement("h2");
@@ -772,6 +880,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
         miniMonths.appendChild(renderMiniMonth(
             monthDate,
             activities,
+            boundedWeek,
             week => {
                 renderCalendar(activities, participations, followers, currentUser, followedActivityIds, week);
                 window.scrollTo({ top: 0, behavior: "smooth" });
