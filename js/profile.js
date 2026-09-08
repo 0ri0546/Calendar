@@ -8,9 +8,6 @@ import { supabase } from "./supabase.js";
 const form = document.getElementById("profile-form");
 
 const pseudoInput = document.getElementById("pseudo");
-const emailInput = document.getElementById("email");
-const roleInput = document.getElementById("role");
-
 const avatar = document.getElementById("profile-avatar");
 
 const avatarFileInput = document.getElementById("avatar-file");
@@ -76,10 +73,6 @@ async function loadProfile() {
     }
 
 
-    // Email
-    emailInput.value = user.email ?? "";
-
-
     // Profil
     const {
         data: profile,
@@ -107,10 +100,6 @@ async function loadProfile() {
 
     // Pseudo
     pseudoInput.value = profile.pseudo ?? "";
-
-
-    // Rôle
-    roleInput.value = profile.role ?? "member";
 
 
     // Avatar actuel

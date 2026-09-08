@@ -85,11 +85,13 @@ async function loadMembers(currentUser) {
         }
 
         const info = document.createElement("div");
+        info.className = "admin-member-info";
 
         const pseudo = document.createElement("strong");
         pseudo.textContent = member.pseudo;
 
         const role = document.createElement("span");
+        role.className = "admin-member-role";
         role.textContent = member.role;
 
         info.appendChild(pseudo);

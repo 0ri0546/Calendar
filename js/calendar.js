@@ -528,8 +528,28 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
     }
 
     const heading = document.createElement("h2");
-    heading.textContent = formatDateForDisplay(dateString);
+
+    const weekday = document.createElement("span");
+    weekday.className = "calendar-day-weekday";
+    weekday.textContent = new Intl.DateTimeFormat("fr-FR", {
+        weekday: "long"
+    }).format(date);
+
+    const dateLabel = document.createElement("span");
+    dateLabel.className = "calendar-day-date";
+    dateLabel.textContent = new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric",
+        month: "long"
+    }).format(date);
+
+    heading.append(weekday, dateLabel);
     dayElement.appendChild(heading);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date.getTime() === today.getTime()) {
+        dayElement.classList.add("calendar-today");
+    }
 
     if (saturdayType) {
         const saturdayLabel = document.createElement("p");
@@ -660,6 +680,11 @@ function renderMiniMonth(monthDate, activities, onSelectWeek) {
         if (activityDates.has(dateString)) {
             button.classList.add("has-activity");
             button.title = "Activité prévue";
+
+            const dot = document.createElement("span");
+            dot.className = "calendar-mini-activity-dot";
+            dot.setAttribute("aria-hidden", "true");
+            button.appendChild(dot);
         }
 
         const saturdayType = getSaturdayType(date);
