@@ -646,6 +646,9 @@ function createActivityElement(
     article.className =
         "calendar-activity";
 
+    article.id = 
+        `activity-${activity.id}`;
+
 
     const title =
         document.createElement("h3");
@@ -835,6 +838,53 @@ function renderCalendar(
     }
 }
 
+/*
+ * Si l'URL contient ?activity=...
+ * fait défiler jusqu'à l'activité correspondante.
+ */
+function scrollToActivityFromUrl() {
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const activityId =
+        params.get("activity");
+
+    if (!activityId) {
+        return;
+    }
+
+    const activityElement =
+        document.getElementById(
+            `activity-${activityId}`
+        );
+
+    if (!activityElement) {
+        console.warn(
+            "Activité demandée introuvable :",
+            activityId
+        );
+
+        return;
+    }
+
+    activityElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+
+    activityElement.classList.add(
+        "calendar-activity-highlight"
+    );
+
+    setTimeout(() => {
+        activityElement.classList.remove(
+            "calendar-activity-highlight"
+        );
+    }, 3000);
+}
+
 
 /*
  * Initialise / recharge le calendrier.
@@ -882,6 +932,8 @@ async function init() {
             currentUser,
             followedActivityIds
         );
+        
+        scrollToActivityFromUrl();
 
     } catch (error) {
         console.error(
