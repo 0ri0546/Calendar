@@ -481,11 +481,10 @@ async function loadApprovedActivities() {
             "admin-activity-actions";
 
 
-        const editButton =
-            document.createElement("button");
+        const editButton = document.createElement("button");
 
-        editButton.textContent =
-            "✏️ Modifier";
+        editButton.type = "button";
+        editButton.textContent = "✏️ Modifier";
 
         editButton.addEventListener(
             "click",
@@ -493,7 +492,19 @@ async function loadApprovedActivities() {
         );
 
 
+        const deleteButton = document.createElement("button");
+
+        deleteButton.type = "button";
+        deleteButton.textContent = "🗑️ Supprimer";
+
+        deleteButton.addEventListener(
+            "click",
+            () => deleteActivity(activity)
+        );
+
+
         actions.appendChild(editButton);
+        actions.appendChild(deleteButton);
 
         article.appendChild(actions);
 
@@ -845,6 +856,57 @@ async function saveActivityChanges(
 
     adminMessage.textContent =
         "Activité modifiée avec succès.";
+
+
+    await loadApprovedActivities();
+}
+
+/*
+ * Supprime une activité approuvée.
+ */
+async function deleteActivity(activity) {
+
+    const confirmed = confirm(
+        `Voulez-vous vraiment supprimer l'activité "${activity.title}" ?\n\n` +
+        "Cette action est définitive.\n" +
+        "Les participants seront informés par e-mail."
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    adminMessage.textContent =
+        "Suppression de l'activité...";
+
+
+    const {
+        error
+    } = await supabase.rpc(
+        "delete_activity",
+        {
+            p_activity_id: activity.id
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "Erreur suppression activité :",
+            error
+        );
+
+        adminMessage.textContent =
+            `Erreur : ${error.message}`;
+
+        return;
+    }
+
+
+    adminMessage.textContent =
+        `L'activité "${activity.title}" a été supprimée.`;
 
 
     await loadApprovedActivities();
