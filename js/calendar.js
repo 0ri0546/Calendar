@@ -151,7 +151,14 @@ async function loadParticipations(activityIds) {
  * On ne récupère QUE ses propres suivis.
  */
 async function loadMyFollows(currentUser, activityIds) {
+
+    console.log("🔵 loadMyFollows appelée", {
+        currentUser,
+        activityIds
+    });
+
     if (!currentUser || activityIds.length === 0) {
+        console.log("🔵 loadMyFollows retourne []");
         return [];
     }
 
@@ -160,6 +167,11 @@ async function loadMyFollows(currentUser, activityIds) {
         .select("activity_id")
         .eq("user_id", currentUser.id)
         .in("activity_id", activityIds);
+
+    console.log("🔵 Résultat followers :", {
+        data,
+        error
+    });
 
     if (error) {
         console.error(
