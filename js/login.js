@@ -1,17 +1,24 @@
-import { supabase } from "./supabase.js";
+import { supabase, SITE_URL } from "./supabase.js";
 
 const googleButton = document.getElementById("google-login");
 
-googleButton.addEventListener("click", async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-            redirectTo: "https://0ri0546.github.io/Calendar/"
+if (googleButton) {
+    googleButton.addEventListener("click", async () => {
+        googleButton.disabled = true;
+        googleButton.textContent = "Connexion...";
+
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: SITE_URL
+            }
+        });
+
+        if (error) {
+            console.error("Erreur de connexion Google :", error);
+            alert("Impossible de se connecter avec Google.");
+            googleButton.disabled = false;
+            googleButton.textContent = "Se connecter avec Google";
         }
     });
-
-    if (error) {
-        console.error("Erreur de connexion Google :", error);
-        alert("Impossible de se connecter avec Google.");
-    }
-});
+}
