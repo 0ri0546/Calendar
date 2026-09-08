@@ -112,3 +112,35 @@ main {
 .admin-proposal button {
     margin-right: 10px;
 }
+
+#calendar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.calendar-day {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.calendar-day h2 {
+    margin-top: 0;
+    text-transform: capitalize;
+}
+
+.calendar-activity {
+    padding: 15px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.calendar-activity h3 {
+    margin-top: 0;
+}
+
+.calendar-activity p {
+    margin: 5px 0;
+}
