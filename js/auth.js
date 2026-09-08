@@ -1,4 +1,5 @@
 import { supabase, SITE_URL } from "./supabase.js";
+import { initNotifications } from "./notifications.js";
 
 const authMenu = document.getElementById("auth-menu");
 
@@ -50,7 +51,9 @@ function renderLoggedIn(profile, user) {
     const profileLink = createLink("Profil", siteUrl("pages/profile.html"));
     const logoutButton = createButton("Déconnexion", "logout-button");
 
-    authMenu.replaceChildren(userContainer, profileLink);
+    authMenu.replaceChildren(userContainer);
+    initNotifications(authMenu, user);
+    authMenu.appendChild(profileLink);
 
     if (profile.role === "admin") {
         authMenu.appendChild(
