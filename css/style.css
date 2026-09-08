@@ -672,3 +672,105 @@ main {
         margin-top: 0.25rem;
     }
 }
+
+/* Rétrospective des événements */
+#events-period {
+    margin-top: -0.5rem;
+    color: #756966;
+}
+
+.events-section {
+    margin-top: 2rem;
+}
+
+.events-section > h2 {
+    margin-bottom: 1rem;
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.event-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e1d9d6;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.event-card-past {
+    opacity: 0.86;
+}
+
+.event-card-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+}
+
+.event-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+}
+
+.event-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.event-card-heading h3 {
+    margin: 0;
+}
+
+.event-status-badge {
+    flex: 0 0 auto;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.event-status-badge.upcoming {
+    background: rgba(93, 61, 55, 0.12);
+    color: #5d3d37;
+}
+
+.event-status-badge.past {
+    background: #eee9e7;
+    color: #756966;
+}
+
+.event-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+}
+
+.event-card-details p,
+.event-card-description {
+    margin: 0;
+}
+
+.event-card-description {
+    line-height: 1.5;
+}
+
+.event-card-link {
+    align-self: flex-start;
+}
+
+.events-empty {
+    margin: 0;
+    padding: 1rem;
+    border: 1px dashed #d8cfcc;
+    border-radius: 10px;
+}
