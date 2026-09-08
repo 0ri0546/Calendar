@@ -1,4 +1,3 @@
-import { humanizeError, showToast } from "./ui.js";
 import { supabase } from "./supabase.js";
 
 
@@ -417,8 +416,9 @@ form.addEventListener(
             );
 
 
-            message.textContent = "";
-            showToast(humanizeError(error, "Impossible d'enregistrer le profil."));
+            message.textContent =
+                error.message ||
+                "Impossible d'enregistrer le profil.";
 
         }
 

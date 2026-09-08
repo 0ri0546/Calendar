@@ -190,6 +190,7 @@ function render() {
     elements.badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
     elements.badge.hidden = unreadCount === 0;
     elements.markAll.hidden = unreadCount === 0;
+    elements.button.classList.toggle("has-unread", unreadCount > 0);
 
     elements.list.replaceChildren();
 

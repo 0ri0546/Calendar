@@ -1,5 +1,5 @@
 import { supabase } from "./supabase.js";
-import { humanizeError, showToast } from "./ui.js";
+import { showUserError } from "./ui-messages.js";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");
@@ -7,6 +7,7 @@ const adminContent = document.getElementById("admin-content");
 const adminMessage = document.getElementById("admin-message");
 const activitiesList =
     document.getElementById("activities-list");
+const adminLogsList = document.getElementById("admin-logs-list");
 
 /*
  * Récupère l'utilisateur actuellement connecté.
@@ -162,8 +163,9 @@ async function changeRole(member) {
     if (error) {
         console.error("Erreur changement de rôle :", error);
 
-        adminMessage.textContent = "";
-        showToast(humanizeError(error, "L’action administrative n’a pas pu être effectuée."));
+        adminMessage.textContent =
+            "Impossible d'effectuer cette action.";
+        showUserError(error);
 
         return;
     }
@@ -178,6 +180,75 @@ async function changeRole(member) {
     }
 }
 
+
+const ADMIN_ACTION_LABELS = {
+    activity_created: "Activité créée",
+    activity_approved: "Activité approuvée",
+    activity_rejected: "Activité refusée",
+    activity_updated: "Activité modifiée",
+    activity_deleted: "Activité supprimée",
+    user_promoted: "Membre promu admin",
+    user_demoted: "Admin rétrogradé",
+    notification_created: "Notification créée",
+    notification_sent: "Notification envoyée",
+    notification_failed: "Notification échouée"
+};
+
+async function loadAdminLogs() {
+    if (!adminLogsList) return;
+    adminLogsList.textContent = "Chargement du journal...";
+
+    const { data, error } = await supabase
+        .from("admin_logs")
+        .select("id, actor_id, action, target_type, target_id, details, created_at, profiles:actor_id(pseudo)")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+    if (error) {
+        console.error("Erreur récupération journal admin :", error);
+        adminLogsList.textContent = "Impossible de charger le journal administrateur.";
+        return;
+    }
+
+    adminLogsList.replaceChildren();
+    if (!data?.length) {
+        const empty = document.createElement("p");
+        empty.textContent = "Aucune action enregistrée.";
+        adminLogsList.appendChild(empty);
+        return;
+    }
+
+    for (const log of data) {
+        const article = document.createElement("article");
+        article.className = "admin-log-entry";
+
+        const heading = document.createElement("div");
+        heading.className = "admin-log-heading";
+        const action = document.createElement("strong");
+        action.textContent = ADMIN_ACTION_LABELS[log.action] ?? log.action;
+        const date = document.createElement("time");
+        date.dateTime = log.created_at;
+        date.textContent = new Date(log.created_at).toLocaleString("fr-FR");
+        heading.append(action, date);
+
+        const meta = document.createElement("p");
+        meta.textContent = `${log.profiles?.pseudo ?? "Administrateur inconnu"} · ${log.target_type}${log.target_id ? ` · ${log.target_id}` : ""}`;
+
+        article.append(heading, meta);
+
+        if (log.details && typeof log.details === "object" && Object.keys(log.details).length) {
+            const details = document.createElement("details");
+            const summary = document.createElement("summary");
+            summary.textContent = "Voir les détails";
+            const pre = document.createElement("pre");
+            pre.textContent = JSON.stringify(log.details, null, 2);
+            details.append(summary, pre);
+            article.appendChild(details);
+        }
+
+        adminLogsList.appendChild(article);
+    }
+}
 
 /*
  * Charge les propositions.
@@ -941,8 +1012,9 @@ async function saveActivityChanges(
             error
         );
 
-        adminMessage.textContent = "";
-        showToast(humanizeError(error, "L’action administrative n’a pas pu être effectuée."));
+        adminMessage.textContent =
+            "Impossible d'effectuer cette action.";
+        showUserError(error);
 
         return;
     }
@@ -992,8 +1064,9 @@ async function deleteActivity(activity) {
             error
         );
 
-        adminMessage.textContent = "";
-        showToast(humanizeError(error, "L’action administrative n’a pas pu être effectuée."));
+        adminMessage.textContent =
+            "Impossible d'effectuer cette action.";
+        showUserError(error);
 
         return;
     }
@@ -1047,8 +1120,9 @@ async function updateProposalStatus(activityId, newStatus) {
             error
         );
 
-        adminMessage.textContent = "";
-        showToast(humanizeError(error, "L’action administrative n’a pas pu être effectuée."));
+        adminMessage.textContent =
+            "Impossible d'effectuer cette action.";
+        showUserError(error);
 
         return;
     }
@@ -1085,80 +1159,10 @@ async function init() {
     }
 
     await loadMembers(user);
+    await loadAdminLogs();
     await loadProposals();
     await loadApprovedActivities();
-    await loadAdminLogs();
 }
 
 
 init();
-/* ==================================================
-   JOURNAL ADMINISTRATEUR
-   ================================================== */
-
-async function loadAdminLogs() {
-    const logsList = document.getElementById("admin-logs-list");
-    if (!logsList) return;
-
-    logsList.textContent = "Chargement du journal...";
-
-    const { data: logs, error } = await supabase
-        .from("admin_logs")
-        .select("id, actor_id, action, target_type, target_id, details, created_at, profiles:actor_id (pseudo)")
-        .order("created_at", { ascending: false })
-        .limit(80);
-
-    if (error) {
-        console.error("Erreur récupération journal admin :", error);
-        logsList.textContent = "Impossible de charger le journal.";
-        return;
-    }
-
-    logsList.replaceChildren();
-    if (!logs.length) {
-        const empty = document.createElement("p");
-        empty.textContent = "Aucune action enregistrée.";
-        logsList.appendChild(empty);
-        return;
-    }
-
-    for (const log of logs) {
-        const article = document.createElement("article");
-        article.className = "admin-log-entry";
-
-        const head = document.createElement("div");
-        head.className = "admin-log-head";
-        const action = document.createElement("strong");
-        action.textContent = humanizeAdminLogAction(log.action);
-        const date = document.createElement("time");
-        date.dateTime = log.created_at;
-        date.textContent = new Intl.DateTimeFormat("fr-FR", {
-            dateStyle: "short",
-            timeStyle: "short"
-        }).format(new Date(log.created_at));
-        head.append(action, date);
-
-        const actor = document.createElement("p");
-        actor.className = "admin-log-actor";
-        actor.textContent = `${log.profiles?.pseudo ?? "Administrateur"} · ${log.target_type}`;
-
-        article.append(head, actor);
-        logsList.appendChild(article);
-    }
-}
-
-function humanizeAdminLogAction(action) {
-    const labels = {
-        activity_created: "Activité créée",
-        activity_approved: "Activité approuvée",
-        activity_rejected: "Activité refusée",
-        activity_updated: "Activité modifiée",
-        activity_deleted: "Activité supprimée",
-        user_promoted: "Utilisateur promu administrateur",
-        user_demoted: "Administrateur rétrogradé",
-        notification_created: "Notification créée",
-        notification_sent: "Notification envoyée",
-        notification_failed: "Notification échouée"
-    };
-    return labels[action] ?? action;
-}
