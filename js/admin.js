@@ -4,7 +4,8 @@ const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");
 const adminContent = document.getElementById("admin-content");
 const adminMessage = document.getElementById("admin-message");
-
+const activitiesList =
+    document.getElementById("activities-list");
 
 /*
  * Récupère l'utilisateur actuellement connecté.
@@ -360,6 +361,494 @@ async function loadProposals() {
     }
 }
 
+/*
+ * Charge les activités approuvées.
+ */
+async function loadApprovedActivities() {
+    activitiesList.textContent =
+        "Chargement des activités...";
+
+    const {
+        data: activities,
+        error
+    } = await supabase
+        .from("activities")
+        .select(`
+            id,
+            title,
+            description,
+            date,
+            start_time,
+            end_time,
+            min_players,
+            max_players,
+            created_at,
+            created_by
+        `)
+        .eq("status", "approved")
+        .order("date", { ascending: true })
+        .order("start_time", { ascending: true });
+
+    if (error) {
+        console.error(
+            "Erreur récupération activités approuvées :",
+            error
+        );
+
+        activitiesList.textContent =
+            `Erreur : ${error.message}`;
+
+        return;
+    }
+
+    activitiesList.replaceChildren();
+
+    if (activities.length === 0) {
+        const empty = document.createElement("p");
+
+        empty.textContent =
+            "Aucune activité approuvée.";
+
+        activitiesList.appendChild(empty);
+
+        return;
+    }
+
+    for (const activity of activities) {
+
+        const article =
+            document.createElement("article");
+
+        article.className =
+            "admin-activity";
+
+        article.dataset.activityId =
+            activity.id;
+
+
+        const title =
+            document.createElement("h3");
+
+        title.textContent =
+            activity.title;
+
+        article.appendChild(title);
+
+
+        if (activity.description) {
+
+            const description =
+                document.createElement("p");
+
+            description.textContent =
+                activity.description;
+
+            article.appendChild(description);
+        }
+
+
+        const date =
+            document.createElement("p");
+
+        date.textContent =
+            `Date : ${activity.date}`;
+
+        article.appendChild(date);
+
+
+        const time =
+            document.createElement("p");
+
+        time.textContent =
+            `Horaire : ${activity.start_time} → ${activity.end_time}`;
+
+        article.appendChild(time);
+
+
+        const players =
+            document.createElement("p");
+
+        players.textContent =
+            `Joueurs : ${activity.min_players} à ${activity.max_players}`;
+
+        article.appendChild(players);
+
+
+        const actions =
+            document.createElement("div");
+
+        actions.className =
+            "admin-activity-actions";
+
+
+        const editButton =
+            document.createElement("button");
+
+        editButton.textContent =
+            "✏️ Modifier";
+
+        editButton.addEventListener(
+            "click",
+            () => openEditActivityForm(activity)
+        );
+
+
+        actions.appendChild(editButton);
+
+        article.appendChild(actions);
+
+        activitiesList.appendChild(article);
+    }
+}
+
+/*
+ * Affiche le formulaire de modification
+ * d'une activité.
+ */
+function openEditActivityForm(activity) {
+
+    const article =
+        document.querySelector(
+            `.admin-activity[data-activity-id="${activity.id}"]`
+        );
+
+    if (!article) {
+        return;
+    }
+
+    article.replaceChildren();
+
+
+    const title =
+        document.createElement("h3");
+
+    title.textContent =
+        "Modifier l'activité";
+
+    article.appendChild(title);
+
+
+    const form =
+        document.createElement("form");
+
+
+    /*
+     * Titre
+     */
+
+    const titleLabel =
+        document.createElement("label");
+
+    titleLabel.textContent =
+        "Titre";
+
+    const titleInput =
+        document.createElement("input");
+
+    titleInput.type = "text";
+    titleInput.value = activity.title;
+    titleInput.required = true;
+
+    titleLabel.appendChild(titleInput);
+    form.appendChild(titleLabel);
+
+
+    /*
+     * Description
+     */
+
+    const descriptionLabel =
+        document.createElement("label");
+
+    descriptionLabel.textContent =
+        "Description";
+
+    const descriptionInput =
+        document.createElement("textarea");
+
+    descriptionInput.value =
+        activity.description ?? "";
+
+    descriptionLabel.appendChild(
+        descriptionInput
+    );
+
+    form.appendChild(
+        descriptionLabel
+    );
+
+
+    /*
+     * Date
+     */
+
+    const dateLabel =
+        document.createElement("label");
+
+    dateLabel.textContent =
+        "Date";
+
+    const dateInput =
+        document.createElement("input");
+
+    dateInput.type = "date";
+    dateInput.value = activity.date;
+    dateInput.required = true;
+
+    dateLabel.appendChild(dateInput);
+    form.appendChild(dateLabel);
+
+
+    /*
+     * Heure de début
+     */
+
+    const startLabel =
+        document.createElement("label");
+
+    startLabel.textContent =
+        "Début";
+
+    const startInput =
+        document.createElement("input");
+
+    startInput.type = "time";
+    startInput.value =
+        activity.start_time.slice(0, 5);
+
+    startInput.required = true;
+
+    startLabel.appendChild(startInput);
+    form.appendChild(startLabel);
+
+
+    /*
+     * Heure de fin
+     */
+
+    const endLabel =
+        document.createElement("label");
+
+    endLabel.textContent =
+        "Fin";
+
+    const endInput =
+        document.createElement("input");
+
+    endInput.type = "time";
+    endInput.value =
+        activity.end_time.slice(0, 5);
+
+    endInput.required = true;
+
+    endLabel.appendChild(endInput);
+    form.appendChild(endLabel);
+
+
+    /*
+     * Minimum de joueurs
+     */
+
+    const minLabel =
+        document.createElement("label");
+
+    minLabel.textContent =
+        "Minimum de joueurs";
+
+    const minInput =
+        document.createElement("input");
+
+    minInput.type = "number";
+    minInput.min = "1";
+    minInput.value =
+        activity.min_players;
+
+    minInput.required = true;
+
+    minLabel.appendChild(minInput);
+    form.appendChild(minLabel);
+
+
+    /*
+     * Maximum de joueurs
+     */
+
+    const maxLabel =
+        document.createElement("label");
+
+    maxLabel.textContent =
+        "Maximum de joueurs";
+
+    const maxInput =
+        document.createElement("input");
+
+    maxInput.type = "number";
+    maxInput.min = "1";
+    maxInput.value =
+        activity.max_players;
+
+    maxInput.required = true;
+
+    maxLabel.appendChild(maxInput);
+    form.appendChild(maxLabel);
+
+
+    /*
+     * Bouton enregistrer
+     */
+
+    const saveButton =
+        document.createElement("button");
+
+    saveButton.type = "submit";
+    saveButton.textContent =
+        "Enregistrer";
+
+
+    /*
+     * Bouton annuler
+     */
+
+    const cancelButton =
+        document.createElement("button");
+
+    cancelButton.type = "button";
+    cancelButton.textContent =
+        "Annuler";
+
+    cancelButton.addEventListener(
+        "click",
+        () => loadApprovedActivities()
+    );
+
+
+    form.appendChild(saveButton);
+    form.appendChild(cancelButton);
+
+
+    form.addEventListener(
+        "submit",
+        async (event) => {
+
+            event.preventDefault();
+
+            await saveActivityChanges(
+                activity.id,
+                titleInput.value.trim(),
+                descriptionInput.value.trim(),
+                dateInput.value,
+                startInput.value,
+                endInput.value,
+                Number(minInput.value),
+                Number(maxInput.value)
+            );
+        }
+    );
+
+
+    article.appendChild(form);
+}
+
+/*
+ * Enregistre les modifications d'une activité.
+ */
+async function saveActivityChanges(
+    activityId,
+    title,
+    description,
+    date,
+    startTime,
+    endTime,
+    minPlayers,
+    maxPlayers
+) {
+
+    if (!title) {
+        adminMessage.textContent =
+            "Le titre est obligatoire.";
+
+        return;
+    }
+
+
+    if (!date || !startTime || !endTime) {
+        adminMessage.textContent =
+            "La date et les horaires sont obligatoires.";
+
+        return;
+    }
+
+
+    if (startTime >= endTime) {
+        adminMessage.textContent =
+            "L'heure de début doit être avant l'heure de fin.";
+
+        return;
+    }
+
+
+    if (
+        !Number.isInteger(minPlayers) ||
+        !Number.isInteger(maxPlayers) ||
+        minPlayers <= 0 ||
+        maxPlayers <= 0
+    ) {
+        adminMessage.textContent =
+            "Les nombres de joueurs sont invalides.";
+
+        return;
+    }
+
+
+    if (minPlayers > maxPlayers) {
+        adminMessage.textContent =
+            "Le minimum de joueurs ne peut pas dépasser le maximum.";
+
+        return;
+    }
+
+
+    adminMessage.textContent =
+        "Modification de l'activité...";
+
+
+    const {
+        error
+    } = await supabase.rpc(
+        "update_activity",
+        {
+            p_activity_id: activityId,
+            p_title: title,
+            p_description: description,
+            p_date: date,
+            p_start_time: startTime,
+            p_end_time: endTime,
+            p_min_players: minPlayers,
+            p_max_players: maxPlayers
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "Erreur modification activité :",
+            error
+        );
+
+        adminMessage.textContent =
+            `Erreur : ${error.message}`;
+
+        return;
+    }
+
+
+    adminMessage.textContent =
+        "Activité modifiée avec succès.";
+
+
+    await loadApprovedActivities();
+}
 
 /*
  * Modifie le statut d'une proposition.
@@ -433,6 +922,7 @@ async function init() {
 
     await loadMembers(user);
     await loadProposals();
+    await loadApprovedActivities();
 }
 
 
