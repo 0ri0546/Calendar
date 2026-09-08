@@ -149,6 +149,44 @@ async function loadParticipations(activityIds) {
 
 
 /*
+ * Récupère les personnes en file d'attente pour les activités affichées.
+ *
+ * La file est publique pour les activités approuvées et son ordre est
+ * déterminé par followed_at.
+ */
+async function loadFollowers(activityIds) {
+    if (activityIds.length === 0) {
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from("followers")
+        .select(`
+            activity_id,
+            user_id,
+            followed_at,
+            profiles (
+                pseudo,
+                avatar_url
+            )
+        `)
+        .in("activity_id", activityIds)
+        .order("followed_at", { ascending: true });
+
+    if (error) {
+        console.error(
+            "Erreur récupération file d'attente :",
+            error
+        );
+
+        throw error;
+    }
+
+    return data;
+}
+
+
+/*
  * Récupère les suivis de l'utilisateur connecté.
  *
  * On ne récupère QUE ses propres suivis.
@@ -228,6 +266,23 @@ function groupParticipations(participations) {
 }
 
 
+function groupFollowers(followers) {
+    const grouped = new Map();
+
+    for (const follower of followers) {
+        if (!grouped.has(follower.activity_id)) {
+            grouped.set(follower.activity_id, []);
+        }
+
+        grouped
+            .get(follower.activity_id)
+            .push(follower);
+    }
+
+    return grouped;
+}
+
+
 /*
  * Formate une heure.
  *
@@ -296,6 +351,37 @@ function createParticipantsElement(
 
     container.appendChild(list);
 
+    return container;
+}
+
+
+/*
+ * Affiche la file d'attente.
+ */
+function createWaitingQueueElement(followers) {
+    const container = document.createElement("div");
+    container.className = "calendar-waiting-queue";
+
+    const title = document.createElement("h4");
+    title.textContent = `File d'attente (${followers.length})`;
+    container.appendChild(title);
+
+    if (followers.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "Personne en attente.";
+        container.appendChild(empty);
+        return container;
+    }
+
+    const list = document.createElement("ol");
+
+    for (const follower of followers) {
+        const item = document.createElement("li");
+        item.textContent = follower.profiles?.pseudo ?? "Utilisateur";
+        list.appendChild(item);
+    }
+
+    container.appendChild(list);
     return container;
 }
 
@@ -640,6 +726,7 @@ async function unfollowActivity(activityId) {
 function createActivityElement(
     activity,
     participants,
+    followers,
     currentUser,
     followedActivityIds
 ) {
@@ -713,6 +800,13 @@ function createActivityElement(
     );
 
 
+    if (followers.length > 0) {
+        article.appendChild(
+            createWaitingQueueElement(followers)
+        );
+    }
+
+
     article.appendChild(
         createActivityActions(
             activity,
@@ -753,6 +847,7 @@ function groupActivitiesByDate(activities) {
 function renderCalendar(
     activities,
     participations,
+    followers,
     currentUser,
     followedActivityIds
 ) {
@@ -774,6 +869,12 @@ function renderCalendar(
     const groupedParticipations =
         groupParticipations(
             participations
+        );
+
+
+    const groupedFollowers =
+        groupFollowers(
+            followers
         );
 
 
@@ -832,11 +933,17 @@ function renderCalendar(
                     activity.id
                 ) ?? [];
 
+            const followersForActivity =
+                groupedFollowers.get(
+                    activity.id
+                ) ?? [];
+
 
             dayElement.appendChild(
                 createActivityElement(
                     activity,
                     participantsForActivity,
+                    followersForActivity,
                     currentUser,
                     followedActivityIds
                 )
@@ -932,6 +1039,12 @@ async function init() {
             );
 
 
+        const followers =
+            await loadFollowers(
+                activityIds
+            );
+
+
         const follows =
             await loadMyFollows(
                 currentUser,
@@ -946,6 +1059,7 @@ async function init() {
         renderCalendar(
             activities,
             participations,
+            followers,
             currentUser,
             followedActivityIds
         );
