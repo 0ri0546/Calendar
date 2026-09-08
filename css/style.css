@@ -98,3 +98,17 @@ main {
     cursor: not-allowed;
     opacity: 0.5;
 }
+
+.admin-proposal {
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+}
+
+.admin-proposal h3 {
+    margin-top: 0;
+}
+
+.admin-proposal button {
+    margin-right: 10px;
+}
