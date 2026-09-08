@@ -9,15 +9,16 @@
 </head>
 
 <body>
-    <header>
-        <nav>
-            <a href="../index.html">Accueil</a>
-            <a href="calendar.html">Calendrier</a>
-            <a href="propose.html">Proposer</a>
-            <a href="login.html">Connexion</a>
-            <div id="auth-menu"></div>
-        </nav>
-    </header>
+    <header class="site-header">
+    <nav class="site-nav" aria-label="Navigation principale">
+        <a class="site-brand" href="../index.html">
+            <img src="../assets/images/logo.webp" alt="Logo de L'oise aux jeux">
+            <span class="site-brand-text"><strong>L'oise aux jeux</strong><span>ludothèque associative</span></span>
+        </a>
+        <div class="site-links"><a class="" href="../index.html">Accueil</a><a class="" href="../pages/calendar.html">Calendrier</a><a class="" href="../pages/events.html">Événements</a><a class="" href="../pages/propose.html">Proposer</a></div>
+        <div id="auth-menu"></div>
+    </nav>
+</header>
 
     <main>
         <h1>Connexion</h1>
@@ -30,7 +31,22 @@
 
     <script src="../js/main.js"></script>
     <script type="module" src="../js/login.js"></script>
-    <script type="module" src="../js/auth.js"></script>
+    <footer class="site-footer">
+    <div class="footer-main">
+        <div class="footer-brand">
+            <img src="../assets/images/logo.webp" alt="Logo de L'oise aux jeux">
+            <div><strong>L'oise aux jeux - ludothèque associative</strong><span>Calendrier des activités de l'association</span></div>
+        </div>
+        <div class="footer-links">
+            <a href="https://subverti.com/fr/maps/associations/oiseaux-jeux-montchevreuil/">Retour au site de l'association</a>
+            <a href="#mentions-legales">Mentions légales</a>
+            <a href="#politique-confidentialite">Politique de confidentialité</a>
+        </div>
+    </div>
+    <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
+</footer>
+
+<script type="module" src="../js/auth.js"></script>
 </body>
 
 </html>

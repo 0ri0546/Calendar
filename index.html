@@ -1,34 +1,58 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendrier de l'association</title>
+    <title>L'oise aux jeux - Calendrier</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-    <header>
-
-        <nav>
-            <a href="index.html">Accueil</a>
-            <a href="pages/calendar.html">Calendrier</a>
-            <a href="pages/events.html">Événements</a>
-            <a href="pages/propose.html">Proposer</a>
-            <a href="pages/login.html">Connexion</a>
-
-            <div id="auth-menu"></div>
-        </nav>
-    </header>
-
-    <main>
-        <h1>Calendrier de l'association</h1>
-        <p>Bienvenue sur le calendrier de l'association.</p>
-    </main>
-
-    <script src="js/main.js"></script>
-    <script type="module" src="js/auth.js"></script>
+<header class="site-header">
+    <nav class="site-nav" aria-label="Navigation principale">
+        <a class="site-brand" href="index.html">
+            <img src="assets/images/logo.webp" alt="Logo de L'oise aux jeux">
+            <span class="site-brand-text"><strong>L'oise aux jeux</strong><span>ludothèque associative</span></span>
+        </a>
+        <div class="site-links"><a class="active" href="index.html">Accueil</a><a class="" href="pages/calendar.html">Calendrier</a><a class="" href="pages/events.html">Événements</a><a class="" href="pages/propose.html">Proposer</a></div>
+        <div id="auth-menu"></div>
+    </nav>
+</header>
+<main>
+    <section class="hero-section">
+        <div class="hero-copy">
+            <div class="eyebrow">Oiseaux jeux Montchevreuil</div>
+            <h1>On joue quand ?</h1>
+            <p>Retrouvez rapidement les activités de l'association, les places disponibles et les rendez-vous des prochains mois.</p>
+            <div class="cta-row">
+                <a class="btn" href="pages/calendar.html">Voir le calendrier</a>
+                <a class="btn btn-secondary" href="pages/propose.html">Proposer une activité</a>
+            </div>
+        </div>
+        <aside class="next-saturday-card">
+            <img class="next-icon" src="assets/images/logo.webp" alt="">
+            <span class="card-label">Prochain samedi</span>
+            <h2>Samedi</h2>
+            <div class="next-saturday-date">12 septembre</div>
+            <div class="next-saturday-type">Thématique du samedi<strong>Peinture figurines / Wargames</strong></div>
+            <a class="btn" href="pages/calendar.html">Voir les jeux prévus</a>
+        </aside>
+    </section>
+</main>
+<footer class="site-footer">
+    <div class="footer-main">
+        <div class="footer-brand">
+            <img src="assets/images/logo.webp" alt="Logo de L'oise aux jeux">
+            <div><strong>L'oise aux jeux - ludothèque associative</strong><span>Calendrier des activités de l'association</span></div>
+        </div>
+        <div class="footer-links">
+            <a href="https://subverti.com/fr/maps/associations/oiseaux-jeux-montchevreuil/">Retour au site de l'association</a>
+            <a href="#mentions-legales">Mentions légales</a>
+            <a href="#politique-confidentialite">Politique de confidentialité</a>
+        </div>
+    </div>
+    <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
+</footer>
+<script src="js/main.js"></script>
+<script type="module" src="js/auth.js"></script>
 </body>
-
 </html>
