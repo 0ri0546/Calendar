@@ -530,8 +530,12 @@ async function leaveActivity(activityId) {
  * Active le suivi d'une activité.
  */
 async function followActivity(activityId) {
+    console.log("🟡 followActivity appelée :", activityId);
+
     try {
-        const { error } =
+        console.log("🟡 Appel RPC follow_activity...");
+
+        const { data, error } =
             await supabase.rpc(
                 "follow_activity",
                 {
@@ -539,10 +543,14 @@ async function followActivity(activityId) {
                 }
             );
 
+        console.log("🟢 Réponse RPC :", {
+            data,
+            error
+        });
 
         if (error) {
             console.error(
-                "Erreur suivi activité :",
+                "🔴 Erreur suivi activité :",
                 error
             );
 
@@ -553,18 +561,23 @@ async function followActivity(activityId) {
             return;
         }
 
+        console.log(
+            "🟢 Suivi activé, rechargement..."
+        );
 
         await init();
 
     } catch (error) {
-        console.error(error);
+        console.error(
+            "🔴 Exception followActivity :",
+            error
+        );
 
         alert(
             "Une erreur est survenue."
         );
     }
 }
-
 
 /*
  * Désactive le suivi d'une activité.
