@@ -73,3 +73,28 @@ main {
     object-fit: cover;
     border-radius: 50%;
 }
+
+.admin-member {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+}
+
+.admin-member img {
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.admin-member div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.admin-member button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
