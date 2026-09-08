@@ -1,0 +1,25 @@
+/* Styles globaux - le design final sera réalisé en phase 3. */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+main {
+    padding: 1rem;
+}
