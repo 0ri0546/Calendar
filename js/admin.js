@@ -1,293 +1,153 @@
 import { supabase } from "./supabase.js";
 
-
-// ==================================================
-// ÉLÉMENTS HTML
-// ==================================================
-
-const membersList =
-    document.getElementById("members-list");
-
-const proposalsList =
-    document.getElementById("proposals-list");
-
-const adminMessage =
-    document.getElementById("admin-message");
+const membersList = document.getElementById("members-list");
+const proposalsList = document.getElementById("proposals-list");
+const adminContent = document.getElementById("admin-content");
+const adminMessage = document.getElementById("admin-message");
 
 
-// ==================================================
-// UTILISATEUR ACTUEL
-// ==================================================
-
+/*
+ * Récupère l'utilisateur actuellement connecté.
+ */
 async function getCurrentUser() {
-
-    const {
-        data: { user },
-        error
-    } = await supabase.auth.getUser();
-
+    const { data, error } = await supabase.auth.getUser();
 
     if (error) {
-
-        console.error(
-            "Erreur récupération utilisateur :",
-            error
-        );
-
+        console.error("Erreur récupération utilisateur :", error);
         return null;
     }
 
-
-    return user;
+    return data.user;
 }
 
 
-// ==================================================
-// VÉRIFIER QUE L'UTILISATEUR EST ADMIN
-// ==================================================
-
-async function checkAdmin() {
-
-    const user = await getCurrentUser();
-
-
-    if (!user) {
-
-        window.location.href = "login.html";
-
-        return null;
-    }
-
-
-    const {
-        data: profile,
-        error
-    } = await supabase
+/*
+ * Vérifie que l'utilisateur est administrateur.
+ */
+async function checkAdmin(user) {
+    const { data, error } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
 
-
     if (error) {
-
-        console.error(
-            "Erreur récupération rôle :",
-            error
-        );
-
-        return null;
+        console.error("Erreur vérification rôle :", error);
+        return false;
     }
 
-
-    if (profile.role !== "admin") {
-
-        membersList.innerHTML = `
-            <p>Accès refusé.</p>
-        `;
-
-        if (proposalsList) {
-            proposalsList.innerHTML = "";
-        }
-
-        return null;
-    }
-
-
-    return user;
+    return data.role === "admin";
 }
 
 
-// ==================================================
-// CHARGER LES MEMBRES
-// ==================================================
-
+/*
+ * Affiche les membres.
+ */
 async function loadMembers(currentUser) {
+    membersList.textContent = "Chargement des membres...";
 
-    const {
-        data: members,
-        error
-    } = await supabase
+    const { data: members, error } = await supabase
         .from("profiles")
-        .select(
-            "id, pseudo, avatar_url, role, created_at"
-        )
-        .order("pseudo");
-
+        .select("id, pseudo, avatar_url, role, created_at")
+        .order("pseudo", { ascending: true });
 
     if (error) {
+        console.error("Erreur récupération membres :", error);
 
-        console.error(
-            "Erreur récupération membres :",
-            error
-        );
-
-        membersList.innerHTML = `
-            <p>
-                Impossible de charger les membres.
-            </p>
-        `;
+        membersList.textContent =
+            `Erreur lors du chargement des membres : ${error.message}`;
 
         return;
     }
 
+    membersList.replaceChildren();
 
-    if (!members || members.length === 0) {
-
-        membersList.innerHTML = `
-            <p>Aucun membre.</p>
-        `;
-
+    if (members.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "Aucun membre.";
+        membersList.appendChild(empty);
         return;
     }
-
-
-    membersList.innerHTML = "";
-
 
     for (const member of members) {
+        const article = document.createElement("article");
+        article.className = "admin-member";
 
-        const memberElement =
-            document.createElement("article");
+        if (member.avatar_url) {
+            const avatar = document.createElement("img");
+            avatar.src = member.avatar_url;
+            avatar.alt = `Photo de profil de ${member.pseudo}`;
+            avatar.width = 50;
+            avatar.height = 50;
 
-        memberElement.className =
-            "admin-member";
+            article.appendChild(avatar);
+        }
 
+        const info = document.createElement("div");
 
-        // ------------------------------------------
-        // Avatar
-        // ------------------------------------------
+        const pseudo = document.createElement("strong");
+        pseudo.textContent = member.pseudo;
 
-        const avatar =
-            document.createElement("img");
+        const role = document.createElement("span");
+        role.textContent = member.role;
 
-        avatar.width = 60;
-        avatar.height = 60;
-
-        avatar.alt =
-            `Photo de profil de ${member.pseudo}`;
-
-        avatar.src =
-            member.avatar_url ||
-            "../assets/images/default-avatar.png";
-
-
-        // ------------------------------------------
-        // Informations
-        // ------------------------------------------
-
-        const info =
-            document.createElement("div");
-
-
-        const name =
-            document.createElement("strong");
-
-        name.textContent =
-            member.pseudo || "Sans pseudo";
-
-
-        const role =
-            document.createElement("span");
-
-        role.textContent =
-            member.role;
-
-
-        info.appendChild(name);
+        info.appendChild(pseudo);
         info.appendChild(role);
 
+        article.appendChild(info);
 
-        // ------------------------------------------
-        // Bouton
-        // ------------------------------------------
+        const roleButton = document.createElement("button");
 
-        const button =
-            document.createElement("button");
+        if (member.id === currentUser.id) {
+            roleButton.textContent =
+                member.role === "admin"
+                    ? "Vous êtes admin"
+                    : "Votre compte";
 
-
-        if (member.role === "admin") {
-
-            button.textContent =
-                "Rétrograder";
-
+            roleButton.disabled = true;
         } else {
+            roleButton.textContent =
+                member.role === "admin"
+                    ? "Rétrograder"
+                    : "Promouvoir admin";
 
-            button.textContent =
-                "Promouvoir admin";
-
+            roleButton.addEventListener("click", () => {
+                changeRole(member);
+            });
         }
 
+        article.appendChild(roleButton);
 
-        // Impossible de modifier son propre rôle
-        if (currentUser.id === member.id) {
-
-            button.disabled = true;
-
-            button.title =
-                "Vous ne pouvez pas modifier votre propre rôle.";
-
-        }
-
-
-        button.addEventListener(
-            "click",
-            () => changeRole(member)
-        );
-
-
-        // ------------------------------------------
-        // Assemblage
-        // ------------------------------------------
-
-        memberElement.appendChild(avatar);
-
-        memberElement.appendChild(info);
-
-        memberElement.appendChild(button);
-
-        membersList.appendChild(memberElement);
-
+        membersList.appendChild(article);
     }
 }
 
 
-// ==================================================
-// CHANGER LE RÔLE
-// ==================================================
-
+/*
+ * Change le rôle d'un membre.
+ */
 async function changeRole(member) {
-
     const newRole =
         member.role === "admin"
             ? "member"
             : "admin";
-
 
     const action =
         newRole === "admin"
             ? "promouvoir"
             : "rétrograder";
 
-
-    const confirmed =
-        window.confirm(
-            `Voulez-vous ${action} ${member.pseudo} ?`
-        );
-
+    const confirmed = confirm(
+        `Voulez-vous ${action} ${member.pseudo} ?`
+    );
 
     if (!confirmed) {
         return;
     }
 
+    adminMessage.textContent = "Modification du rôle...";
 
-    adminMessage.textContent =
-        "Modification du rôle...";
-
-
-    const {
-        error
-    } = await supabase.rpc(
+    const { error } = await supabase.rpc(
         "set_user_role",
         {
             p_user_id: member.id,
@@ -295,43 +155,38 @@ async function changeRole(member) {
         }
     );
 
-
     if (error) {
-
-        console.error(
-            "Erreur modification rôle :",
-            error
-        );
+        console.error("Erreur changement de rôle :", error);
 
         adminMessage.textContent =
-            error.message ||
-            "Impossible de modifier le rôle.";
+            `Erreur : ${error.message}`;
 
         return;
     }
 
-
     adminMessage.textContent =
         `Le rôle de ${member.pseudo} a été modifié.`;
 
+    const currentUser = await getCurrentUser();
 
-    const currentUser =
-        await getCurrentUser();
-
-
-    await loadMembers(currentUser);
+    if (currentUser) {
+        await loadMembers(currentUser);
+    }
 }
 
 
-// ==================================================
-// CHARGER LES PROPOSITIONS
-// ==================================================
-
+/*
+ * Charge les propositions.
+ */
 async function loadProposals() {
+    proposalsList.textContent = "Chargement des propositions...";
 
+    /*
+     * On récupère uniquement les activités.
+     */
     const {
-        data: proposals,
-        error
+        data: activities,
+        error: activitiesError
     } = await supabase
         .from("activities")
         .select(`
@@ -345,296 +200,238 @@ async function loadProposals() {
             max_players,
             status,
             created_at,
-            created_by,
-            profiles (
-                pseudo,
-                avatar_url
-            )
+            created_by
         `)
         .in("status", ["pending", "rejected"])
-        .order("created_at", {
-            ascending: false
-        });
+        .order("created_at", { ascending: false });
 
-
-    if (error) {
-
+    if (activitiesError) {
         console.error(
             "Erreur récupération propositions :",
-            error
+            activitiesError
         );
 
-        proposalsList.innerHTML = `
-            <p>
-                Impossible de charger les propositions.
-            </p>
-        `;
+        proposalsList.textContent =
+            `Erreur Supabase : ${activitiesError.message}`;
 
         return;
     }
 
+    proposalsList.replaceChildren();
 
-    if (!proposals || proposals.length === 0) {
-
-        proposalsList.innerHTML = `
-            <p>
-                Aucune proposition à traiter.
-            </p>
-        `;
-
+    if (activities.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "Aucune proposition en attente.";
+        proposalsList.appendChild(empty);
         return;
     }
 
+    /*
+     * Récupération des IDs des créateurs.
+     */
+    const creatorIds = [
+        ...new Set(
+            activities.map(activity => activity.created_by)
+        )
+    ];
 
-    proposalsList.innerHTML = "";
+    let profiles = [];
 
+    if (creatorIds.length > 0) {
+        const {
+            data,
+            error: profilesError
+        } = await supabase
+            .from("profiles")
+            .select("id, pseudo, avatar_url")
+            .in("id", creatorIds);
 
-    for (const proposal of proposals) {
-
-        const article =
-            document.createElement("article");
-
-        article.className =
-            "admin-proposal";
-
-
-        // ------------------------------------------
-        // Titre
-        // ------------------------------------------
-
-        const title =
-            document.createElement("h3");
-
-        title.textContent =
-            proposal.title;
-
-
-        // ------------------------------------------
-        // Description
-        // ------------------------------------------
-
-        const description =
-            document.createElement("p");
-
-        description.textContent =
-            proposal.description ||
-            "Aucune description.";
-
-
-        // ------------------------------------------
-        // Informations
-        // ------------------------------------------
-
-        const information =
-            document.createElement("div");
-
-
-        const date =
-            document.createElement("p");
-
-        date.textContent =
-            `Date : ${proposal.date}`;
-
-
-        const time =
-            document.createElement("p");
-
-        time.textContent =
-            `Horaire : ${proposal.start_time} → ${proposal.end_time}`;
-
-
-        const players =
-            document.createElement("p");
-
-        players.textContent =
-            `Joueurs : ${proposal.min_players} à ${proposal.max_players}`;
-
-
-        const creator =
-            document.createElement("p");
-
-        creator.textContent =
-            `Proposé par : ${
-                proposal.profiles?.pseudo ||
-                "Utilisateur inconnu"
-            }`;
-
-
-        information.appendChild(date);
-
-        information.appendChild(time);
-
-        information.appendChild(players);
-
-        information.appendChild(creator);
-
-
-        // ------------------------------------------
-        // Statut
-        // ------------------------------------------
-
-        const status =
-            document.createElement("p");
-
-        status.textContent =
-            `Statut : ${proposal.status}`;
-
-
-        // ------------------------------------------
-        // Boutons
-        // ------------------------------------------
-
-        const buttons =
-            document.createElement("div");
-
-
-        if (proposal.status === "pending") {
-
-            const approveButton =
-                document.createElement("button");
-
-            approveButton.textContent =
-                "Approuver";
-
-
-            approveButton.addEventListener(
-                "click",
-                () => updateProposalStatus(
-                    proposal.id,
-                    "approved"
-                )
+        if (profilesError) {
+            console.error(
+                "Erreur récupération profils des créateurs :",
+                profilesError
             );
 
+            proposalsList.textContent =
+                `Erreur lors du chargement des créateurs : ${profilesError.message}`;
 
-            const rejectButton =
-                document.createElement("button");
-
-            rejectButton.textContent =
-                "Refuser";
-
-
-            rejectButton.addEventListener(
-                "click",
-                () => updateProposalStatus(
-                    proposal.id,
-                    "rejected"
-                )
-            );
-
-
-            buttons.appendChild(
-                approveButton
-            );
-
-            buttons.appendChild(
-                rejectButton
-            );
-
+            return;
         }
 
+        profiles = data;
+    }
 
-        // ------------------------------------------
-        // Assemblage
-        // ------------------------------------------
+    /*
+     * Création d'une Map pour retrouver rapidement
+     * le profil correspondant à chaque créateur.
+     */
+    const profilesMap = new Map(
+        profiles.map(profile => [profile.id, profile])
+    );
+
+    /*
+     * Affichage des propositions.
+     */
+    for (const activity of activities) {
+        const creator = profilesMap.get(activity.created_by);
+
+        const article = document.createElement("article");
+        article.className = "admin-proposal";
+
+        const title = document.createElement("h3");
+        title.textContent = activity.title;
 
         article.appendChild(title);
 
-        article.appendChild(description);
+        if (activity.description) {
+            const description = document.createElement("p");
+            description.textContent = activity.description;
+            article.appendChild(description);
+        }
 
-        article.appendChild(information);
+        const date = document.createElement("p");
+        date.textContent =
+            `Date : ${activity.date}`;
+
+        article.appendChild(date);
+
+        const time = document.createElement("p");
+        time.textContent =
+            `Horaire : ${activity.start_time} → ${activity.end_time}`;
+
+        article.appendChild(time);
+
+        const players = document.createElement("p");
+        players.textContent =
+            `Joueurs : ${activity.min_players} à ${activity.max_players}`;
+
+        article.appendChild(players);
+
+        const creatorElement = document.createElement("p");
+        creatorElement.textContent =
+            `Proposé par : ${creator?.pseudo ?? "Utilisateur inconnu"}`;
+
+        article.appendChild(creatorElement);
+
+        const status = document.createElement("p");
+
+        if (activity.status === "pending") {
+            status.textContent = "Statut : En attente";
+        } else if (activity.status === "rejected") {
+            status.textContent = "Statut : Refusée";
+        } else {
+            status.textContent =
+                `Statut : ${activity.status}`;
+        }
 
         article.appendChild(status);
 
-        article.appendChild(buttons);
+        /*
+         * Boutons uniquement pour les propositions en attente.
+         */
+        if (activity.status === "pending") {
+            const approveButton = document.createElement("button");
+
+            approveButton.textContent = "Approuver";
+
+            approveButton.addEventListener("click", () => {
+                updateProposalStatus(
+                    activity.id,
+                    "approved"
+                );
+            });
+
+            const rejectButton = document.createElement("button");
+
+            rejectButton.textContent = "Refuser";
+
+            rejectButton.addEventListener("click", () => {
+                updateProposalStatus(
+                    activity.id,
+                    "rejected"
+                );
+            });
+
+            article.appendChild(approveButton);
+            article.appendChild(rejectButton);
+        }
 
         proposalsList.appendChild(article);
-
     }
 }
 
 
-// ==================================================
-// MODIFIER LE STATUT D'UNE PROPOSITION
-// ==================================================
-
-async function updateProposalStatus(
-    activityId,
-    newStatus
-) {
-
+/*
+ * Modifie le statut d'une proposition.
+ */
+async function updateProposalStatus(activityId, newStatus) {
     const action =
         newStatus === "approved"
             ? "approuver"
             : "refuser";
 
-
-    const confirmed =
-        window.confirm(
-            `Voulez-vous ${action} cette proposition ?`
-        );
-
+    const confirmed = confirm(
+        `Voulez-vous ${action} cette proposition ?`
+    );
 
     if (!confirmed) {
         return;
     }
 
-
     adminMessage.textContent =
-        "Mise à jour de la proposition...";
+        "Modification de la proposition...";
 
-
-    const {
-        error
-    } = await supabase
+    const { error } = await supabase
         .from("activities")
         .update({
             status: newStatus
         })
         .eq("id", activityId);
 
-
     if (error) {
-
         console.error(
-            "Erreur mise à jour proposition :",
+            "Erreur modification proposition :",
             error
         );
 
         adminMessage.textContent =
-            error.message ||
-            "Impossible de modifier la proposition.";
+            `Erreur : ${error.message}`;
 
         return;
     }
 
-
     adminMessage.textContent =
-        `Proposition ${action === "approuver"
-            ? "approuvée"
-            : "refusée"
-        }.`;
+        newStatus === "approved"
+            ? "Proposition approuvée."
+            : "Proposition refusée.";
 
     await loadProposals();
 }
 
 
-// ==================================================
-// INITIALISATION
-// ==================================================
-
+/*
+ * Initialisation de la page.
+ */
 async function init() {
+    const user = await getCurrentUser();
 
-    const currentUser =
-        await checkAdmin();
+    if (!user) {
+        adminContent.textContent =
+            "Vous devez être connecté pour accéder à cette page.";
 
-
-    if (!currentUser) {
         return;
     }
 
+    const isAdmin = await checkAdmin(user);
 
-    await loadMembers(currentUser);
+    if (!isAdmin) {
+        adminContent.textContent =
+            "Accès refusé. Cette page est réservée aux administrateurs.";
 
+        return;
+    }
+
+    await loadMembers(user);
     await loadProposals();
 }
 
