@@ -14,3 +14,10 @@ Version responsive : 20260909-23. Page Événements : grille 4 colonnes desktop,
 
 
 Correction 20260909-26 : image de la modale mobile du calendrier non contrainte par les anciennes règles de 34px.
+
+
+## Étape 6
+- Les administrateurs voient un bouton « Valider » sur la page de proposition.
+- Le bouton « Proposer » reste le bouton normal.
+- « Valider » crée l'activité puis utilise la fonction RPC d'approbation existante.
+- Le contrôle admin est effectué côté client pour l'affichage et côté RPC pour la sécurité.

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proposer une activité - Calendar</title>
-    <link rel="stylesheet" href="../css/style.css?v=20260909-29">
+    <link rel="stylesheet" href="../css/style.css?v=20260909-31">
 </head>
 <body>
     <header class="site-header">
@@ -77,13 +77,16 @@
                     <div id="activity-image-preview" class="activity-image-preview-container"></div>
                 </div>
 
-                <button type="submit">Envoyer la proposition</button>
+                <div class="activity-form-actions">
+                    <button type="submit" id="propose-submit-button">Proposer</button>
+                    <button type="button" id="approve-submit-button" class="btn-direct-approve" hidden>Valider</button>
+                </div>
                 <p id="activity-form-message" class="form-message" aria-live="polite"></p>
             </form>
         </section>
     </main>
 
-    <script type="module" src="../js/auth.js?v=20260909-29"></script>
+    <script type="module" src="../js/auth.js?v=20260909-31"></script>
     <footer class="site-footer">
     <div class="footer-main">
         <div class="footer-brand">
@@ -99,6 +102,6 @@
     <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
 </footer>
 
-<script type="module" src="../js/propose.js?v=20260909-29"></script>
+<script type="module" src="../js/propose.js?v=20260909-32"></script>
 </body>
 </html>

@@ -1,10 +1,13 @@
-import { supabase } from "./supabase.js?v=20260909-27";
-import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260909-27";
+import { supabase } from "./supabase.js?v=20260909-32";
+import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260909-32";
 
 const form = document.getElementById("activity-form");
 const message = document.getElementById("activity-form-message");
 const imageInput = document.getElementById("activity-image");
 const imagePreview = document.getElementById("activity-image-preview");
+const proposeButton = document.getElementById("propose-submit-button");
+const approveButton = document.getElementById("approve-submit-button");
+let currentUserIsAdmin = false;
 
 function setMessage(text, type = "") {
     message.textContent = text;
@@ -40,18 +43,56 @@ function showImagePreview(file) {
     imagePreview.appendChild(image);
 }
 
+async function loadCurrentUserRole() {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData.user) {
+        currentUserIsAdmin = false;
+        return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userData.user.id)
+        .single();
+
+    currentUserIsAdmin = !profileError && profile?.role === "admin";
+
+    if (approveButton) {
+        approveButton.hidden = !currentUserIsAdmin;
+    }
+}
+
+loadCurrentUserRole();
+
+// La session Supabase peut être restaurée après le chargement du module.
+// On revérifie donc le rôle dès qu'une session devient disponible ou change.
+supabase.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+        setTimeout(() => {
+            loadCurrentUserRole();
+        }, 0);
+    } else {
+        currentUserIsAdmin = false;
+        if (approveButton) approveButton.hidden = true;
+    }
+});
+
 imageInput?.addEventListener("change", () => {
     showImagePreview(imageInput.files?.[0] || null);
 });
 
-form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
+async function submitActivity({ validateDirectly = false } = {}) {
+    const submitButton = validateDirectly ? approveButton : proposeButton;
+    const otherButton = validateDirectly ? proposeButton : approveButton;
 
-    const submitButton = form.querySelector("button[type=submit]");
-    submitButton.disabled = true;
-    setMessage("Envoi de la proposition...");
+    if (submitButton) submitButton.disabled = true;
+    if (otherButton) otherButton.disabled = true;
+    setMessage(validateDirectly ? "Validation de l'activité..." : "Envoi de la proposition...");
 
     let uploadedImage = null;
+    let activityId = null;
 
     try {
         const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -60,7 +101,7 @@ form?.addEventListener("submit", async (event) => {
         }
 
         const user = userData.user;
-        const activityId = crypto.randomUUID();
+        activityId = crypto.randomUUID();
         const imageFile = imageInput?.files?.[0] || null;
 
         if (imageFile) {
@@ -83,17 +124,29 @@ form?.addEventListener("submit", async (event) => {
             status: "pending"
         };
 
-        const { error } = await supabase
-            .from("activities")
-            .insert(payload);
+        const { error: insertError } = await supabase.from("activities").insert(payload);
+        if (insertError) throw insertError;
 
-        if (error) {
-            throw error;
+        if (validateDirectly) {
+            if (!currentUserIsAdmin) {
+                throw new Error("Seuls les administrateurs peuvent valider directement une activité.");
+            }
+
+            const { error: approveError } = await supabase.rpc("approve_activity", {
+                p_activity_id: activityId
+            });
+
+            if (approveError) throw approveError;
         }
 
         form.reset();
         imagePreview.replaceChildren();
-        setMessage("Proposition envoyée. Elle sera visible après validation par un administrateur.", "success");
+        setMessage(
+            validateDirectly
+                ? "Activité validée directement et publiée."
+                : "Proposition envoyée. Elle sera visible après validation par un administrateur.",
+            "success"
+        );
     } catch (error) {
         if (uploadedImage?.path) {
             await removeActivityImage(uploadedImage.path);
@@ -102,8 +155,23 @@ form?.addEventListener("submit", async (event) => {
         console.error("Erreur proposition activité :", error);
         setMessage(error.message || "Impossible d'envoyer la proposition.", "error");
     } finally {
-        submitButton.disabled = false;
+        if (submitButton) submitButton.disabled = false;
+        if (otherButton) otherButton.disabled = false;
     }
+}
+
+form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await submitActivity({ validateDirectly: false });
+});
+
+approveButton?.addEventListener("click", async () => {
+    if (!currentUserIsAdmin) return;
+
+    const confirmed = confirm("Valider directement cette activité ?");
+    if (!confirmed) return;
+
+    await submitActivity({ validateDirectly: true });
 });
 
 const dateInput = document.getElementById("activity-date");

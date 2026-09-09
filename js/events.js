@@ -1,5 +1,5 @@
 import { supabase } from "./supabase.js?v=20260909-27";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260909-30";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260909-31";
 
 const eventsContainer = document.getElementById("events-list");
 const eventsPeriod = document.getElementById("events-period");
