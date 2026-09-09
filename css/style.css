@@ -1503,10 +1503,10 @@ body.admin-logs-open {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 38px;
-    padding: 5px 9px;
-    border: 1px solid transparent;
-    border-radius: 10px;
+    min-height: 32px;
+    padding: 3px 8px;
+    border: 1px solid rgba(93,61,55,.82);
+    border-radius: 9px;
     background: transparent;
     color: #fff;
     font-size: .84rem;
@@ -1515,13 +1515,13 @@ body.admin-logs-open {
 
 .auth-user:hover,
 .auth-user[aria-expanded="true"] {
-    background: var(--surface-2);
-    border-color: rgba(93,61,55,.65);
+    background: transparent;
+    border-color: rgba(93,61,55,1);
 }
 
 .auth-avatar {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--brand);
@@ -1576,7 +1576,9 @@ body.admin-logs-open {
 /* Le pseudo reste visible : c'est lui qui ouvre le menu. */
 @media (max-width: 650px) {
     .auth-user {
-        padding: 4px 7px;
+        min-height: 30px;
+        padding: 2px 7px;
+        background: transparent;
     }
 
     .auth-user span:not(.auth-user-arrow) {
