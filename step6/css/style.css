@@ -2974,7 +2974,8 @@ body.events-modal-open { overflow: hidden; }
     }
 
     #profile-form button,
-    .activity-form button[type="submit"] {
+    .activity-form button[type="submit"],
+    .activity-form-actions button {
         width: 100%;
     }
 
@@ -3209,4 +3210,32 @@ body.events-modal-open { overflow: hidden; }
 .admin-activity p .description-link {
     text-decoration: underline;
     text-underline-offset: 2px;
+}
+
+
+/* Validation directe pour les administrateurs. */
+.activity-form-actions {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.activity-form-actions button {
+    flex: 1 1 0;
+}
+
+.btn-direct-approve {
+    background: transparent !important;
+    border: 1px solid rgba(93,61,55,.82) !important;
+    color: #fff !important;
+}
+
+.btn-direct-approve:hover {
+    background: var(--surface-3) !important;
+}
+
+@media (max-width: 650px) {
+    .activity-form-actions {
+        flex-direction: column;
+    }
 }

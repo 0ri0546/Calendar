@@ -3,36 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Calendrier</title>
-
-    <link rel="stylesheet" href="../css/style.css?v=20260909-29">
+    <title>Événements</title>
+    <link rel="stylesheet" href="../css/style.css?v=20260909-31">
 </head>
-
 <body>
-
 <header class="site-header">
     <nav class="site-nav" aria-label="Navigation principale">
         <a class="site-brand" href="../index.html">
             <img src="../assets/images/logo.webp" alt="Logo de L'oise aux jeux">
             <span class="site-brand-text"><strong>L'oise aux jeux</strong><span>ludothèque associative</span></span>
         </a>
-        <div class="site-links"><a class="" href="../index.html">Accueil</a><a class="active" href="../pages/calendar.html">Calendrier</a><a class="" href="../pages/events.html">Événements</a><a class="" href="../pages/propose.html">Proposer</a></div>
+        <div class="site-links"><a class="" href="../index.html">Accueil</a><a class="" href="../pages/calendar.html">Calendrier</a><a class="active" href="../pages/events.html">Événements</a><a class="" href="../pages/propose.html">Proposer</a></div>
         <div id="auth-menu"></div>
     </nav>
 </header>
 
 <main>
-    <h1>Calendrier</h1>
-
-    <p id="calendar-period"></p>
-
-    <div id="calendar">
-        <p>Chargement du calendrier...</p>
+    <h1>Rétrospective des événements</h1>
+    <p id="events-period"></p>
+    <div id="events-list">
+        <p>Chargement des événements...</p>
     </div>
 </main>
 
-<script type="module" src="../js/auth.js?v=20260909-29"></script>
+<script type="module" src="../js/auth.js?v=20260909-31"></script>
 <footer class="site-footer">
     <div class="footer-main">
         <div class="footer-brand">
@@ -48,7 +42,6 @@
     <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
 </footer>
 
-<script type="module" src="../js/calendar.js?v=20260909-29"></script>
-
+<script type="module" src="../js/events.js?v=20260909-31"></script>
 </body>
 </html>
