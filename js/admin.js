@@ -8,6 +8,9 @@ const adminMessage = document.getElementById("admin-message");
 const activitiesList =
     document.getElementById("activities-list");
 const adminLogsList = document.getElementById("admin-logs-list");
+const openAdminLogsButton = document.getElementById("open-admin-logs");
+const closeAdminLogsButton = document.getElementById("close-admin-logs");
+const adminLogsModal = document.getElementById("admin-logs-modal");
 
 /*
  * Récupère l'utilisateur actuellement connecté.
@@ -193,6 +196,29 @@ const ADMIN_ACTION_LABELS = {
     notification_sent: "Notification envoyée",
     notification_failed: "Notification échouée"
 };
+
+function openAdminLogs() {
+    if (!adminLogsModal) return;
+    adminLogsModal.hidden = false;
+    document.body.classList.add("admin-logs-open");
+    closeAdminLogsButton?.focus();
+}
+
+function closeAdminLogs() {
+    if (!adminLogsModal) return;
+    adminLogsModal.hidden = true;
+    document.body.classList.remove("admin-logs-open");
+    openAdminLogsButton?.focus();
+}
+
+openAdminLogsButton?.addEventListener("click", openAdminLogs);
+closeAdminLogsButton?.addEventListener("click", closeAdminLogs);
+adminLogsModal?.querySelector("[data-close-admin-logs]")?.addEventListener("click", closeAdminLogs);
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && adminLogsModal && !adminLogsModal.hidden) {
+        closeAdminLogs();
+    }
+});
 
 async function loadAdminLogs() {
     if (!adminLogsList) return;

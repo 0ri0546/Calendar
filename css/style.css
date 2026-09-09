@@ -1314,3 +1314,159 @@ body:has(#google-login) main {
 .notification-button.has-unread:hover {
     background: var(--brand);
 }
+
+/* ==================================================
+   CALENDAR MINI DAYS — fond uniforme + pastille
+   ================================================== */
+.calendar-mini-day,
+.calendar-mini-day.has-activity,
+.calendar-mini-day.is-selected-week,
+.calendar-mini-day.is-selected-week.has-activity {
+    background: transparent !important;
+}
+
+.calendar-mini-day:hover {
+    background: var(--surface-3) !important;
+}
+
+.calendar-mini-activity-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: none;
+}
+
+/* La semaine affichée est repérée uniquement par son cadre. */
+.calendar-mini-day.is-selected-week {
+    border: 1px solid rgba(93,61,55,.82);
+    border-radius: 7px;
+}
+
+/* ==================================================
+   ADMIN — journal dans une fenêtre secondaire
+   ================================================== */
+#admin-logs-section {
+    padding: 18px 20px;
+}
+
+.admin-logs-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-logs-trigger h2 {
+    margin: 0;
+}
+
+.admin-logs-trigger p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: .8rem;
+}
+
+.admin-logs-trigger button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.admin-logs-modal[hidden] {
+    display: none;
+}
+
+.admin-logs-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.admin-logs-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.72);
+}
+
+.admin-logs-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(900px, 100%);
+    max-height: min(760px, calc(100vh - 48px));
+    overflow: auto;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line-brand);
+    border-radius: 18px;
+}
+
+.admin-logs-dialog-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.admin-logs-dialog-header h2 {
+    margin: 0;
+}
+
+.admin-logs-dialog-header p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: .8rem;
+}
+
+.admin-logs-dialog .icon-button {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.4rem;
+}
+
+.admin-logs-dialog .icon-button:hover {
+    background: var(--surface-3);
+}
+
+.admin-log-entry {
+    background: var(--surface-2);
+}
+
+body.admin-logs-open {
+    overflow: hidden;
+}
+
+@media (max-width: 650px) {
+    .admin-logs-trigger {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-logs-trigger button {
+        width: auto;
+    }
+
+    .admin-logs-modal {
+        padding: 12px;
+    }
+
+    .admin-logs-dialog {
+        max-height: calc(100vh - 24px);
+        padding: 18px;
+    }
+}
+
+.calendar-mini-day { background-color: transparent !important; }

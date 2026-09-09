@@ -41,11 +41,30 @@
         </section>
 
         <section id="admin-logs-section">
-            <h2>Journal administrateur</h2>
-            <div id="admin-logs-list">
-                <p>Chargement du journal...</p>
+            <div class="admin-logs-trigger">
+                <div>
+                    <h2>Journal administrateur</h2>
+                    <p>Consultez les dernières actions effectuées sur l'administration.</p>
+                </div>
+                <button id="open-admin-logs" type="button">Voir le journal</button>
             </div>
         </section>
+
+        <div id="admin-logs-modal" class="admin-logs-modal" hidden>
+            <div class="admin-logs-backdrop" data-close-admin-logs></div>
+            <section class="admin-logs-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-logs-title">
+                <div class="admin-logs-dialog-header">
+                    <div>
+                        <h2 id="admin-logs-title">Journal administrateur</h2>
+                        <p>Historique des actions récentes.</p>
+                    </div>
+                    <button id="close-admin-logs" class="icon-button" type="button" aria-label="Fermer le journal">×</button>
+                </div>
+                <div id="admin-logs-list">
+                    <p>Chargement du journal...</p>
+                </div>
+            </section>
+        </div>
 
         <section id="proposals-section">
 
