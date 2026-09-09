@@ -1,4 +1,4 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-27";
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-33";
 
 const NOTIFICATION_TYPES = new Set([
     "place_opened",
@@ -8,12 +8,42 @@ const NOTIFICATION_TYPES = new Set([
 ]);
 
 let currentUserId = null;
+let currentUser = null;
 let channel = null;
 let notifications = [];
+let notificationsEnabled = true;
 let elements = null;
 
 function siteUrl(path = "") {
     return new URL(path, SITE_URL).href;
+}
+
+function getNotificationsPreference(user) {
+    return user?.user_metadata?.notifications_enabled !== false;
+}
+
+async function setNotificationsPreference(enabled) {
+    if (!currentUserId || !elements?.toggle) return;
+
+    const previous = notificationsEnabled;
+    notificationsEnabled = enabled;
+    elements.toggle.disabled = true;
+
+    const { data, error } = await supabase.auth.updateUser({
+        data: { notifications_enabled: enabled }
+    });
+
+    elements.toggle.disabled = false;
+
+    if (error) {
+        notificationsEnabled = previous;
+        elements.toggle.checked = previous;
+        console.error("Erreur préférence notifications :", error);
+        return;
+    }
+
+    currentUser = data?.user ?? currentUser;
+    elements.toggle.checked = notificationsEnabled;
 }
 
 function formatRelativeDate(value) {
@@ -239,6 +269,25 @@ function createUI(authMenu) {
     const heading = document.createElement("strong");
     heading.textContent = "Notifications";
 
+    const preferences = document.createElement("label");
+    preferences.className = "notification-preference";
+
+    const preferenceText = document.createElement("span");
+    preferenceText.textContent = "Recevoir les notifications";
+
+    const toggle = document.createElement("input");
+    toggle.type = "checkbox";
+    toggle.className = "notification-toggle-input";
+    toggle.checked = notificationsEnabled;
+    toggle.setAttribute("aria-label", "Recevoir les notifications");
+
+    const slider = document.createElement("span");
+    slider.className = "notification-toggle-slider";
+    slider.setAttribute("aria-hidden", "true");
+
+    preferences.append(preferenceText, toggle, slider);
+    toggle.addEventListener("change", () => setNotificationsPreference(toggle.checked));
+
     const markAll = document.createElement("button");
     markAll.type = "button";
     markAll.className = "notification-mark-all";
@@ -246,7 +295,7 @@ function createUI(authMenu) {
     markAll.hidden = true;
     markAll.addEventListener("click", markAllAsRead);
 
-    header.append(heading, markAll);
+    header.append(heading, preferences, markAll);
 
     const list = document.createElement("div");
     list.className = "notification-list";
@@ -271,7 +320,7 @@ function createUI(authMenu) {
 
     authMenu.appendChild(wrapper);
 
-    elements = { wrapper, button, badge, panel, list, markAll };
+    elements = { wrapper, button, badge, panel, list, markAll, toggle };
     render();
 }
 
@@ -320,7 +369,9 @@ export async function initNotifications(authMenu, user) {
         channel = null;
     }
 
+    currentUser = user ?? null;
     currentUserId = user?.id ?? null;
+    notificationsEnabled = getNotificationsPreference(user);
     notifications = [];
     elements = null;
 
