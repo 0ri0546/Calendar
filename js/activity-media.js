@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260909-06";
+import { supabase } from "./supabase.js?v=20260909-07";
 
 export const ACTIVITY_IMAGE_BUCKET = "activity-images";
 export const ACTIVITY_IMAGE_MAX_SIZE = 10 * 1024 * 1024;

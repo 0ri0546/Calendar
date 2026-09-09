@@ -1,5 +1,5 @@
-import { supabase } from "./supabase.js?v=20260909-06";
-import { uploadActivityImage, removeActivityImage } from "./activity-media.js?v=20260909-06";
+import { supabase } from "./supabase.js?v=20260909-07";
+import { uploadActivityImage, removeActivityImage } from "./activity-media.js?v=20260909-07";
 
 /*
  * Helper pour le panneau d'administration existant.

@@ -1,5 +1,5 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-06";
-import { initNotifications } from "./notifications.js?v=20260909-06";
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-07";
+import { initNotifications } from "./notifications.js?v=20260909-07";
 
 function getAvatarDisplayUrl(url) {
     if (!url) {
@@ -50,6 +50,13 @@ function renderLoggedIn(profile, user) {
     const userButton = document.createElement("button");
     userButton.type = "button";
     userButton.className = "auth-user";
+
+    // Apparence du bouton profil : fond transparent et contour brun.
+    // Les styles inline avec !important passent devant les règles CSS générales.
+    userButton.style.setProperty("background", "transparent", "important");
+    userButton.style.setProperty("border", "1px solid rgba(93,61,55,.82)", "important");
+    userButton.style.setProperty("box-shadow", "none", "important");
+    userButton.style.setProperty("min-height", "40px", "important");
     userButton.setAttribute("aria-haspopup", "menu");
     userButton.setAttribute("aria-expanded", "false");
     userButton.setAttribute("aria-label", `Ouvrir le menu de ${pseudo}`);
