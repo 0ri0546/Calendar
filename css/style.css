@@ -3316,3 +3316,144 @@ body.events-modal-open { overflow: hidden; }
         border-top: 1px solid var(--line);
     }
 }
+
+/* ==================================================
+   ÉTAPE 8 — AMIS
+   ================================================== */
+.friends-wrapper {
+    position: relative;
+    display: inline-flex;
+}
+
+.friends-button {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    border: 1px solid rgba(93,61,55,.7);
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: #fff;
+    font-size: 1rem;
+}
+
+.friends-button:hover { background: var(--brand); }
+
+.friends-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 1200;
+    width: min(420px, calc(100vw - 24px));
+    max-height: min(680px, calc(100vh - 100px));
+    overflow-y: auto;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line-brand);
+    border-radius: 14px;
+    box-shadow: none;
+}
+
+.friends-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+}
+
+.friend-code-box {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 3px 10px;
+    align-items: center;
+    padding: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+}
+
+.friend-code-box span { grid-column: 1 / -1; color: var(--muted); font-size: .68rem; }
+.friend-code-box strong { font-size: .95rem; letter-spacing: .08em; }
+.friend-code-box button,
+.friend-add button,
+.friend-request-actions button {
+    width: auto;
+    padding: 7px 10px;
+    font-size: .72rem;
+}
+
+.friend-add {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 7px;
+    margin-top: 10px;
+}
+
+.friend-add input { min-width: 0; }
+.friend-add-message { min-height: 1.2em; margin: 5px 0 8px; color: var(--text-soft); font-size: .7rem; }
+
+.friends-panel h4 { margin: 12px 0 7px; font-size: .78rem; }
+.friend-requests { display: grid; gap: 6px; }
+.friend-request {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-2);
+}
+.friend-request-actions { display: flex; gap: 5px; }
+.friend-request-actions button:first-child { background: var(--brand); color: #fff; }
+
+.friends-list { display: grid; gap: 7px; }
+.friend-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 9px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--surface-2);
+}
+.friend-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid var(--brand); }
+.friend-card-info { min-width: 0; display: grid; gap: 2px; }
+.friend-card-info strong { overflow-wrap: anywhere; }
+.friend-card-info span { color: var(--muted); font-size: .62rem; }
+.friend-whatsapp { white-space: nowrap; padding: 7px 9px; border: 1px solid rgba(93,61,55,.8); border-radius: 7px; text-decoration: none; font-size: .68rem; }
+.friend-whatsapp:hover { background: var(--brand); color: #fff; }
+.friend-whatsapp.is-disabled { opacity: .55; pointer-events: none; }
+.friends-empty { margin: 8px 0; color: var(--muted); font-size: .75rem; }
+
+.profile-friend-code {
+    display: grid;
+    gap: 4px;
+    margin-top: 18px;
+    padding: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+.profile-friend-code span { color: var(--muted); font-size: .72rem; }
+.profile-friend-code strong { letter-spacing: .1em; }
+.profile-friend-code small { color: var(--muted); }
+
+@media (max-width: 650px) {
+    .friends-panel {
+        position: fixed;
+        top: 76px;
+        right: 12px;
+        width: min(390px, calc(100vw - 24px));
+        max-height: calc(100vh - 92px);
+    }
+    .friend-card { grid-template-columns: auto 1fr; }
+    .friend-whatsapp { grid-column: 2; justify-self: start; }
+}

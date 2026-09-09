@@ -21,3 +21,12 @@ Correction 20260909-26 : image de la modale mobile du calendrier non contrainte 
 - Le bouton « Proposer » reste le bouton normal.
 - « Valider » crée l'activité puis utilise la fonction RPC d'approbation existante.
 - Le contrôle admin est effectué côté client pour l'affichage et côté RPC pour la sécurité.
+
+
+## Étape 8
+- Système d'amis par code unique.
+- Demandes d'amis avec acceptation/refus.
+- Liste d'amis dans un bouton à côté des notifications.
+- Bouton WhatsApp pour ouvrir une discussion privée avec un ami.
+- Numéro WhatsApp stocké dans private.user_contacts, jamais exposé par la table publique profiles.
+- Code ami affiché dans le profil et dans le panneau Amis.

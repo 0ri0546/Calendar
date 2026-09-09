@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260909-34";
+import { supabase } from "./supabase.js?v=20260909-35";
 
 
 // ==================================================
@@ -9,6 +9,8 @@ const form = document.getElementById("profile-form");
 
 const pseudoInput = document.getElementById("pseudo");
 const avatar = document.getElementById("profile-avatar");
+const phoneInput = document.getElementById("phone");
+const friendCode = document.getElementById("profile-friend-code");
 
 const avatarFileInput = document.getElementById("avatar-file");
 
@@ -88,7 +90,7 @@ async function loadProfile() {
         error: profileError
     } = await supabase
         .from("profiles")
-        .select("pseudo, avatar_url, role")
+        .select("pseudo, avatar_url, role, friend_code")
         .eq("id", user.id)
         .single();
 
@@ -109,6 +111,11 @@ async function loadProfile() {
 
     // Pseudo
     pseudoInput.value = profile.pseudo ?? "";
+    if (phoneInput) {
+        const { data: phone } = await supabase.rpc("get_my_phone");
+        phoneInput.value = phone ?? "";
+    }
+    if (friendCode) friendCode.textContent = profile.friend_code ?? "—";
 
 
     // Avatar actuel
@@ -390,6 +397,15 @@ form.addEventListener(
 
                 throw error;
 
+            }
+
+
+            const { error: phoneError } = await supabase.rpc("set_my_phone", {
+                p_phone: phoneInput?.value.trim() ?? ""
+            });
+
+            if (phoneError) {
+                throw phoneError;
             }
 
 
