@@ -1,5 +1,5 @@
-import { supabase } from "./supabase.js?v=20260909-08";
-import { showUserError } from "./ui-messages.js?v=20260909-08";
+import { supabase } from "./supabase.js?v=20260909-18";
+import { showUserError } from "./ui-messages.js?v=20260909-18";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
@@ -445,7 +445,7 @@ async function unfollowActivity(activityId) {
 }
 
 
-function createActivityElement(activity, participants, followers, currentUser, followedActivityIds) {
+function createActivityElement(activity, participants, followers, currentUser, followedActivityIds, compactWeek = false) {
     const article = document.createElement("article");
     article.className = "calendar-activity";
     article.id = `activity-${activity.id}`;
@@ -533,7 +533,107 @@ function createActivityElement(activity, participants, followers, currentUser, f
 
     article.appendChild(createActivityActions(activity, participants, currentUser, followedActivityIds));
 
+    if (compactWeek) {
+        article.classList.add("calendar-activity-compact");
+        article.setAttribute("role", "button");
+        article.setAttribute("tabindex", "0");
+        article.setAttribute("aria-label", `Voir les détails de ${activity.title}`);
+
+        const openDetails = () => {
+            if (window.matchMedia("(max-width: 650px)").matches) {
+                openMobileActivityDetails(
+                    activity,
+                    participants,
+                    followers,
+                    currentUser,
+                    followedActivityIds
+                );
+            }
+        };
+
+        article.addEventListener("click", openDetails);
+        article.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openDetails();
+            }
+        });
+    }
+
     return article;
+}
+
+
+function openMobileActivityDetails(activity, participants, followers, currentUser, followedActivityIds) {
+    document.querySelector(".calendar-mobile-activity-modal")?.remove();
+
+    const overlay = document.createElement("div");
+    overlay.className = "calendar-mobile-activity-modal";
+
+    const backdrop = document.createElement("button");
+    backdrop.type = "button";
+    backdrop.className = "calendar-mobile-activity-modal-backdrop";
+    backdrop.setAttribute("aria-label", "Fermer les détails");
+
+    const dialog = document.createElement("div");
+    dialog.className = "calendar-mobile-activity-dialog";
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-label", `Détails de ${activity.title}`);
+
+    const header = document.createElement("div");
+    header.className = "calendar-mobile-activity-dialog-header";
+
+    const heading = document.createElement("h2");
+    heading.textContent = activity.title;
+    header.appendChild(heading);
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "calendar-mobile-activity-close";
+    closeButton.textContent = "×";
+    closeButton.setAttribute("aria-label", "Fermer");
+    header.appendChild(closeButton);
+    dialog.appendChild(header);
+
+    const content = createActivityElement(
+        activity,
+        participants,
+        followers,
+        currentUser,
+        followedActivityIds,
+        false
+    );
+    content.classList.add("calendar-mobile-activity-dialog-content");
+    content.removeAttribute("id");
+    content.removeAttribute("role");
+    content.removeAttribute("tabindex");
+    content.removeAttribute("aria-label");
+    dialog.appendChild(content);
+
+    overlay.append(backdrop, dialog);
+    document.body.appendChild(overlay);
+    document.body.classList.add("calendar-mobile-activity-open");
+
+    const close = () => {
+        overlay.remove();
+        document.body.classList.remove("calendar-mobile-activity-open");
+        document.removeEventListener("keydown", onKeyDown);
+    };
+
+    const onKeyDown = event => {
+        if (event.key === "Escape") close();
+    };
+
+    backdrop.addEventListener("click", close);
+    closeButton.addEventListener("click", close);
+    document.addEventListener("keydown", onKeyDown);
+
+    content.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", close, { once: true });
+    });
+
+    requestAnimationFrame(() => closeButton.focus());
 }
 
 
@@ -549,7 +649,7 @@ function groupActivitiesByDate(activities) {
 }
 
 
-function createDayActivityList(date, groupedActivities, groupedParticipations, groupedFollowers, currentUser, followedActivityIds) {
+function createDayActivityList(date, groupedActivities, groupedParticipations, groupedFollowers, currentUser, followedActivityIds, compactWeek = false) {
     const dateString = formatDateForDatabase(date);
     const activitiesForDay = groupedActivities.get(dateString) ?? [];
 
@@ -607,7 +707,8 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
             participants,
             followers,
             currentUser,
-            followedActivityIds
+            followedActivityIds,
+            compactWeek
         ));
     }
 
@@ -635,6 +736,13 @@ function renderLargeWeek(weekStart, activities, participations, followers, curre
     const days = document.createElement("div");
     days.className = "calendar-large-week-days";
 
+    // La semaine reste toujours composée de 7 colonnes.
+    // On fixe la grille directement sur le conteneur pour éviter qu'une
+    // règle responsive héritée ne la fasse repasser en 2 ou 1 colonne.
+    days.style.display = "grid";
+    days.style.gridTemplateColumns = "repeat(7, minmax(0, 1fr))";
+    days.style.gridAutoFlow = "row";
+
     const groupedActivities = groupActivitiesByDate(activities);
     const groupedParticipations = groupParticipations(participations);
     const groupedFollowers = groupFollowers(followers);
@@ -647,17 +755,29 @@ function renderLargeWeek(weekStart, activities, participations, followers, curre
             continue;
         }
 
-        days.appendChild(createDayActivityList(
+        const dayElement = createDayActivityList(
             date,
             groupedActivities,
             groupedParticipations,
             groupedFollowers,
             currentUser,
-            followedActivityIds
-        ));
+            followedActivityIds,
+            true
+        );
+
+        // Autorise la carte à se réduire dans sa colonne mobile.
+        dayElement.style.minWidth = "0";
+        dayElement.style.width = "auto";
+        dayElement.style.maxWidth = "none";
+
+        days.appendChild(dayElement);
     }
 
     weekContainer.appendChild(days);
+
+    // La semaine garde sa grille 7 colonnes.
+    // Sur mobile, le contenu de chaque activité est volontairement compact :
+    // image + titre, avec les détails accessibles au clic.
     return weekContainer;
 }
 

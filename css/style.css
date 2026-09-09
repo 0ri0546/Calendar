@@ -1632,3 +1632,877 @@ body.admin-logs-open {
     }
 }
 
+/* =========================================================
+   MOBILE — CALENDRIER
+   La semaine reste horizontale.
+   Les mini-calendriers passent en 2 colonnes.
+   ========================================================= */
+@media (max-width: 768px) {
+    /* Vue semaine : 7 jours sur une seule ligne */
+    .calendar-week-grid {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(115px, 115px)) !important;
+        grid-auto-flow: column !important;
+        gap: 7px !important;
+        width: max-content !important;
+        min-width: max-content !important;
+        overflow: visible !important;
+    }
+
+    .calendar-week-grid > * {
+        width: 115px !important;
+        min-width: 115px !important;
+        max-width: 115px !important;
+        grid-column: auto !important;
+    }
+
+    /* Le scroll appartient au bloc de semaine, pas à toute la page */
+    .calendar-week,
+    .calendar-week-grid-wrapper {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+
+    /* Vue d'ensemble : 2 mini-calendriers par ligne */
+    .calendar-overview,
+    .calendar-mini-grid,
+    .calendar-months {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .calendar-overview > *,
+    .calendar-mini-grid > *,
+    .calendar-months > * {
+        min-width: 0 !important;
+        width: auto !important;
+    }
+}
+
+/* =========================================================
+   MOBILE — CALENDRIER : mise en page définitive
+   ========================================================= */
+@media (max-width: 650px) {
+    /*
+     * Semaine : on conserve les 7 jours côte à côte.
+     * Le conteneur de la semaine défile horizontalement.
+     */
+    .calendar-large-week-days {
+        display: grid !important;
+        grid-template-columns: repeat(7, 140px) !important;
+        grid-auto-flow: column !important;
+        gap: 8px !important;
+        width: max-content !important;
+        min-width: max-content !important;
+        overflow: visible !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        width: 140px !important;
+        min-width: 140px !important;
+        max-width: 140px !important;
+    }
+
+    /*
+     * Le bloc qui contient la grille est rendu scrollable.
+     * On cible aussi les conteneurs parents possibles pour éviter
+     * que la grille soit coupée sur les petits écrans.
+     */
+    .calendar-large-week-days {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    /*
+     * Vue d'ensemble : 2 mini-calendriers par ligne.
+     * Le 3e mois passe donc automatiquement sur la ligne suivante.
+     */
+    .calendar-mini-months {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .calendar-mini-months .calendar-mini-month {
+        min-width: 0 !important;
+        width: auto !important;
+    }
+}
+
+/* =========================================================
+   MOBILE — CORRECTION FINALE
+   Ne change pas la forme des composants : on change seulement
+   leur disposition.
+   ========================================================= */
+@media (max-width: 650px) {
+    /* Semaine : les 7 jours restent sur une seule ligne.
+       Les cartes gardent leur taille/forme et défilent horizontalement. */
+    .calendar-large-week-days {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        padding: 12px !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        flex: 0 0 185px !important;
+        width: 185px !important;
+        min-width: 185px !important;
+        max-width: 185px !important;
+        align-self: flex-start !important;
+    }
+
+    /* Mini-calendriers : 2 mois par ligne.
+       IMPORTANT : la grille des jours de CHAQUE mois reste en 7 colonnes. */
+    .calendar-mini-months {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .calendar-mini-month {
+        min-width: 0 !important;
+        width: auto !important;
+    }
+
+    .calendar-mini-weekdays,
+    .calendar-mini-grid {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        gap: 3px !important;
+        width: 100% !important;
+    }
+}
+
+/* =========================================================
+   MOBILE — CALENDRIER COMPACT
+   Objectif : garder les mêmes composants, mais les réduire
+   suffisamment pour afficher les 7 jours sur une seule ligne
+   et 2 mini-calendriers par ligne.
+   ========================================================= */
+@media (max-width: 650px) {
+    /* Semaine : 7 colonnes dans la largeur disponible, sans scroll. */
+    .calendar-large-week-days {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        gap: 4px !important;
+        padding: 7px !important;
+        width: 100% !important;
+        overflow: hidden !important;
+    }
+
+    /* On réduit la taille, mais on conserve exactement les mêmes cartes. */
+    .calendar-large-week-days .calendar-day {
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 150px !important;
+        padding: 5px !important;
+        border-radius: 8px !important;
+    }
+
+    .calendar-day > h2 {
+        min-height: 32px !important;
+        padding-bottom: 5px !important;
+        font-size: .52rem !important;
+        line-height: 1.08 !important;
+    }
+
+    .calendar-day-weekday {
+        font-size: .48rem !important;
+    }
+
+    .calendar-day-date {
+        margin-top: 2px !important;
+        font-size: .58rem !important;
+    }
+
+    .calendar-saturday-label {
+        margin: 4px 0 5px !important;
+        padding: 3px 4px !important;
+        font-size: .42rem !important;
+        line-height: 1.05 !important;
+    }
+
+    .calendar-day-empty {
+        font-size: .48rem !important;
+    }
+
+    .calendar-activity {
+        margin-top: 4px !important;
+        padding: 4px !important;
+        border-radius: 7px !important;
+    }
+
+    .calendar-activity-image {
+        max-height: none !important;
+        height: 38px !important;
+        margin: 0 0 4px !important;
+        border-radius: 5px !important;
+    }
+
+    .calendar-activity-header {
+        gap: 2px !important;
+    }
+
+    .calendar-activity-header h3 {
+        font-size: .52rem !important;
+        line-height: 1.05 !important;
+        overflow-wrap: anywhere;
+    }
+
+    .calendar-event-badge,
+    .event-status-badge {
+        min-width: 16px !important;
+        min-height: 16px !important;
+        padding: 2px 3px !important;
+        font-size: .42rem !important;
+    }
+
+    .calendar-activity-details {
+        gap: 2px !important;
+        margin-top: 4px !important;
+    }
+
+    .calendar-activity-details p,
+    .calendar-activity-description {
+        font-size: .46rem !important;
+        line-height: 1.12 !important;
+    }
+
+    .calendar-activity-description {
+        margin-top: 4px !important;
+    }
+
+    .calendar-participants,
+    .calendar-waiting-queue {
+        margin-top: 5px !important;
+        padding-top: 4px !important;
+    }
+
+    .calendar-participants h4,
+    .calendar-waiting-queue h4 {
+        font-size: .5rem !important;
+    }
+
+    .calendar-participants ul,
+    .calendar-waiting-queue ol {
+        padding-left: 8px !important;
+        font-size: .44rem !important;
+    }
+
+    .calendar-actions {
+        gap: 3px !important;
+        margin-top: 5px !important;
+    }
+
+    .calendar-actions button {
+        font-size: .48rem !important;
+        padding: 4px 3px !important;
+    }
+
+    /* Vue d'ensemble : 2 mois par ligne. */
+    .calendar-mini-months {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .calendar-mini-month {
+        min-width: 0 !important;
+        width: auto !important;
+        padding: 8px !important;
+        border-radius: 10px !important;
+    }
+
+    .calendar-mini-month h3 {
+        margin-bottom: 7px !important;
+        font-size: .68rem !important;
+    }
+
+    .calendar-mini-weekdays,
+    .calendar-mini-grid {
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        gap: 2px !important;
+    }
+
+    .calendar-mini-weekdays span {
+        font-size: .42rem !important;
+    }
+
+    .calendar-mini-day,
+    .calendar-mini-empty {
+        min-height: 21px !important;
+        padding: 3px 0 !important;
+        font-size: .48rem !important;
+        border-radius: 5px !important;
+    }
+
+    .calendar-mini-activity-dot {
+        width: 4px !important;
+        height: 4px !important;
+        bottom: 1px !important;
+    }
+
+    /* Navigation : reste compacte, sans modifier les boutons sur desktop. */
+    .calendar-week-navigation {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 5px !important;
+    }
+
+    .calendar-week-navigation button,
+    .calendar-today-button {
+        min-width: 0 !important;
+        padding: 7px 6px !important;
+        font-size: .58rem !important;
+        white-space: nowrap;
+    }
+}
+
+/* =========================================================
+   MOBILE / PETITS ÉCRANS — SEMAINE UNIQUEMENT
+   Les mini-calendriers ne sont volontairement PAS touchés ici.
+   ========================================================= */
+@media (max-width: 950px) {
+    .calendar-large-week-days {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        grid-auto-flow: row !important;
+        gap: 4px !important;
+        padding: 7px !important;
+        width: 100% !important;
+        overflow: hidden !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 5px !important;
+        border-radius: 8px !important;
+    }
+
+    .calendar-day > h2 {
+        min-height: 32px !important;
+        padding-bottom: 5px !important;
+        font-size: .52rem !important;
+        line-height: 1.08 !important;
+    }
+
+    .calendar-day-weekday {
+        font-size: .48rem !important;
+    }
+
+    .calendar-day-date {
+        font-size: .58rem !important;
+    }
+
+    .calendar-saturday-label {
+        margin: 4px 0 5px !important;
+        padding: 3px 4px !important;
+        font-size: .42rem !important;
+    }
+
+    .calendar-activity {
+        margin-top: 4px !important;
+        padding: 4px !important;
+        border-radius: 7px !important;
+    }
+
+    .calendar-activity-image {
+        height: 34px !important;
+        max-height: 34px !important;
+        margin-bottom: 4px !important;
+        border-radius: 5px !important;
+    }
+
+    .calendar-activity-header {
+        gap: 2px !important;
+    }
+
+    .calendar-activity-header h3 {
+        font-size: .5rem !important;
+        line-height: 1.05 !important;
+        overflow-wrap: anywhere;
+    }
+
+    .calendar-event-badge,
+    .event-status-badge {
+        min-width: 15px !important;
+        min-height: 15px !important;
+        padding: 2px 3px !important;
+        font-size: .4rem !important;
+    }
+
+    .calendar-activity-details {
+        gap: 2px !important;
+        margin-top: 4px !important;
+    }
+
+    .calendar-activity-details p,
+    .calendar-activity-description {
+        font-size: .43rem !important;
+        line-height: 1.1 !important;
+    }
+
+    .calendar-activity-description {
+        margin-top: 4px !important;
+    }
+
+    .calendar-participants,
+    .calendar-waiting-queue {
+        margin-top: 4px !important;
+        padding-top: 4px !important;
+    }
+
+    .calendar-participants h4,
+    .calendar-waiting-queue h4 {
+        font-size: .46rem !important;
+    }
+
+    .calendar-participants ul,
+    .calendar-waiting-queue ol {
+        padding-left: 7px !important;
+        font-size: .4rem !important;
+    }
+
+    .calendar-actions {
+        gap: 3px !important;
+        margin-top: 4px !important;
+    }
+
+    .calendar-actions button {
+        font-size: .44rem !important;
+        padding: 4px 2px !important;
+    }
+}
+
+/* =========================================================
+   MOBILE — SEMAINE : dimensions compactes uniquement
+   La grille 7 colonnes est fixée directement par calendar.js.
+   ========================================================= */
+@media (max-width: 950px) {
+    .calendar-large-week-days {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        grid-auto-flow: row !important;
+        align-items: start !important;
+        gap: 4px !important;
+        padding: 7px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        min-width: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 4px !important;
+        border-radius: 7px !important;
+    }
+
+    .calendar-large-week-days .calendar-day > h2 {
+        min-height: 30px !important;
+        margin: 0 !important;
+        padding-bottom: 4px !important;
+        font-size: .5rem !important;
+        line-height: 1.05 !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday {
+        font-size: .45rem !important;
+    }
+
+    .calendar-large-week-days .calendar-day-date {
+        font-size: .55rem !important;
+    }
+
+    .calendar-large-week-days .calendar-saturday-label {
+        margin: 3px 0 4px !important;
+        padding: 3px !important;
+        font-size: .38rem !important;
+    }
+
+    .calendar-large-week-days .calendar-activity {
+        margin-top: 3px !important;
+        padding: 3px !important;
+        border-radius: 6px !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-image {
+        height: 30px !important;
+        max-height: 30px !important;
+        margin: 0 0 3px !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-header h3 {
+        font-size: .46rem !important;
+        line-height: 1.05 !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-details {
+        gap: 1px !important;
+        margin-top: 3px !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-details p,
+    .calendar-large-week-days .calendar-activity-description {
+        font-size: .4rem !important;
+        line-height: 1.05 !important;
+    }
+
+    .calendar-large-week-days .calendar-participants,
+    .calendar-large-week-days .calendar-waiting-queue {
+        margin-top: 3px !important;
+        padding-top: 3px !important;
+    }
+
+    .calendar-large-week-days .calendar-participants h4,
+    .calendar-large-week-days .calendar-waiting-queue h4 {
+        font-size: .42rem !important;
+    }
+
+    .calendar-large-week-days .calendar-actions {
+        gap: 2px !important;
+        margin-top: 3px !important;
+    }
+
+    .calendar-large-week-days .calendar-actions button {
+        padding: 3px 2px !important;
+        font-size: .4rem !important;
+    }
+}
+
+/* =========================================================
+   MOBILE — SEMAINE : réduction uniforme
+   La grille garde les dimensions desktop puis calendar.js
+   la réduit d'un seul bloc. Les mini-calendriers ne sont pas touchés.
+   ========================================================= */
+@media (max-width: 650px) {
+    .calendar-large-week-days {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        grid-auto-flow: row !important;
+        gap: 8px !important;
+        padding: 12px !important;
+        width: 178.5714% !important;
+        min-width: 0 !important;
+        overflow: visible !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        min-width: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        min-height: 185px !important;
+        height: auto !important;
+        padding: 12px !important;
+        border-radius: 13px !important;
+    }
+}
+
+/* =========================================================
+   MOBILE V10 — SEMAINE COMPACTE INTERACTIVE
+   Sur mobile : jour de hauteur identique + activité = image/titre.
+   Les détails complets sont ouverts au clic.
+   Les mini-calendriers ne sont volontairement pas modifiés ici.
+   ========================================================= */
+@media (max-width: 650px) {
+    .calendar-large-week-days {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        grid-auto-rows: 128px !important;
+        align-items: stretch !important;
+        gap: 4px !important;
+        padding: 8px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        transform: none !important;
+        height: auto !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 128px !important;
+        height: 128px !important;
+        padding: 5px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        border-radius: 8px !important;
+    }
+
+    .calendar-large-week-days .calendar-day > h2 {
+        flex: 0 0 auto !important;
+        min-height: 26px !important;
+        height: 26px !important;
+        margin: 0 !important;
+        padding: 0 0 4px !important;
+        font-size: .48rem !important;
+        line-height: 1.05 !important;
+        overflow: hidden !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday,
+    .calendar-large-week-days .calendar-day-date {
+        display: block !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday {
+        font-size: .42rem !important;
+    }
+
+    .calendar-large-week-days .calendar-day-date {
+        font-size: .5rem !important;
+    }
+
+    .calendar-large-week-days .calendar-saturday-label {
+        flex: 0 0 auto !important;
+        margin: 3px 0 4px !important;
+        padding: 2px 3px !important;
+        border-radius: 3px !important;
+        font-size: .34rem !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .calendar-large-week-days .calendar-day-empty {
+        display: none !important;
+    }
+
+    /* Activité compacte : uniquement visuel + titre. */
+    .calendar-large-week-days .calendar-activity.calendar-activity-compact {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 2px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        margin: 3px 0 0 !important;
+        padding: 3px !important;
+        border-radius: 5px !important;
+        cursor: pointer !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .calendar-large-week-days .calendar-activity.calendar-activity-compact:hover {
+        transform: none !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-compact .calendar-activity-image {
+        display: block !important;
+        width: 100% !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        margin: 0 !important;
+        object-fit: cover !important;
+        border-radius: 3px !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-compact .calendar-activity-header {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 2px !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-compact .calendar-activity-header h3 {
+        min-width: 0 !important;
+        margin: 0 !important;
+        font-size: .42rem !important;
+        line-height: 1.05 !important;
+        text-align: center !important;
+        overflow: hidden !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow-wrap: normal !important;
+        word-break: normal !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-compact .calendar-event-badge {
+        flex: 0 0 auto !important;
+        min-width: 10px !important;
+        min-height: 10px !important;
+        padding: 0 !important;
+        font-size: .35rem !important;
+        border: 0 !important;
+        background: transparent !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-compact .calendar-activity-details,
+    .calendar-large-week-days .calendar-activity-compact .calendar-activity-description,
+    .calendar-large-week-days .calendar-activity-compact .calendar-participants,
+    .calendar-large-week-days .calendar-activity-compact .calendar-waiting-queue,
+    .calendar-large-week-days .calendar-activity-compact .calendar-actions {
+        display: none !important;
+    }
+
+    /* Modal mobile : les informations complètes restent accessibles au clic. */
+    .calendar-mobile-activity-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px;
+        box-sizing: border-box;
+    }
+
+    .calendar-mobile-activity-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: rgba(0, 0, 0, .76);
+        cursor: default;
+    }
+
+    .calendar-mobile-activity-dialog {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 390px);
+        max-height: calc(100vh - 28px);
+        overflow: auto;
+        box-sizing: border-box;
+        padding: 14px;
+        background: var(--surface);
+        border: 1px solid var(--line-brand);
+        border-radius: 12px;
+    }
+
+    .calendar-mobile-activity-dialog-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .calendar-mobile-activity-dialog-header h2 {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.15;
+    }
+
+    .calendar-mobile-activity-close {
+        flex: 0 0 auto;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: transparent;
+        color: #fff;
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+
+    .calendar-mobile-activity-dialog-content {
+        margin: 0 !important;
+        cursor: default !important;
+    }
+
+    .calendar-mobile-activity-dialog-content:hover {
+        transform: none !important;
+    }
+}
+
+body.calendar-mobile-activity-open {
+    overflow: hidden;
+}
+
+/* v11 — textes de la semaine mobile encore plus compacts, sans couper les libellés. */
+@media (max-width: 650px) {
+    .calendar-large-week-days .calendar-activity.calendar-activity-compact .calendar-activity-header h3 {
+        font-size: .34rem !important;
+        line-height: 1.05 !important;
+        -webkit-line-clamp: 3 !important;
+        overflow-wrap: break-word !important;
+        word-break: normal !important;
+    }
+
+    .calendar-large-week-days .calendar-saturday-label {
+        font-size: .27rem !important;
+        line-height: 1.05 !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        overflow-wrap: break-word !important;
+        word-break: normal !important;
+        padding: 2px !important;
+    }
+}
+
+
+/* v12 : sur mobile, l’étoile d’événement passe sur sa propre ligne afin de préserver le titre. */
+@media (max-width: 650px) {
+    .calendar-large-week-days .calendar-activity-compact .calendar-activity-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 1px !important;
+        width: 100% !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-compact .calendar-activity-header h3 {
+        order: 1 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .calendar-large-week-days .calendar-activity-compact .calendar-event-badge {
+        order: 2 !important;
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        line-height: 1 !important;
+        text-align: center !important;
+        font-size: .3rem !important;
+        margin-top: 1px !important;
+    }
+}

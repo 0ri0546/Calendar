@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260909-08";
+import { supabase } from "./supabase.js?v=20260909-18";
 
 const eventsContainer = document.getElementById("events-list");
 const eventsPeriod = document.getElementById("events-period");

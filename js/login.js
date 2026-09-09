@@ -1,4 +1,4 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-08";
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-18";
 
 const googleButton = document.getElementById("google-login");
 
