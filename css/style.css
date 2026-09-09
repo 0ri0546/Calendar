@@ -3457,3 +3457,9 @@ body.events-modal-open { overflow: hidden; }
     .friend-card { grid-template-columns: auto 1fr; }
     .friend-whatsapp { grid-column: 2; justify-self: start; }
 }
+
+.profile-phone-help {
+    color: var(--muted);
+    font-size: .74rem;
+    line-height: 1.4;
+}
