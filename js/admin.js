@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260909-27";
+import { supabase } from "./supabase.js?v=20260909-28";
 
 
 function getAvatarDisplayUrl(url) {
@@ -9,7 +9,7 @@ function getAvatarDisplayUrl(url) {
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${Date.now()}`;
 }
-import { showUserError } from "./ui-messages.js?v=20260909-27";
+import { showUserError } from "./ui-messages.js?v=20260909-28";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");
@@ -22,12 +22,23 @@ const openAdminLogsButton = document.getElementById("open-admin-logs");
 const closeAdminLogsButton = document.getElementById("close-admin-logs");
 const adminLogsModal = document.getElementById("admin-logs-modal");
 
-// Sections administrateur repliables.
+// Sections administrateur repliables : toutes fermées par défaut.
 document.querySelectorAll(".admin-section-toggle").forEach(button => {
+    const section = button.closest(".admin-collapsible");
+    const contentId = button.getAttribute("aria-controls");
+    const content = contentId ? document.getElementById(contentId) : section?.querySelector(".admin-section-content");
+
+    button.setAttribute("aria-expanded", "false");
+    section?.classList.remove("is-open");
+    if (content) content.hidden = true;
+
     button.addEventListener("click", () => {
         const expanded = button.getAttribute("aria-expanded") === "true";
-        button.setAttribute("aria-expanded", String(!expanded));
-        button.closest(".admin-collapsible")?.classList.toggle("is-open", !expanded);
+        const nextExpanded = !expanded;
+
+        button.setAttribute("aria-expanded", String(nextExpanded));
+        section?.classList.toggle("is-open", nextExpanded);
+        if (content) content.hidden = !nextExpanded;
     });
 });
 

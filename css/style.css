@@ -3130,8 +3130,9 @@ body.events-modal-open { overflow: hidden; }
     transition: transform .18s ease;
 }
 
-.admin-collapsible:not(.is-open) .admin-section-content {
-    display: none;
+.admin-collapsible:not(.is-open) .admin-section-content,
+.admin-section-content[hidden] {
+    display: none !important;
 }
 
 .admin-collapsible.is-open .admin-section-chevron {
