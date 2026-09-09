@@ -1056,6 +1056,7 @@ body:has(#google-login) main {
     .site-brand-text span { display: none; }
     #auth-menu > a,
     #auth-menu > button { padding: 8px 8px; font-size: .75rem; }
+    .auth-user span:not(.auth-avatar) { display: none; }
 
     main { padding: 26px 0 52px; }
     .hero-copy { padding: 28px 22px; }
@@ -1490,10 +1491,7 @@ body.admin-logs-open {
     box-shadow: none !important;
 }
 
-/* ==================================================
-   MENU UTILISATEUR
-   ================================================== */
-
+/* Menu utilisateur — V3 recovery */
 .auth-user-menu {
     position: relative;
 }
@@ -1573,16 +1571,10 @@ body.admin-logs-open {
     background: transparent;
 }
 
-/* Le pseudo reste visible : c'est lui qui ouvre le menu. */
 @media (max-width: 650px) {
     .auth-user {
         min-height: 30px;
         padding: 2px 7px;
-        background: transparent;
-    }
-
-    .auth-user span:not(.auth-user-arrow) {
-        display: inline;
     }
 
     .auth-dropdown {

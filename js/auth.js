@@ -8,8 +8,18 @@ function getAvatarDisplayUrl(url) {
     return `${url}${separator}v=${Date.now()}`;
 }
 
-import { supabase, SITE_URL } from "./supabase.js";
-import { initNotifications } from "./notifications.js";
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-02";
+import { initNotifications } from "./notifications.js?v=20260909-02";
+
+function getAvatarDisplayUrl(url) {
+    if (!url) {
+        return url;
+    }
+
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}v=${Date.now()}`;
+}
+
 
 const authMenu = document.getElementById("auth-menu");
 
@@ -41,7 +51,7 @@ function renderLoggedOut() {
 }
 
 function renderLoggedIn(profile, user) {
-    const pseudo = profile.pseudo || user.email || "Utilisateur";
+    const pseudo = profile?.pseudo || user.email || "Utilisateur";
 
     const userWrapper = document.createElement("div");
     userWrapper.className = "auth-user-menu";
@@ -53,7 +63,7 @@ function renderLoggedIn(profile, user) {
     userButton.setAttribute("aria-expanded", "false");
     userButton.setAttribute("aria-label", `Ouvrir le menu de ${pseudo}`);
 
-    if (profile.avatar_url) {
+    if (profile?.avatar_url) {
         const avatar = document.createElement("img");
         avatar.src = getAvatarDisplayUrl(profile.avatar_url);
         avatar.alt = "";
@@ -78,22 +88,21 @@ function renderLoggedIn(profile, user) {
 
     const profileLink = createLink("Profil", siteUrl("pages/profile.html"));
     profileLink.setAttribute("role", "menuitem");
-
-    const logoutButton = createButton("Déconnexion", "logout-button");
-    logoutButton.setAttribute("role", "menuitem");
-
     menu.appendChild(profileLink);
 
-    if (profile.role === "admin") {
+    if (profile?.role === "admin") {
         const adminLink = createLink("Administration", siteUrl("pages/admin.html"));
         adminLink.setAttribute("role", "menuitem");
         menu.appendChild(adminLink);
     }
 
+    const logoutButton = createButton("Déconnexion", "logout-button");
+    logoutButton.setAttribute("role", "menuitem");
     menu.appendChild(logoutButton);
-    userWrapper.append(userButton, menu);
 
+    userWrapper.append(userButton, menu);
     authMenu.replaceChildren(userWrapper);
+
     initNotifications(authMenu, user);
 
     function closeMenu() {
@@ -101,24 +110,20 @@ function renderLoggedIn(profile, user) {
         userButton.setAttribute("aria-expanded", "false");
     }
 
-    function toggleMenu(event) {
+    userButton.addEventListener("click", event => {
         event.stopPropagation();
-        const isOpen = !menu.hidden;
-        menu.hidden = isOpen;
-        userButton.setAttribute("aria-expanded", String(!isOpen));
-    }
+        const willOpen = menu.hidden;
+        menu.hidden = !willOpen;
+        userButton.setAttribute("aria-expanded", String(willOpen));
+    });
 
-    userButton.addEventListener("click", toggleMenu);
     menu.addEventListener("click", event => event.stopPropagation());
-
     document.addEventListener("click", closeMenu);
     document.addEventListener("keydown", event => {
         if (event.key === "Escape") {
             closeMenu();
         }
     });
-
-    profileLink.addEventListener("click", closeMenu);
 
     logoutButton.addEventListener("click", async () => {
         logoutButton.disabled = true;
@@ -164,6 +169,14 @@ async function updateAuthUI() {
 
     if (profileError) {
         console.error("Erreur récupération profil :", profileError);
+        renderLoggedIn(
+            {
+                pseudo: user.user_metadata?.full_name || user.email || "Utilisateur",
+                avatar_url: null,
+                role: "member"
+            },
+            user
+        );
         return;
     }
 
