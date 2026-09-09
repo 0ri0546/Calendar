@@ -17,3 +17,6 @@ Database already updated:
 - replica identity FULL for realtime UPDATE/DELETE support
 
 The patch is designed to be merged into the current site without replacing the existing calendar.js.
+
+
+V3 fixes: admin logs use the get_admin_logs SECURITY DEFINER RPC; mini-calendar activity cells stay flat with white dots; participant names are member tags; event markers use a star; compact calendar cards have more vertical spacing; notification bell stays sober when there are no unread notifications.

@@ -198,19 +198,17 @@ async function loadAdminLogs() {
     if (!adminLogsList) return;
     adminLogsList.textContent = "Chargement du journal...";
 
-    const { data, error } = await supabase
-        .from("admin_logs")
-        .select("id, actor_id, action, target_type, target_id, details, created_at, profiles:actor_id(pseudo)")
-        .order("created_at", { ascending: false })
-        .limit(100);
+    const { data, error } = await supabase.rpc("get_admin_logs");
 
     if (error) {
         console.error("Erreur récupération journal admin :", error);
-        adminLogsList.textContent = "Impossible de charger le journal administrateur.";
+        adminLogsList.textContent =
+            "Impossible de charger le journal administrateur.";
         return;
     }
 
     adminLogsList.replaceChildren();
+
     if (!data?.length) {
         const empty = document.createElement("p");
         empty.textContent = "Aucune action enregistrée.";
@@ -224,24 +222,35 @@ async function loadAdminLogs() {
 
         const heading = document.createElement("div");
         heading.className = "admin-log-heading";
+
         const action = document.createElement("strong");
         action.textContent = ADMIN_ACTION_LABELS[log.action] ?? log.action;
+
         const date = document.createElement("time");
         date.dateTime = log.created_at;
         date.textContent = new Date(log.created_at).toLocaleString("fr-FR");
+
         heading.append(action, date);
 
         const meta = document.createElement("p");
-        meta.textContent = `${log.profiles?.pseudo ?? "Administrateur inconnu"} · ${log.target_type}${log.target_id ? ` · ${log.target_id}` : ""}`;
+        meta.textContent =
+            `${log.actor_pseudo ?? "Administrateur inconnu"} · ${log.target_type}` +
+            (log.target_id ? ` · ${log.target_id}` : "");
 
         article.append(heading, meta);
 
-        if (log.details && typeof log.details === "object" && Object.keys(log.details).length) {
+        if (
+            log.details &&
+            typeof log.details === "object" &&
+            Object.keys(log.details).length
+        ) {
             const details = document.createElement("details");
             const summary = document.createElement("summary");
             summary.textContent = "Voir les détails";
+
             const pre = document.createElement("pre");
             pre.textContent = JSON.stringify(log.details, null, 2);
+
             details.append(summary, pre);
             article.appendChild(details);
         }
@@ -391,11 +400,14 @@ async function loadProposals() {
             article.appendChild(location);
         }
 
-        const eventInfo = document.createElement("p");
-        eventInfo.textContent = activity.is_event
-            ? "Événement important : Oui"
-            : "Événement important : Non";
-        article.appendChild(eventInfo);
+        if (activity.is_event) {
+            const eventInfo = document.createElement("p");
+            eventInfo.className = "admin-event-marker";
+            eventInfo.textContent = "⭐";
+            eventInfo.title = "Événement important";
+            eventInfo.setAttribute("aria-label", "Événement important");
+            article.appendChild(eventInfo);
+        }
 
         if (activity.image_url) {
             const image = document.createElement("img");
@@ -580,11 +592,14 @@ async function loadApprovedActivities() {
             article.appendChild(location);
         }
 
-        const eventInfo = document.createElement("p");
-        eventInfo.textContent = activity.is_event
-            ? "Événement important : Oui"
-            : "Événement important : Non";
-        article.appendChild(eventInfo);
+        if (activity.is_event) {
+            const eventInfo = document.createElement("p");
+            eventInfo.className = "admin-event-marker";
+            eventInfo.textContent = "⭐";
+            eventInfo.title = "Événement important";
+            eventInfo.setAttribute("aria-label", "Événement important");
+            article.appendChild(eventInfo);
+        }
 
         if (activity.image_url) {
             const image = document.createElement("img");
@@ -849,7 +864,12 @@ function openEditActivityForm(activity) {
     eventInput.checked = Boolean(activity.is_event);
 
     eventLabel.appendChild(eventInput);
-    eventLabel.appendChild(document.createTextNode(" Événement important"));
+
+    const eventText = document.createElement("span");
+    eventText.textContent = "⭐";
+    eventText.title = "Marquer cette activité comme événement important";
+    eventText.setAttribute("aria-label", "Événement important");
+    eventLabel.appendChild(eventText);
     form.appendChild(eventLabel);
 
     if (activity.image_url) {

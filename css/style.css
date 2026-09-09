@@ -1030,11 +1030,11 @@ body:has(#google-login) main {
 .calendar-mini-activity-dot {
     position: absolute;
     left: 50%;
-    bottom: 3px;
-    width: 5px;
-    height: 5px;
+    bottom: 2px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: var(--brand);
+    background: #fff;
     transform: translateX(-50%);
     pointer-events: none;
 }
@@ -1117,7 +1117,7 @@ body:has(#google-login) main {
 
 /* Les pastilles des mini-calendriers sont volontairement très contrastées. */
 .calendar-mini-day.has-activity {
-    background: rgba(93,61,55,.20);
+    background: transparent;
     color: #fff;
 }
 
@@ -1130,12 +1130,13 @@ body:has(#google-login) main {
 
 /* Cadre de la semaine actuellement affichée dans chaque mini-calendrier. */
 .calendar-mini-day.is-selected-week {
-    background: rgba(93,61,55,.42);
+    background: rgba(93,61,55,.16);
+    border: 1px solid rgba(93,61,55,.75);
     border-radius: 6px;
 }
 
 .calendar-mini-day.is-selected-week.has-activity {
-    background: var(--brand);
+    background: rgba(93,61,55,.16);
 }
 
 /* Jour actuel : même langage visuel que la DA du samedi, sans surcharge. */
@@ -1248,4 +1249,68 @@ body:has(#google-login) main {
     .calendar-week-navigation button,
     .calendar-today-button { padding: 9px 13px; }
     .admin-log-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
+
+/* V3 — respiration verticale des cartes condensées */
+.calendar-activity-details {
+    gap: 7px;
+}
+.calendar-activity-details .calendar-availability {
+    margin-top: 3px !important;
+}
+.calendar-activity-details .calendar-queue-summary {
+    margin-top: 2px !important;
+}
+.calendar-activity-description {
+    margin-top: 14px;
+}
+.calendar-participants {
+    margin-top: 16px;
+}
+
+/* Participants : tags façon cartes de membres. */
+.calendar-participant-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.calendar-participant-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 9px;
+    border: 1px solid rgba(93,61,55,.7);
+    border-radius: 7px;
+    background: #241b1a;
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+/* Événement : une étoile suffit visuellement. */
+.calendar-event-badge,
+.admin-event-marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px 6px;
+    border: 1px solid rgba(93,61,55,.7);
+    border-radius: 7px;
+    background: var(--brand);
+    color: #fff;
+}
+.admin-event-marker {
+    width: fit-content;
+    margin: 8px 0;
+}
+
+/* Cloche : aucun changement de fond au survol si tout est lu. */
+.notification-button:not(.has-unread):hover {
+    background: var(--surface-2);
+}
+.notification-button.has-unread:hover {
+    background: var(--brand);
 }

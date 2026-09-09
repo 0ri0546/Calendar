@@ -296,10 +296,12 @@ function createParticipantsElement(activity, participants) {
         return container;
     }
 
-    const list = document.createElement("ul");
+    const list = document.createElement("div");
+    list.className = "calendar-participant-tags";
 
     for (const participant of participants) {
-        const item = document.createElement("li");
+        const item = document.createElement("span");
+        item.className = "calendar-participant-tag";
         item.textContent = participant.profiles?.pseudo ?? "Utilisateur";
         list.appendChild(item);
     }
@@ -460,7 +462,9 @@ function createActivityElement(activity, participants, followers, currentUser, f
     if (activity.is_event) {
         const badge = document.createElement("span");
         badge.className = "calendar-event-badge";
-        badge.textContent = "Événement";
+        badge.textContent = "⭐";
+        badge.title = "Activité marquée comme événement important";
+        badge.setAttribute("aria-label", "Événement important");
         header.appendChild(badge);
     }
 
