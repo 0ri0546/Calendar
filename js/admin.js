@@ -1,4 +1,14 @@
 import { supabase } from "./supabase.js";
+
+
+function getAvatarDisplayUrl(url) {
+    if (!url) {
+        return url;
+    }
+
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}v=${Date.now()}`;
+}
 import { showUserError } from "./ui-messages.js";
 
 const membersList = document.getElementById("members-list");
@@ -81,7 +91,7 @@ async function loadMembers(currentUser) {
 
         if (member.avatar_url) {
             const avatar = document.createElement("img");
-            avatar.src = member.avatar_url;
+            avatar.src = getAvatarDisplayUrl(member.avatar_url);
             avatar.alt = `Photo de profil de ${member.pseudo}`;
             avatar.width = 50;
             avatar.height = 50;

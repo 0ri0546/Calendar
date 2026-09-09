@@ -1,3 +1,13 @@
+
+function getAvatarDisplayUrl(url) {
+    if (!url) {
+        return url;
+    }
+
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}v=${Date.now()}`;
+}
+
 import { supabase, SITE_URL } from "./supabase.js";
 import { initNotifications } from "./notifications.js";
 
@@ -38,7 +48,7 @@ function renderLoggedIn(profile, user) {
 
     if (profile.avatar_url) {
         const avatar = document.createElement("img");
-        avatar.src = profile.avatar_url;
+        avatar.src = getAvatarDisplayUrl(profile.avatar_url);
         avatar.alt = `Photo de profil de ${pseudo}`;
         avatar.className = "auth-avatar";
         userContainer.appendChild(avatar);

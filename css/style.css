@@ -1481,3 +1481,12 @@ body.admin-logs-open {
 .calendar-week-day.is-special-saturday {
     /* style du samedi principal conservé */
 }
+
+/* Le samedi reste une case normale hors semaine sélectionnée.
+   S'il appartient à la semaine affichée, il reprend le cadre de cette semaine. */
+.calendar-mini-day.is-selected-week.is-special-saturday {
+    border: 1px solid rgba(93,61,55,.82) !important;
+    border-radius: 7px;
+    background: transparent !important;
+    box-shadow: none !important;
+}

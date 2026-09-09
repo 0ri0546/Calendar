@@ -24,6 +24,15 @@ const avatarPreviewArrow =
 const message =
     document.getElementById("profile-message");
 
+function getAvatarDisplayUrl(url) {
+    if (!url) {
+        return url;
+    }
+
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}v=${Date.now()}`;
+}
+
 
 // ==================================================
 // UTILISATEUR CONNECTÉ
@@ -105,7 +114,7 @@ async function loadProfile() {
     // Avatar actuel
     if (profile.avatar_url) {
 
-        avatar.src = profile.avatar_url;
+        avatar.src = getAvatarDisplayUrl(profile.avatar_url);
 
     }
 
@@ -387,7 +396,7 @@ form.addEventListener(
             // Mettre à jour l'image actuelle
             if (avatarUrl) {
 
-                avatar.src = avatarUrl;
+                avatar.src = getAvatarDisplayUrl(avatarUrl);
 
             }
 
