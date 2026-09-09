@@ -1,5 +1,5 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-03";
-import { initNotifications } from "./notifications.js?v=20260909-03";
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-04";
+import { initNotifications } from "./notifications.js?v=20260909-04";
 
 function getAvatarDisplayUrl(url) {
     if (!url) {
@@ -10,8 +10,6 @@ function getAvatarDisplayUrl(url) {
     return `${url}${separator}v=${Date.now()}`;
 }
 
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-03";
-import { initNotifications } from "./notifications.js?v=20260909-03";
 
 
 const authMenu = document.getElementById("auth-menu");

@@ -1,5 +1,5 @@
-import { supabase } from "./supabase.js?v=20260909-03";
-import { showUserError } from "./ui-messages.js?v=20260909-03";
+import { supabase } from "./supabase.js?v=20260909-04";
+import { showUserError } from "./ui-messages.js?v=20260909-04";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
