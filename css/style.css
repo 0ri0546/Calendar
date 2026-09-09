@@ -1582,3 +1582,18 @@ body.admin-logs-open {
         min-width: 160px;
     }
 }
+
+/* Profil — cadre transparent, y compris au survol */
+#auth-menu > button.auth-user,
+#auth-menu > button.auth-user:hover,
+#auth-menu > button.auth-user[aria-expanded="true"] {
+    background: transparent !important;
+    border: 1px solid rgba(93,61,55,.82) !important;
+    box-shadow: none !important;
+}
+
+#auth-menu > button.auth-user:hover,
+#auth-menu > button.auth-user[aria-expanded="true"] {
+    border-color: rgba(93,61,55,1) !important;
+}
+

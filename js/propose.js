@@ -1,5 +1,5 @@
-import { supabase } from "./supabase.js?v=20260909-05";
-import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260909-05";
+import { supabase } from "./supabase.js?v=20260909-06";
+import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260909-06";
 
 const form = document.getElementById("activity-form");
 const message = document.getElementById("activity-form-message");
