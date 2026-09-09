@@ -1,3 +1,5 @@
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-03";
+import { initNotifications } from "./notifications.js?v=20260909-03";
 
 function getAvatarDisplayUrl(url) {
     if (!url) {
@@ -8,17 +10,8 @@ function getAvatarDisplayUrl(url) {
     return `${url}${separator}v=${Date.now()}`;
 }
 
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-02";
-import { initNotifications } from "./notifications.js?v=20260909-02";
-
-function getAvatarDisplayUrl(url) {
-    if (!url) {
-        return url;
-    }
-
-    const separator = url.includes("?") ? "&" : "?";
-    return `${url}${separator}v=${Date.now()}`;
-}
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-03";
+import { initNotifications } from "./notifications.js?v=20260909-03";
 
 
 const authMenu = document.getElementById("auth-menu");
