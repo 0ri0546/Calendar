@@ -1609,3 +1609,26 @@ body.admin-logs-open {
     box-shadow: none !important;
 }
 
+/* Mobile : la semaine reste horizontale comme sur desktop */
+@media (max-width: 768px) {
+    .calendar-week-grid {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(118px, 1fr)) !important;
+        gap: 7px !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .calendar-week-grid > .calendar-day {
+        min-width: 118px;
+    }
+
+    /* Le conteneur garde sa largeur d'écran ; seul le contenu de la semaine
+       peut défiler horizontalement. */
+    .calendar-week {
+        overflow: hidden;
+    }
+}
+

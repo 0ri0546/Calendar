@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260909-07";
+import { supabase } from "./supabase.js?v=20260909-08";
 
 
 function getAvatarDisplayUrl(url) {
@@ -9,7 +9,7 @@ function getAvatarDisplayUrl(url) {
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${Date.now()}`;
 }
-import { showUserError } from "./ui-messages.js?v=20260909-07";
+import { showUserError } from "./ui-messages.js?v=20260909-08";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");
