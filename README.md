@@ -1,22 +1,16 @@
-# Notifications in-site
+# Calendar — Étape 1 + responsive + événements
 
-Patch for the Calendar project.
+Version v4 — cache 20260909-22.
 
-Files:
-- Calendar/js/auth.js — integrates the notification bell into the existing auth menu.
-- Calendar/js/notifications.js — notification loading, unread count, mark-read RPCs and Supabase Realtime.
-- Calendar/css/style.css — notification UI styles.
-
-Database already updated:
-- notification_events.read_at
-- RLS: users can only SELECT their own notifications
-- mark_notification_read(uuid)
-- mark_all_notifications_read()
-- notification indexes
-- notification_events added to supabase_realtime
-- replica identity FULL for realtime UPDATE/DELETE support
-
-The patch is designed to be merged into the current site without replacing the existing calendar.js.
+Corrections :
+- bouton de fermeture de la modale événement centré avec flex + dimensions fixes ;
+- grille événements mobile conservée en 2 colonnes ;
+- cartes compactées pour permettre d'afficher une liste pouvant contenir jusqu'à 10 événements par section sur mobile ;
+- titre et détails des cartes protégés contre les débordements ;
+- image de la modale mobile plus haute.
 
 
-V3 fixes: admin logs use the get_admin_logs SECURITY DEFINER RPC; mini-calendar activity cells stay flat with white dots; participant names are member tags; event markers use a star; compact calendar cards have more vertical spacing; notification bell stays sober when there are no unread notifications.
+Version responsive : 20260909-23. Page Événements : grille 4 colonnes desktop, 1 colonne mobile, sans limite artificielle du nombre d'événements rendus.
+
+
+Correction 20260909-26 : image de la modale mobile du calendrier non contrainte par les anciennes règles de 34px.

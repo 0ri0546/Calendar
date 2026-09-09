@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260909-18";
+import { supabase } from "./supabase.js?v=20260909-27";
 
 
 // ==================================================

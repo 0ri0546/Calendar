@@ -7,7 +7,7 @@
 
     <title>Administration - Calendar</title>
 
-    <link rel="stylesheet" href="../css/style.css?v=20260909-18">
+    <link rel="stylesheet" href="../css/style.css?v=20260909-27">
 </head>
 
 <body>
@@ -28,25 +28,28 @@
 
         <h1>Administration</h1>
 
-        <section id="admin-content">
-
-            <h2>Membres</h2>
-
-            <div id="members-list">
+        <section id="admin-content" class="admin-collapsible is-open">
+            <button class="admin-section-toggle" type="button" aria-expanded="true" aria-controls="members-list">
+                <span>Membres</span><span class="admin-section-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div class="admin-section-content" id="members-list">
                 <p>Chargement des membres...</p>
             </div>
-
             <p id="admin-message"></p>
-
         </section>
 
-        <section id="admin-logs-section">
+        <section id="admin-logs-section" class="admin-collapsible">
+            <button class="admin-section-toggle" type="button" aria-expanded="false" aria-controls="admin-logs-panel">
+                <span>Journal administrateur</span><span class="admin-section-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="admin-logs-panel" class="admin-section-content">
             <div class="admin-logs-trigger">
                 <div>
                     <h2>Journal administrateur</h2>
                     <p>Consultez les dernières actions effectuées sur l'administration.</p>
                 </div>
                 <button id="open-admin-logs" type="button">Voir le journal</button>
+            </div>
             </div>
         </section>
 
@@ -66,30 +69,28 @@
             </section>
         </div>
 
-        <section id="proposals-section">
-
-            <h2>Propositions</h2>
-
-            <div id="proposals-list">
+        <section id="proposals-section" class="admin-collapsible is-open">
+            <button class="admin-section-toggle" type="button" aria-expanded="true" aria-controls="proposals-list">
+                <span>Propositions</span><span class="admin-section-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div class="admin-section-content" id="proposals-list">
                 <p>Chargement des propositions...</p>
             </div>
-
         </section>
 
-        <section id="activities-section">
-
-            <h2>Activités approuvées</h2>
-
-            <div id="activities-list">
+        <section id="activities-section" class="admin-collapsible is-open">
+            <button class="admin-section-toggle" type="button" aria-expanded="true" aria-controls="activities-list">
+                <span>Activités approuvées</span><span class="admin-section-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div class="admin-section-content" id="activities-list">
                 <p>Chargement des activités...</p>
             </div>
-
         </section>
 
     </main>
 
 
-    <script type="module" src="../js/auth.js?v=20260909-18"></script>
+    <script type="module" src="../js/auth.js?v=20260909-27"></script>
     <footer class="site-footer">
     <div class="footer-main">
         <div class="footer-brand">
@@ -105,7 +106,7 @@
     <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
 </footer>
 
-<script type="module" src="../js/admin.js?v=20260909-18"></script>
+<script type="module" src="../js/admin.js?v=20260909-27"></script>
 
 </body>
 

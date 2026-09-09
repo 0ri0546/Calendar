@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Griffy&display=swap");
+
 :root {
     --brand: #5d3d37;
     --brand-light: #765149;
@@ -17,6 +19,7 @@
     --warning: #e5c98f;
     --radius: 16px;
     --shadow: none;
+    --display-font: "Griffy", Georgia, serif;
 }
 
 * { box-sizing: border-box; }
@@ -28,13 +31,83 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--bg);
+    position: relative;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 18% 18%, rgba(126, 92, 124, .28), transparent 32%),
+        radial-gradient(circle at 82% 34%, rgba(93, 61, 55, .22), transparent 34%),
+        linear-gradient(155deg, #080f20 0%, #17142a 38%, #2b1d28 72%, #39201e 100%);
+    background-attachment: fixed;
     color: var(--text);
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.5;
 }
 
+/* Ciel étoilé discret : les surfaces du site restent lisibles par-dessus. */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .72;
+    background-image:
+        radial-gradient(circle at 8% 16%, rgba(255,255,255,.85) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 17% 42%, rgba(255,255,255,.58) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 29% 11%, rgba(255,255,255,.72) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 38% 31%, rgba(255,255,255,.48) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 49% 13%, rgba(255,255,255,.72) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 58% 39%, rgba(255,255,255,.55) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 67% 19%, rgba(255,255,255,.8) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 76% 48%, rgba(255,255,255,.5) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 86% 14%, rgba(255,255,255,.72) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 94% 36%, rgba(255,255,255,.58) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 12% 72%, rgba(255,255,255,.5) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 26% 86%, rgba(255,255,255,.7) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 44% 67%, rgba(255,255,255,.45) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 61% 82%, rgba(255,255,255,.7) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 73% 69%, rgba(255,255,255,.52) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 89% 84%, rgba(255,255,255,.65) 0 1px, transparent 1.8px);
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(4, 5, 12, .28) 100%);
+}
+
 body::selection { background: var(--brand); color: #fff; }
+
+/* Griffy : identité visuelle réservée aux grands titres et au header. */
+h1,
+.hero-copy h1,
+.next-saturday-card h2,
+.events-section > h2,
+.site-brand-text strong,
+.site-links a,
+.site-links button,
+#auth-menu > a,
+#auth-menu > button {
+    font-family: var(--display-font);
+    font-weight: 400;
+}
+
+/* Les informations, dates, heures, nombres et détails restent dans la police normale. */
+.calendar-day > h2,
+.calendar-activity,
+.event-card,
+.event-card h3,
+.event-card-details,
+.event-card-description,
+input,
+textarea,
+select,
+button:not(.site-links button) {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
 img { max-width: 100%; }
 
@@ -681,29 +754,107 @@ button:not(.icon-button):hover { background: var(--brand-light); transform: tran
 
 .events-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
 }
 
 .event-card {
     overflow: hidden;
+    padding: 0;
+    width: 100%;
+    text-align: left;
     background: var(--surface-2);
     border: 1px solid rgba(93,61,55,.62);
     border-radius: 15px;
+    color: var(--text);
+    font: inherit;
+    transition: border-color .15s ease, transform .15s ease, background .15s ease;
+}
+
+.event-card:hover,
+.event-card:focus-visible {
+    border-color: rgba(93,61,55,.95);
+    background: var(--surface-3);
+    transform: translateY(-2px);
 }
 
 .event-card-past { opacity: .78; }
 .event-card-image { display: block; width: 100%; height: 170px; object-fit: cover; }
 .event-card-content { padding: 16px; }
 .event-card-heading { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
-.event-card-details { display: grid; gap: 3px; margin-top: 11px; }
-.event-card-details p { margin: 0; color: var(--text-soft); font-size: .78rem; }
-.event-card-description { color: var(--muted); font-size: .8rem; }
+.event-card-heading h3 { margin: 0; font-family: inherit; font-size: 1rem; line-height: 1.2; }
+.event-card-details { display: grid; gap: 4px; margin-top: 11px; }
+.event-card-details p { margin: 0; color: var(--text-soft); font-size: .82rem; }
+.event-card-description { margin: 12px 0 0; color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; word-break: break-word; }
 .event-card-link { display: inline-block; margin-top: 12px; color: #e5d0ca; font-size: .8rem; font-weight: 900; }
 .events-empty { color: var(--muted); }
-
 .event-status-badge.past { background: #443735; }
 .event-status-badge.upcoming { background: var(--brand); }
+
+/* Détails de l'événement : ouverture au clic de la carte. */
+.events-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.events-modal[hidden] { display: none; }
+
+.events-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 5, 12, .78);
+}
+
+.events-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    background: var(--surface);
+    border: 1px solid var(--line-brand);
+    border-radius: 18px;
+}
+
+.events-modal-image {
+    display: block;
+    width: 100%;
+    max-height: 380px;
+    object-fit: cover;
+}
+
+.events-modal-content { padding: 22px; }
+.events-modal-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.events-modal-header h2 { margin: 0; font-family: var(--display-font); font-weight: 400; }
+.events-modal-close {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 1.2rem;
+    line-height: 1;
+    text-align: center;
+}
+.events-modal-details { display: grid; gap: 5px; margin: 18px 0 0; }
+.events-modal-details p { margin: 0; color: var(--text-soft); }
+.events-modal-description { margin: 18px 0 0; color: var(--text-soft); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.events-modal-link { display: inline-block; margin-top: 18px; color: #e5d0ca; font-weight: 800; }
 
 /* ==================================================
    FORMS / PROFILE / ADMIN
@@ -2504,5 +2655,521 @@ body.calendar-mobile-activity-open {
         text-align: center !important;
         font-size: .3rem !important;
         margin-top: 1px !important;
+    }
+}
+
+
+/* Étape 2 — grille événements : jusqu'à 10 cartes visibles par section. */
+@media (max-width: 950px) {
+    .events-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 650px) {
+    .events-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+    .events-section { padding: 12px; }
+    .event-card {
+        min-width: 0;
+        border-radius: 10px;
+    }
+    .event-card-image {
+        height: 105px;
+        min-height: 105px;
+    }
+    .event-card-content { padding: 8px; }
+    .event-card-heading { gap: 4px; }
+    .event-card-heading h3 {
+        min-width: 0;
+        font-size: .68rem;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+    .event-card-details { gap: 2px; margin-top: 6px; }
+    .event-card-details p {
+        font-size: .58rem;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+    .event-card-description,
+    .event-card-link { font-size: .62rem; }
+
+    .events-modal { padding: 10px; }
+    .events-modal-dialog { max-height: calc(100vh - 20px); border-radius: 13px; }
+    .events-modal-image { max-height: 55vh; min-height: 280px; }
+    .events-modal-content { padding: 15px; }
+    .events-modal-header { align-items: center; }
+    .events-modal-header h2 { min-width: 0; font-size: 1.25rem; overflow-wrap: anywhere; }
+    .events-modal-close {
+        flex: 0 0 34px;
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+        padding: 0;
+    }
+}
+
+body.events-modal-open { overflow: hidden; }
+
+
+/* =========================================================
+   RESPONSIVE FINAL — étape 2
+   Cette couche harmonise les petits écrans sans modifier la
+   logique du calendrier mobile déjà validée.
+   ========================================================= */
+@media (max-width: 1100px) {
+    .events-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 950px) {
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    main {
+        width: 100%;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .site-nav {
+        width: 100%;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .site-links {
+        max-width: 100%;
+        scrollbar-width: none;
+    }
+
+    .site-links::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hero-section {
+        min-width: 0;
+    }
+
+    .activity-form-section,
+    #admin-content,
+    #proposals-section,
+    #activities-section,
+    #profile-form,
+    .avatar-preview {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .events-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .event-card,
+    .event-card-content,
+    .event-card-heading,
+    .event-card-details {
+        min-width: 0;
+    }
+
+    .event-card-heading h3,
+    .event-card-details p,
+    .event-card-description {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .form-grid {
+        min-width: 0;
+    }
+
+    .form-field input,
+    .form-field textarea,
+    .form-field select {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .events-modal-dialog,
+    .admin-logs-dialog {
+        width: min(100%, 760px);
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 650px) {
+    main {
+        padding: 22px 12px 44px;
+    }
+
+    h1 {
+        font-size: clamp(1.65rem, 8vw, 2.2rem);
+        line-height: 1.05;
+        overflow-wrap: anywhere;
+    }
+
+    h2 {
+        overflow-wrap: anywhere;
+    }
+
+    .site-nav {
+        gap: 7px;
+        padding: 10px 10px 8px;
+    }
+
+    .site-links {
+        gap: 4px;
+        margin-right: 0;
+    }
+
+    .site-links a,
+    .site-links button {
+        white-space: nowrap;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .events-section {
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .event-card {
+        border-radius: 10px;
+    }
+
+    .event-card-image {
+        height: 115px;
+        min-height: 115px;
+    }
+
+    .event-card-content {
+        padding: 9px;
+    }
+
+    .event-card-heading {
+        gap: 6px;
+    }
+
+    .event-card-heading h3 {
+        font-size: .78rem;
+        line-height: 1.15;
+    }
+
+    .event-card-details p {
+        font-size: .68rem;
+        line-height: 1.2;
+    }
+
+    .event-card-description,
+    .event-card-link {
+        font-size: .68rem;
+        line-height: 1.25;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+
+    .form-field input,
+    .form-field textarea,
+    .form-field select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .form-field input[type="time"] {
+        font-size: .9rem;
+        padding-left: 10px;
+        padding-right: 8px;
+    }
+
+    .activity-form-section {
+        padding: 18px 14px;
+        border-radius: 14px;
+    }
+
+    .events-modal {
+        padding: 8px;
+    }
+
+    .events-modal-dialog {
+        width: 100%;
+        max-height: calc(100vh - 16px);
+        border-radius: 12px;
+    }
+
+    .events-modal-image {
+        max-height: 58vh;
+        min-height: 300px;
+        object-fit: cover;
+    }
+
+    .events-modal-content {
+        padding: 14px;
+    }
+
+    .events-modal-header {
+        gap: 8px;
+    }
+
+    .events-modal-header h2 {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .events-modal-close {
+        flex: 0 0 34px;
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #admin-content,
+    #proposals-section,
+    #activities-section,
+    #admin-logs-section {
+        width: 100%;
+    }
+
+    .admin-member,
+    .admin-logs-trigger,
+    .admin-logs-dialog-header {
+        min-width: 0;
+    }
+
+    .admin-logs-trigger {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .admin-logs-trigger button {
+        width: 100%;
+    }
+
+    .admin-logs-dialog {
+        width: calc(100% - 16px);
+        max-height: calc(100vh - 16px);
+        padding: 14px;
+    }
+
+    .avatar-preview {
+        width: 100%;
+        gap: 12px;
+    }
+
+    #profile-form button,
+    .activity-form button[type="submit"] {
+        width: 100%;
+    }
+
+    .footer-main {
+        gap: 16px;
+    }
+
+    .footer-links {
+        width: 100%;
+        gap: 8px 14px;
+        flex-wrap: wrap;
+    }
+
+    /* Évite qu'un texte très long casse la largeur de n'importe quelle carte. */
+    .card,
+    section,
+    article,
+    p,
+    li,
+    td,
+    th {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+}
+
+/* FINAL OVERRIDES — événements : 4 colonnes desktop, 2 colonnes mobile. */
+.events-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+/* L'image de la modale conserve son ratio : elle n'est plus recadrée en bandeau. */
+.events-modal-image {
+    display: block;
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 62vh !important;
+    object-fit: contain !important;
+    object-position: center;
+}
+
+@media (max-width: 950px) {
+    .events-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 650px) {
+    .events-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .event-card-image {
+        width: 100%;
+        height: auto !important;
+        min-height: 0 !important;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+    }
+
+    .events-modal-image {
+        width: 100%;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: 68vh !important;
+        object-fit: contain !important;
+    }
+}
+
+/* CORRECTION FINALE — image de la modale événement sur mobile.
+   On réserve une vraie zone haute à l'image et on affiche l'intégralité
+   de l'original sans recadrage. */
+@media (max-width: 650px) {
+    .events-modal-media {
+        width: 100%;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .events-modal-media .events-modal-image {
+        display: block;
+        width: 100% !important;
+        height: min(60vh, 520px) !important;
+        min-height: 260px !important;
+        max-height: 60vh !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        margin: 0 !important;
+    }
+}
+
+
+/* FIX — image complète dans la fenêtre de détails d'une activité sur mobile.
+   Les anciennes règles mobiles de .calendar-activity-image ne doivent pas
+   s'appliquer à la copie affichée dans la modale. */
+@media (max-width: 650px) {
+    .calendar-mobile-activity-dialog-content .calendar-activity-image {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        margin: 0 0 12px !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        border-radius: 7px !important;
+    }
+}
+
+
+/* ==================================================
+   ADMIN — sections déroulantes + textes robustes
+   ================================================== */
+.admin-collapsible {
+    overflow: hidden;
+}
+
+.admin-section-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-family: var(--display-font);
+    font-size: 1.2rem;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+}
+
+.admin-section-chevron {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line-brand);
+    border-radius: 7px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform .18s ease;
+}
+
+.admin-collapsible:not(.is-open) .admin-section-content {
+    display: none;
+}
+
+.admin-collapsible.is-open .admin-section-chevron {
+    transform: rotate(180deg);
+}
+
+.admin-collapsible .admin-section-content {
+    min-width: 0;
+    margin-top: 18px;
+}
+
+.admin-collapsible#admin-content,
+.admin-collapsible#proposals-section,
+.admin-collapsible#activities-section,
+.admin-collapsible#admin-logs-section {
+    padding-top: 18px;
+}
+
+.admin-proposal,
+.admin-activity,
+.admin-proposal p,
+.admin-activity p,
+.calendar-activity,
+.calendar-activity-description {
+    min-width: 0;
+}
+
+.admin-proposal p,
+.admin-activity p,
+.calendar-activity-description {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    max-width: 100%;
+}
+
+@media (max-width: 650px) {
+    .admin-section-toggle {
+        font-size: 1.05rem;
     }
 }
