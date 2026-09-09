@@ -1,5 +1,5 @@
-import { supabase } from "./supabase.js?v=20260909-04";
-import { showUserError } from "./ui-messages.js?v=20260909-04";
+import { supabase } from "./supabase.js?v=20260909-05";
+import { showUserError } from "./ui-messages.js?v=20260909-05";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
@@ -129,6 +129,11 @@ async function getCurrentUser() {
     const { data, error } = await supabase.auth.getUser();
 
     if (error) {
+        // Un visiteur non connecté n'a simplement pas de session.
+        if (error.name === "AuthSessionMissingError") {
+            return null;
+        }
+
         console.error("Erreur récupération utilisateur :", error);
         return null;
     }
@@ -217,8 +222,10 @@ async function loadFollowers(activityIds) {
         .order("followed_at", { ascending: true });
 
     if (error) {
-        console.error("Erreur récupération file d'attente :", error);
-        throw error;
+        // La file d'attente est secondaire : elle ne doit jamais empêcher
+        // le calendrier public de s'afficher.
+        console.warn("File d'attente indisponible :", error);
+        return [];
     }
 
     return data;

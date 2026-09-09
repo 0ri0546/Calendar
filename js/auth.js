@@ -1,5 +1,5 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-04";
-import { initNotifications } from "./notifications.js?v=20260909-04";
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-05";
+import { initNotifications } from "./notifications.js?v=20260909-05";
 
 function getAvatarDisplayUrl(url) {
     if (!url) {
@@ -141,7 +141,13 @@ async function updateAuthUI() {
     const { data, error } = await supabase.auth.getUser();
 
     if (error) {
+        if (error.name === "AuthSessionMissingError") {
+            renderLoggedOut();
+            return;
+        }
+
         console.error("Erreur récupération utilisateur :", error);
+        renderLoggedOut();
         return;
     }
 
