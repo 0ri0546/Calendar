@@ -664,10 +664,6 @@ button:not(.icon-button):hover { background: var(--brand-light); transform: tran
 
 .calendar-mini-day:hover { background: var(--surface-3); color: #fff; }
 .calendar-mini-day.has-activity { color: #fff; }
-.calendar-mini-day.is-special-saturday {
-    border: 0 !important;
-    box-shadow: none !important;
-}
 .calendar-mini-day.is-today { outline: 2px solid var(--brand); outline-offset: -2px; }
 
 /* ==================================================
@@ -1474,8 +1470,14 @@ body.admin-logs-open {
 
 .calendar-mini-day { background-color: transparent !important; }
 
-/* V4 — les samedis des mini-calendriers n'ont pas de cadre spécifique. */
+/* Les samedis des mini-calendriers restent des cases normales. */
 .calendar-mini-day.is-special-saturday {
     border: 0 !important;
     box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* Le samedi de la semaine visible garde son traitement propre au grand calendrier. */
+.calendar-week-day.is-special-saturday {
+    /* style du samedi principal conservé */
 }
