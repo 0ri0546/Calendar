@@ -1056,7 +1056,6 @@ body:has(#google-login) main {
     .site-brand-text span { display: none; }
     #auth-menu > a,
     #auth-menu > button { padding: 8px 8px; font-size: .75rem; }
-    .auth-user span:not(.auth-avatar) { display: none; }
 
     main { padding: 26px 0 52px; }
     .hero-copy { padding: 28px 22px; }
@@ -1489,4 +1488,103 @@ body.admin-logs-open {
     border-radius: 7px;
     background: transparent !important;
     box-shadow: none !important;
+}
+
+/* ==================================================
+   MENU UTILISATEUR
+   ================================================== */
+
+.auth-user-menu {
+    position: relative;
+}
+
+.auth-user {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 5px 9px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: #fff;
+    font-size: .84rem;
+    font-weight: 700;
+}
+
+.auth-user:hover,
+.auth-user[aria-expanded="true"] {
+    background: var(--surface-2);
+    border-color: rgba(93,61,55,.65);
+}
+
+.auth-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--brand);
+}
+
+.auth-user-arrow {
+    color: var(--muted);
+    font-size: .72rem;
+    line-height: 1;
+}
+
+.auth-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 1200;
+    min-width: 170px;
+    padding: 6px;
+    border: 1px solid var(--line-brand);
+    border-radius: 12px;
+    background: var(--surface-2);
+    box-shadow: none;
+}
+
+.auth-dropdown a,
+.auth-dropdown button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 38px;
+    padding: 9px 11px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-soft);
+    text-decoration: none;
+    text-align: left;
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.auth-dropdown a:hover,
+.auth-dropdown button:hover {
+    background: var(--brand);
+    color: #fff;
+}
+
+.auth-dropdown button:disabled {
+    background: transparent;
+}
+
+/* Le pseudo reste visible : c'est lui qui ouvre le menu. */
+@media (max-width: 650px) {
+    .auth-user {
+        padding: 4px 7px;
+    }
+
+    .auth-user span:not(.auth-user-arrow) {
+        display: inline;
+    }
+
+    .auth-dropdown {
+        right: 0;
+        min-width: 160px;
+    }
 }

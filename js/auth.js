@@ -43,35 +43,82 @@ function renderLoggedOut() {
 function renderLoggedIn(profile, user) {
     const pseudo = profile.pseudo || user.email || "Utilisateur";
 
-    const userContainer = document.createElement("span");
-    userContainer.className = "auth-user";
+    const userWrapper = document.createElement("div");
+    userWrapper.className = "auth-user-menu";
+
+    const userButton = document.createElement("button");
+    userButton.type = "button";
+    userButton.className = "auth-user";
+    userButton.setAttribute("aria-haspopup", "menu");
+    userButton.setAttribute("aria-expanded", "false");
+    userButton.setAttribute("aria-label", `Ouvrir le menu de ${pseudo}`);
 
     if (profile.avatar_url) {
         const avatar = document.createElement("img");
         avatar.src = getAvatarDisplayUrl(profile.avatar_url);
-        avatar.alt = `Photo de profil de ${pseudo}`;
+        avatar.alt = "";
         avatar.className = "auth-avatar";
-        userContainer.appendChild(avatar);
+        userButton.appendChild(avatar);
     }
 
     const pseudoElement = document.createElement("span");
     pseudoElement.textContent = pseudo;
-    userContainer.appendChild(pseudoElement);
+    userButton.appendChild(pseudoElement);
+
+    const arrow = document.createElement("span");
+    arrow.className = "auth-user-arrow";
+    arrow.textContent = "▾";
+    arrow.setAttribute("aria-hidden", "true");
+    userButton.appendChild(arrow);
+
+    const menu = document.createElement("div");
+    menu.className = "auth-dropdown";
+    menu.setAttribute("role", "menu");
+    menu.hidden = true;
 
     const profileLink = createLink("Profil", siteUrl("pages/profile.html"));
-    const logoutButton = createButton("Déconnexion", "logout-button");
+    profileLink.setAttribute("role", "menuitem");
 
-    authMenu.replaceChildren(userContainer);
-    initNotifications(authMenu, user);
-    authMenu.appendChild(profileLink);
+    const logoutButton = createButton("Déconnexion", "logout-button");
+    logoutButton.setAttribute("role", "menuitem");
+
+    menu.appendChild(profileLink);
 
     if (profile.role === "admin") {
-        authMenu.appendChild(
-            createLink("Administration", siteUrl("pages/admin.html"))
-        );
+        const adminLink = createLink("Administration", siteUrl("pages/admin.html"));
+        adminLink.setAttribute("role", "menuitem");
+        menu.appendChild(adminLink);
     }
 
-    authMenu.appendChild(logoutButton);
+    menu.appendChild(logoutButton);
+    userWrapper.append(userButton, menu);
+
+    authMenu.replaceChildren(userWrapper);
+    initNotifications(authMenu, user);
+
+    function closeMenu() {
+        menu.hidden = true;
+        userButton.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleMenu(event) {
+        event.stopPropagation();
+        const isOpen = !menu.hidden;
+        menu.hidden = isOpen;
+        userButton.setAttribute("aria-expanded", String(!isOpen));
+    }
+
+    userButton.addEventListener("click", toggleMenu);
+    menu.addEventListener("click", event => event.stopPropagation());
+
+    document.addEventListener("click", closeMenu);
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeMenu();
+        }
+    });
+
+    profileLink.addEventListener("click", closeMenu);
 
     logoutButton.addEventListener("click", async () => {
         logoutButton.disabled = true;
