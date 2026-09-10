@@ -4804,5 +4804,7 @@ button:not(.icon-button):active,
 }
 
 .calendar-day-presence-button[aria-busy="true"] {
-    pointer-events: none;
+    /* Le bouton reste cliquable pendant la synchronisation : les clics
+       rapides sont mis en file et la dernière intention gagne. */
+    pointer-events: auto;
 }
