@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>L'oise aux jeux - Calendrier</title>
-    <link rel="stylesheet" href="css/style.css?v=20260910-40">
+    <link rel="stylesheet" href="css/style.css?v=20260910-41">
 </head>
 <body>
 <header class="site-header">
@@ -38,6 +38,20 @@
         </aside>
     </section>
 
+    <section class="home-today-section" aria-labelledby="home-today-title">
+        <div class="home-today-header">
+            <div>
+                <span class="card-label">Aujourd’hui</span>
+                <h2 id="home-today-title">Activités prévues aujourd’hui</h2>
+                <p id="home-today-date" class="home-today-date">Chargement...</p>
+            </div>
+            <a class="home-today-calendar-link" href="pages/calendar.html">Voir le calendrier</a>
+        </div>
+        <div id="home-today-activities" class="home-today-activities">
+            <p class="home-today-empty">Chargement...</p>
+        </div>
+    </section>
+
     <section class="home-online-section" aria-labelledby="home-online-title">
         <div class="home-online-header">
             <div>
@@ -65,7 +79,8 @@
     </div>
     <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
 </footer>
-<script src="js/main.js?v=20260910-40"></script>
-<script type="module" src="js/auth.js?v=20260910-40"></script>
+<script src="js/main.js?v=20260910-41"></script>
+<script type="module" src="js/home.js?v=20260910-41"></script>
+<script type="module" src="js/auth.js?v=20260910-41"></script>
 </body>
 </html>

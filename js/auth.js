@@ -74,7 +74,6 @@ function renderLoggedIn(profile, user) {
     pseudoElement.textContent = pseudo;
     userButton.appendChild(pseudoElement);
 
-    
     const arrow = document.createElement("span");
     arrow.className = "auth-user-arrow";
     arrow.textContent = "▾";

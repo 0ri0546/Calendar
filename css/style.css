@@ -3789,3 +3789,151 @@ body.events-modal-open { overflow: hidden; }
         overflow-wrap: anywhere;
     }
 }
+
+/* ==================================================
+   ÉTAPE 12 — ACTIVITÉS DU JOUR SUR L'ACCUEIL
+   ================================================== */
+.home-today-section {
+    margin-top: 26px;
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+}
+
+.home-today-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 15px;
+}
+
+.home-today-header h2 {
+    margin: 2px 0 4px;
+}
+
+.home-today-header .card-label {
+    color: var(--muted);
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.home-today-date {
+    margin: 0;
+    color: var(--muted);
+    font-size: .76rem;
+    text-transform: capitalize;
+}
+
+.home-today-calendar-link {
+    flex: 0 0 auto;
+    padding: 8px 11px;
+    border: 1px solid var(--line-brand);
+    border-radius: 9px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: .7rem;
+    font-weight: 800;
+}
+
+.home-today-calendar-link:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.home-today-activities {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.home-today-activity {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color .15s ease, transform .15s ease, background .15s ease;
+}
+
+.home-today-activity:hover {
+    border-color: var(--line-brand);
+    background: var(--surface-3);
+    color: var(--text);
+    transform: translateY(-1px);
+}
+
+.home-today-activity-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.home-today-activity h3 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.home-today-event {
+    flex: 0 0 auto;
+    font-size: .8rem;
+}
+
+.home-today-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 10px;
+    color: var(--text-soft);
+    font-size: .7rem;
+}
+
+.home-today-type {
+    color: var(--text-soft);
+}
+
+.home-today-more {
+    margin-top: auto;
+    color: var(--muted);
+    font-size: .65rem;
+    font-weight: 800;
+}
+
+.home-today-empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: .78rem;
+}
+
+@media (max-width: 900px) {
+    .home-today-activities {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .home-today-section {
+        padding: 17px;
+    }
+
+    .home-today-header {
+        flex-direction: column;
+        gap: 11px;
+    }
+
+    .home-today-calendar-link {
+        align-self: flex-start;
+    }
+
+    .home-today-activities {
+        grid-template-columns: 1fr;
+    }
+}
