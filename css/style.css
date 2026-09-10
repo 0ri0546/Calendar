@@ -4806,3 +4806,54 @@ button:not(.icon-button):active,
 .calendar-day-presence-button[aria-busy="true"] {
     pointer-events: none;
 }
+
+
+/* MOBILE — CHAMPS DESCRIPTION PLUS GRANDS */
+@media (max-width: 650px) {
+    /* Création d'une activité : descriptions plus confortables à saisir. */
+    #activity-description,
+    #free-activity-description {
+        min-height: 220px !important;
+    }
+
+    /* Administration : même confort lors de la modification d'une activité. */
+    .admin-edit-form textarea {
+        min-height: 220px !important;
+    }
+}
+
+
+/* Pages légales */
+.legal-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 4rem;
+}
+.legal-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border, rgba(255,255,255,.08));
+    border-radius: 18px;
+    background: var(--surface, #1a1515);
+}
+.legal-header img { width: 72px; height: 72px; object-fit: contain; border-radius: 14px; }
+.legal-header h1 { margin: .2rem 0 .35rem; }
+.legal-header p { margin: 0; opacity: .7; }
+.legal-section {
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border, rgba(255,255,255,.08));
+    border-radius: 16px;
+    background: var(--surface, #1a1515);
+}
+.legal-section h2 { margin-top: 0; }
+.legal-section p:last-child { margin-bottom: 0; }
+@media (max-width: 600px) {
+    .legal-page { padding: 2rem .75rem 3rem; }
+    .legal-header { align-items: flex-start; padding: 1rem; gap: 1rem; }
+    .legal-header img { width: 56px; height: 56px; }
+    .legal-section { padding: 1.1rem; }
+}
