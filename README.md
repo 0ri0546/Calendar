@@ -1,10 +1,12 @@
-# Calendar — mobile day header fix v56
+# Calendar - tags de journées
 
-Correction du calendrier hebdomadaire sur tous les écrans téléphone (<= 650px).
+## Modifications
+- Les samedis 1 à 4 gardent leur thème habituel et reçoivent le tag `privilégié`.
+- Le 5e samedi du mois reçoit `privilégié` et `activité privilégié non définie`.
+- Les tags d'une journée sont visibles dans le calendrier et dans le récapitulatif d'une journée.
+- Les administrateurs peuvent modifier les tags depuis le récapitulatif d'une journée, avec plusieurs tags séparés par des virgules.
+- Les tags personnalisés sont persistés dans Supabase.
 
-- Réduction du padding horizontal des cases de jours.
-- Réduction de l'espacement entre les 7 cases.
-- Suppression du padding horizontal du bouton et des contenus jour/date.
-- Les 7 jours restent sur une seule ligne.
-- Les mini-calendriers ne sont pas modifiés.
-- Cache-busting : 20260910-56.
+## Base de données
+La migration `supabase/calendar-day-tags.sql` crée `calendar_day_tags`, ses politiques RLS et la fonction `is_admin()`.
+La migration a été appliquée au projet Supabase utilisé par l'application.

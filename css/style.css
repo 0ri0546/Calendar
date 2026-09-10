@@ -4555,3 +4555,134 @@ button:not(.icon-button):active,
         white-space: nowrap !important;
     }
 }
+
+/* =========================================================
+   Tags de journée
+   ========================================================= */
+.calendar-day-tags-section {
+    margin: 0 0 18px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+
+.calendar-day-tags,
+.calendar-day-tags-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.calendar-day-tags-inline {
+    margin: 8px 0;
+}
+
+.calendar-day-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 8px;
+    border: 1px solid var(--line-brand);
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: #fff;
+    font-size: .92rem;
+    font-weight: 800;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.calendar-day-tag-empty {
+    color: var(--muted);
+    font-size: .8rem;
+}
+
+.calendar-day-tags-editor {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.calendar-day-tags-editor input {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.calendar-day-tags-editor button {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 650px) {
+    .calendar-day-tags-section {
+        padding: 10px;
+    }
+
+    .calendar-day-tags-editor {
+        flex-direction: column;
+    }
+
+    .calendar-day-tags-editor button {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   TAGS DE JOURNEE - ATTACHES A L'EN-TETE
+   ========================================================= */
+.calendar-day-heading-button {
+    position: relative;
+    overflow: visible !important;
+}
+
+.calendar-day-tags-inline {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 3px 0 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.calendar-day-tags-inline .calendar-day-tag {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 2px 4px;
+    border: 0;
+    border-radius: 0 0 7px 7px;
+    background: var(--brand);
+    color: #fff;
+    font-size: .58rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    overflow: hidden;
+}
+
+@media (max-width: 650px) {
+    .calendar-day-tags-inline {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 2px !important;
+    }
+
+    .calendar-day-tags-inline .calendar-day-tag {
+        width: 100%;
+        max-width: 100%;
+        padding: 2px 3px;
+        font-size: .46rem;
+        line-height: 1.08;
+        border-radius: 0 0 5px 5px;
+        overflow-wrap: anywhere;
+    }
+}
+

@@ -1,6 +1,6 @@
-import { supabase } from "./supabase.js?v=20260910-55";
-import { showUserError } from "./ui-messages.js?v=20260910-55";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260910-55";
+import { supabase } from "./supabase.js?v=20260910-58";
+import { showUserError } from "./ui-messages.js?v=20260910-58";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-58";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
@@ -15,7 +15,8 @@ const calendarState = {
     followers: [],
     currentUser: null,
     followedActivityIds: new Set(),
-    selectedWeekStart: null
+    selectedWeekStart: null,
+    dayTags: new Map()
 };
 
 
@@ -88,9 +89,9 @@ function isDateWithinPeriod(date, startDate, endDate) {
 }
 
 
-function getSaturdayType(date) {
+function getSaturdayTags(date) {
     if (date.getDay() !== 6) {
-        return null;
+        return [];
     }
 
     const rank = Math.ceil(date.getDate() / 7);
@@ -102,7 +103,20 @@ function getSaturdayType(date) {
         4: "Jeu de rôle"
     };
 
-    return types[rank] ?? null;
+    if (rank === 5) {
+        return ["activité privilégié non définie"];
+    }
+
+    return types[rank] ? [`${types[rank]} privilégié`] : [];
+}
+
+function getDayTags(date) {
+    const dateString = formatDateForDatabase(date);
+    if (calendarState.dayTags.has(dateString)) {
+        return calendarState.dayTags.get(dateString);
+    }
+
+    return getSaturdayTags(date);
 }
 
 
@@ -194,6 +208,87 @@ async function loadActivities() {
 /*
  * Récupère toutes les participations des activités affichées.
  */
+async function loadDayTags() {
+    const { startDate, endDate } = getCalendarPeriod();
+
+    const { data, error } = await supabase
+        .from("calendar_day_tags")
+        .select("day, tags")
+        .gte("day", formatDateForDatabase(startDate))
+        .lte("day", formatDateForDatabase(endDate));
+
+    if (error) {
+        console.warn("Tags de journées indisponibles :", error);
+        return [];
+    }
+
+    return data ?? [];
+}
+
+
+async function loadCurrentUserRole(currentUser) {
+    if (!currentUser) return null;
+
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+    if (error) {
+        console.warn("Rôle utilisateur indisponible :", error);
+        return null;
+    }
+
+    return data?.role ?? null;
+}
+
+
+async function saveDayTags(date, tags) {
+    if (!calendarState.currentUser || calendarState.currentUser.profileRole !== "admin") {
+        return false;
+    }
+
+    const day = formatDateForDatabase(date);
+    const normalized = [...new Set(
+        tags
+            .map(tag => tag.trim())
+            .filter(Boolean)
+    )];
+
+    let error;
+
+    if (normalized.length === 0) {
+        ({ error } = await supabase
+            .from("calendar_day_tags")
+            .delete()
+            .eq("day", day));
+        calendarState.dayTags.delete(day);
+    } else {
+        ({ error } = await supabase
+            .from("calendar_day_tags")
+            .upsert({
+                day,
+                tags: normalized,
+                updated_by: calendarState.currentUser.id,
+                updated_at: new Date().toISOString()
+            }, { onConflict: "day" }));
+
+        if (!error) {
+            calendarState.dayTags.set(day, normalized);
+        }
+    }
+
+    if (error) {
+        console.error("Erreur sauvegarde tags de journée :", error);
+        showUserError(error);
+        return false;
+    }
+
+    return true;
+}
+
+
 async function loadParticipations(activityIds) {
     if (activityIds.length === 0) return [];
 
@@ -786,6 +881,68 @@ function openDayRecap(date) {
     header.append(title, closeButton);
     dialog.appendChild(header);
 
+    const tags = getDayTags(date);
+    const tagSection = document.createElement("div");
+    tagSection.className = "calendar-day-tags-section";
+
+    const tagList = document.createElement("div");
+    tagList.className = "calendar-day-tags";
+
+    const renderTags = values => {
+        tagList.replaceChildren();
+        if (values.length === 0) {
+            const empty = document.createElement("span");
+            empty.className = "calendar-day-tag-empty";
+            empty.textContent = "Aucun tag";
+            tagList.appendChild(empty);
+            return;
+        }
+
+        for (const value of values) {
+            const tag = document.createElement("span");
+            tag.className = "calendar-day-tag";
+            tag.textContent = value;
+            tagList.appendChild(tag);
+        }
+    };
+
+    renderTags(tags);
+    tagSection.appendChild(tagList);
+
+    if (calendarState.currentUser?.profileRole === "admin") {
+        const editor = document.createElement("div");
+        editor.className = "calendar-day-tags-editor";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = tags.join(", ");
+        input.placeholder = "Tags séparés par des virgules";
+        input.setAttribute("aria-label", "Tags de la journée");
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.textContent = "Enregistrer les tags";
+
+        saveButton.addEventListener("click", async () => {
+            saveButton.disabled = true;
+            const values = input.value.split(",");
+            const saved = await saveDayTags(date, values);
+            if (saved) {
+                const nextTags = getDayTags(date);
+                renderTags(nextTags);
+                input.value = nextTags.join(", ");
+                saveButton.textContent = "Enregistré";
+                setTimeout(() => { saveButton.textContent = "Enregistrer les tags"; }, 1200);
+            }
+            saveButton.disabled = false;
+        });
+
+        editor.append(input, saveButton);
+        tagSection.appendChild(editor);
+    }
+
+    dialog.appendChild(tagSection);
+
     const grid = document.createElement("div");
     grid.className = "calendar-day-recap-grid";
 
@@ -838,8 +995,8 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
     const dayElement = document.createElement("section");
     dayElement.className = "calendar-day";
 
-    const saturdayType = getSaturdayType(date);
-    if (saturdayType) {
+    const dayTags = getDayTags(date);
+    if (date.getDay() === 6) {
         dayElement.classList.add("calendar-saturday");
     }
 
@@ -880,11 +1037,21 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
         dayElement.classList.add("calendar-today");
     }
 
-    if (saturdayType) {
-        const saturdayLabel = document.createElement("p");
-        saturdayLabel.className = "calendar-saturday-label";
-        saturdayLabel.textContent = saturdayType;
-        dayElement.appendChild(saturdayLabel);
+    if (dayTags.length > 0) {
+        const tagList = document.createElement("div");
+        tagList.className = "calendar-day-tags calendar-day-tags-inline";
+
+        for (const value of dayTags) {
+            const tag = document.createElement("span");
+            tag.className = "calendar-day-tag";
+            tag.textContent = value;
+            tagList.appendChild(tag);
+        }
+
+        // Les tags appartiennent visuellement a l'en-tete du jour.
+        // On les place donc dans le bouton de date plutot que dans le contenu
+        // de la colonne, afin qu'ils restent clairement rattaches au jour.
+        heading.appendChild(tagList);
     }
 
     if (activitiesForDay.length === 0) {
@@ -1041,10 +1208,10 @@ function renderMiniMonth(monthDate, activities, selectedWeekStart, onSelectWeek)
             button.classList.add("is-selected-week");
         }
 
-        const saturdayType = getSaturdayType(date);
-        if (saturdayType) {
+        const saturdayTags = getDayTags(date);
+        if (saturdayTags.length > 0) {
             button.classList.add("is-special-saturday");
-            button.title = saturdayType;
+            button.title = saturdayTags.join(" · ");
         }
 
         if (dateString === formatDateForDatabase(new Date())) {
@@ -1224,6 +1391,9 @@ async function init() {
         const currentUser =
             await getCurrentUser();
 
+        if (currentUser) {
+            currentUser.profileRole = await loadCurrentUserRole(currentUser);
+        }
 
         const activities =
             await loadActivities();
@@ -1234,6 +1404,9 @@ async function init() {
                 activity => activity.id
             );
 
+
+        const dayTags =
+            await loadDayTags();
 
         const participations =
             await loadParticipations(
@@ -1259,6 +1432,9 @@ async function init() {
 
 
         calendarState.activities = activities ?? [];
+        calendarState.dayTags = new Map(
+            dayTags.map(row => [row.day, row.tags ?? []])
+        );
         calendarState.participations = participations ?? [];
         calendarState.followers = followers ?? [];
         calendarState.currentUser = currentUser;
