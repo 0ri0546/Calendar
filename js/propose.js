@@ -1,5 +1,5 @@
-import { supabase } from "./supabase.js?v=20260910-3";
-import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260910-3";
+import { supabase } from "./supabase.js?v=20260910-51";
+import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260910-51";
 
 const preparedForm = document.getElementById("activity-form");
 const freeForm = document.getElementById("free-activity-form");
@@ -82,17 +82,55 @@ imageInput?.addEventListener("change", () => {
     showImagePreview(imageInput.files?.[0] || null);
 });
 
+function animateProposalAccordion(content, open) {
+    if (!content) return;
+
+    content.hidden = false;
+    const startHeight = open ? 0 : content.scrollHeight;
+    const endHeight = open ? content.scrollHeight : 0;
+
+    content.style.overflow = "hidden";
+    content.style.maxHeight = `${startHeight}px`;
+    content.style.opacity = open ? "0" : "1";
+    content.style.transform = open ? "translateY(-6px)" : "translateY(0)";
+
+    requestAnimationFrame(() => {
+        content.style.transition = [
+            "max-height 500ms cubic-bezier(.22,1,.36,1)",
+            "opacity 500ms ease",
+            "transform 500ms cubic-bezier(.22,1,.36,1)"
+        ].join(", ");
+        content.style.maxHeight = `${endHeight}px`;
+        content.style.opacity = open ? "1" : "0";
+        content.style.transform = open ? "translateY(0)" : "translateY(-6px)";
+    });
+
+    window.setTimeout(() => {
+        content.style.transition = "";
+        if (open) {
+            content.style.maxHeight = "none";
+            content.style.opacity = "1";
+            content.style.transform = "none";
+        } else {
+            content.hidden = true;
+            content.style.maxHeight = "";
+            content.style.opacity = "";
+            content.style.transform = "";
+        }
+    }, 500);
+}
+
 function setupAccordion() {
-    document.querySelectorAll(".proposal-accordion-toggle").forEach((toggle) => {
+    document.querySelectorAll(".proposal-accordion-toggle").forEach(toggle => {
         toggle.addEventListener("click", () => {
             const accordion = toggle.closest(".proposal-accordion");
             const content = accordion?.querySelector(".proposal-accordion-content");
             if (!accordion || !content) return;
 
-            const shouldOpen = content.hidden;
-            content.hidden = !shouldOpen;
-            accordion.classList.toggle("is-open", shouldOpen);
+            const shouldOpen = toggle.getAttribute("aria-expanded") !== "true";
             toggle.setAttribute("aria-expanded", String(shouldOpen));
+            accordion.classList.toggle("is-open", shouldOpen);
+            animateProposalAccordion(content, shouldOpen);
         });
     });
 }

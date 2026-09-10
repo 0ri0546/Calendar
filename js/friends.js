@@ -1,4 +1,4 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260910-1";
+import { supabase, SITE_URL } from "./supabase.js?v=20260910-51";
 
 let currentUserId = null;
 let elements = null;
@@ -409,20 +409,37 @@ function createUI(authMenu) {
     button.addEventListener("click", async e => {
         e.stopPropagation();
 
-        const open = !panel.hidden;
-        panel.hidden = open;
-        button.setAttribute("aria-expanded", String(!open));
+        const open = panel.getAttribute("data-open") === "true";
 
-        if (!open) {
-            await refresh();
+        if (open) {
+            panel.setAttribute("data-open", "false");
+            panel.classList.remove("polish-panel-open");
+            button.setAttribute("aria-expanded", "false");
+            window.setTimeout(() => {
+                if (panel.getAttribute("data-open") !== "true") panel.hidden = true;
+            }, 500);
+            return;
         }
+
+        panel.hidden = false;
+        panel.setAttribute("data-open", "true");
+        panel.classList.remove("polish-panel-open");
+        void panel.offsetWidth;
+        requestAnimationFrame(() => panel.classList.add("polish-panel-open"));
+        button.setAttribute("aria-expanded", "true");
+        await refresh();
     });
 
     panel.addEventListener("click", e => e.stopPropagation());
 
     document.addEventListener("click", () => {
-        panel.hidden = true;
+        if (panel.getAttribute("data-open") !== "true") return;
+        panel.setAttribute("data-open", "false");
+        panel.classList.remove("polish-panel-open");
         button.setAttribute("aria-expanded", "false");
+        window.setTimeout(() => {
+            if (panel.getAttribute("data-open") !== "true") panel.hidden = true;
+        }, 500);
     });
 
     authMenu.appendChild(wrapper);

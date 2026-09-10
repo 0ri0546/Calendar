@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260909-28";
+import { supabase } from "./supabase.js?v=20260910-51";
 
 
 function getAvatarDisplayUrl(url) {
@@ -9,8 +9,8 @@ function getAvatarDisplayUrl(url) {
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${Date.now()}`;
 }
-import { showUserError } from "./ui-messages.js?v=20260909-28";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260909-35";
+import { showUserError } from "./ui-messages.js?v=20260910-51";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-51";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");
@@ -24,22 +24,60 @@ const closeAdminLogsButton = document.getElementById("close-admin-logs");
 const adminLogsModal = document.getElementById("admin-logs-modal");
 
 // Sections administrateur repliables : toutes fermées par défaut.
+function animateCollapsible(content, open) {
+    if (!content) return;
+
+    content.hidden = false;
+    const startHeight = open ? 0 : content.scrollHeight;
+    const endHeight = open ? content.scrollHeight : 0;
+
+    content.style.overflow = "hidden";
+    content.style.maxHeight = `${startHeight}px`;
+    content.style.opacity = open ? "0" : "1";
+    content.style.transform = open ? "translateY(-6px)" : "translateY(0)";
+
+    requestAnimationFrame(() => {
+        content.style.transition = [
+            "max-height 500ms cubic-bezier(.22,1,.36,1)",
+            "opacity 500ms ease",
+            "transform 500ms cubic-bezier(.22,1,.36,1)"
+        ].join(", ");
+        content.style.maxHeight = `${endHeight}px`;
+        content.style.opacity = open ? "1" : "0";
+        content.style.transform = open ? "translateY(0)" : "translateY(-6px)";
+    });
+
+    window.setTimeout(() => {
+        content.style.transition = "";
+        if (open) {
+            content.style.maxHeight = "none";
+            content.style.opacity = "1";
+            content.style.transform = "none";
+        } else {
+            content.hidden = true;
+            content.style.maxHeight = "";
+            content.style.opacity = "";
+            content.style.transform = "";
+        }
+    }, 500);
+}
+
 document.querySelectorAll(".admin-section-toggle").forEach(button => {
     const section = button.closest(".admin-collapsible");
     const contentId = button.getAttribute("aria-controls");
-    const content = contentId ? document.getElementById(contentId) : section?.querySelector(".admin-section-content");
+    const content = contentId
+        ? document.getElementById(contentId)
+        : section?.querySelector(".admin-section-content");
 
     button.setAttribute("aria-expanded", "false");
     section?.classList.remove("is-open");
     if (content) content.hidden = true;
 
     button.addEventListener("click", () => {
-        const expanded = button.getAttribute("aria-expanded") === "true";
-        const nextExpanded = !expanded;
-
+        const nextExpanded = button.getAttribute("aria-expanded") !== "true";
         button.setAttribute("aria-expanded", String(nextExpanded));
         section?.classList.toggle("is-open", nextExpanded);
-        if (content) content.hidden = !nextExpanded;
+        animateCollapsible(content, nextExpanded);
     });
 });
 
@@ -231,14 +269,22 @@ const ADMIN_ACTION_LABELS = {
 function openAdminLogs() {
     if (!adminLogsModal) return;
     adminLogsModal.hidden = false;
+    adminLogsModal.classList.remove("polish-modal-closing");
+    void adminLogsModal.offsetWidth;
     document.body.classList.add("admin-logs-open");
     closeAdminLogsButton?.focus();
 }
 
 function closeAdminLogs() {
     if (!adminLogsModal) return;
-    adminLogsModal.hidden = true;
+    adminLogsModal.classList.add("polish-modal-closing");
     document.body.classList.remove("admin-logs-open");
+    window.setTimeout(() => {
+        if (adminLogsModal.classList.contains("polish-modal-closing")) {
+            adminLogsModal.hidden = true;
+            adminLogsModal.classList.remove("polish-modal-closing");
+        }
+    }, 500);
     openAdminLogsButton?.focus();
 }
 

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260910-1";
+import { supabase } from "./supabase.js?v=20260910-51";
 
 const activitiesContainer = document.getElementById("home-today-activities");
 const dateLabel = document.getElementById("home-today-date");

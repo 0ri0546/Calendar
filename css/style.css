@@ -3942,3 +3942,363 @@ body.events-modal-open { overflow: hidden; }
 .calendar-free-participants-info {
     margin: 0;
 }
+
+
+/* =========================================================
+   POLISH GLOBAL — animations volontairement uniformes à 500 ms
+   ========================================================= */
+:root { --polish-duration: 500ms; --polish-ease: cubic-bezier(.22,.61,.36,1); }
+
+.btn,
+button:not(.icon-button),
+.site-links a,
+#auth-menu > a,
+#auth-menu > button,
+.calendar-activity,
+.event-card,
+.home-today-activity,
+.home-online-friend,
+.friend-card,
+.friend-request,
+.notification-item,
+.friends-button,
+.notification-button,
+.events-modal-close,
+.calendar-mobile-activity-close,
+.calendar-day-recap-close {
+    transition:
+        transform var(--polish-duration) var(--polish-ease),
+        background-color var(--polish-duration) ease,
+        border-color var(--polish-duration) ease,
+        color var(--polish-duration) ease,
+        box-shadow var(--polish-duration) ease,
+        opacity var(--polish-duration) ease;
+}
+
+.btn:hover,
+button:not(.icon-button):hover,
+.calendar-activity:hover,
+.event-card:hover,
+.home-today-activity:hover,
+.home-online-friend:hover,
+.friend-card:hover,
+.friend-request:hover,
+.notification-item:hover {
+    transform: translateY(-2px);
+}
+
+.btn:active,
+button:not(.icon-button):active,
+.site-links a:active,
+#auth-menu > a:active,
+#auth-menu > button:active {
+    transform: translateY(0) scale(.98);
+}
+
+@keyframes polish-section-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes polish-modal-in {
+    from { opacity: 0; transform: translateY(14px) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes polish-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes polish-online-in {
+    0% { transform: scale(.65); opacity: .45; }
+    55% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes polish-calendar-in {
+    from { opacity: .15; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sections administration / proposition : vraie ouverture progressive. */
+.admin-collapsible .admin-section-content,
+.proposal-accordion .proposal-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+        max-height var(--polish-duration) var(--polish-ease),
+        opacity var(--polish-duration) ease,
+        transform var(--polish-duration) var(--polish-ease);
+}
+
+.admin-collapsible.is-open .admin-section-content,
+.proposal-accordion.is-open .proposal-accordion-content {
+    max-height: 5000px;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.admin-section-chevron,
+.proposal-accordion-chevron {
+    transition: transform var(--polish-duration) var(--polish-ease), background-color var(--polish-duration) ease;
+}
+
+.admin-section-toggle:hover .admin-section-chevron,
+.proposal-accordion-toggle:hover .proposal-accordion-chevron {
+    background: var(--brand-soft);
+}
+
+.admin-collapsible.is-open .admin-section-chevron,
+.proposal-accordion.is-open .proposal-accordion-chevron {
+    transform: rotate(180deg);
+}
+
+/* Apparition du contenu nouvellement ouvert. */
+.admin-collapsible.is-open .admin-section-content > *,
+.proposal-accordion.is-open .proposal-accordion-content > * {
+    animation: polish-section-in var(--polish-duration) var(--polish-ease) both;
+}
+
+/* Modales : entrée de 500 ms. */
+.events-modal:not([hidden]) .events-modal-backdrop,
+.calendar-mobile-activity-modal .calendar-mobile-activity-modal-backdrop,
+.calendar-day-recap-modal .calendar-day-recap-backdrop,
+.admin-logs-modal:not([hidden]) .admin-logs-backdrop {
+    animation: polish-backdrop-in var(--polish-duration) ease both;
+}
+
+.events-modal:not([hidden]) .events-modal-dialog,
+.calendar-mobile-activity-modal .calendar-mobile-activity-dialog,
+.calendar-day-recap-modal .calendar-day-recap-dialog,
+.admin-logs-modal:not([hidden]) .admin-logs-dialog {
+    animation: polish-modal-in var(--polish-duration) var(--polish-ease) both;
+}
+
+.events-modal-close:hover,
+.calendar-mobile-activity-close:hover,
+.calendar-day-recap-close:hover {
+    transform: rotate(90deg);
+}
+
+/* Navigation calendrier : changement de semaine plus doux. */
+#calendar.polish-calendar-entering {
+    animation: polish-calendar-in var(--polish-duration) var(--polish-ease) both;
+}
+
+/* Présence : le point vert apparaît proprement sans boucle permanente. */
+.friend-online-dot.is-online {
+    animation: polish-online-in var(--polish-duration) var(--polish-ease) both;
+}
+
+/* Amis en ligne : apparition discrète des éléments. */
+.home-online-friend {
+    will-change: transform, opacity;
+}
+
+/* Panneaux flottants : l'ouverture/fermeture est pilotée en JS sur 500 ms. */
+.friends-panel,
+.notification-panel {
+    opacity: 0;
+    transform: translateY(-8px) scale(.985);
+    transform-origin: top right;
+    transition: opacity var(--polish-duration) var(--polish-ease), transform var(--polish-duration) var(--polish-ease);
+}
+
+.friends-panel.polish-panel-open,
+.notification-panel.polish-panel-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Accueil : les deux nouvelles cases respirent davantage. */
+.home-today-section,
+.home-online-section {
+    transition: border-color var(--polish-duration) ease, transform var(--polish-duration) var(--polish-ease);
+}
+
+.home-today-section:hover,
+.home-online-section:hover {
+    border-color: var(--line-brand);
+}
+
+/* Réduction de mouvement : on conserve l'accessibilité. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* Final polish refinements — les états restent cohérents à 500 ms. */
+.admin-collapsible:not(.is-open) .admin-section-content:not([hidden]) {
+    display: block !important;
+}
+
+.admin-section-toggle,
+.proposal-accordion-toggle {
+    min-height: 48px;
+}
+
+.admin-section-chevron,
+.proposal-accordion-chevron {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.025);
+    font-size: .95rem;
+}
+
+.admin-section-toggle:hover,
+.proposal-accordion-toggle:hover {
+    color: #fff;
+}
+
+.calendar-week-navigation button {
+    min-height: 42px;
+}
+
+.calendar-day-heading-button:hover {
+    background: rgba(255,255,255,.018);
+}
+
+.calendar-mini-day,
+.calendar-day-heading-button,
+.calendar-week-navigation button {
+    transition: background-color var(--polish-duration) ease,
+                border-color var(--polish-duration) ease,
+                color var(--polish-duration) ease,
+                transform var(--polish-duration) var(--polish-ease);
+}
+
+.calendar-mini-day:hover {
+    transform: translateY(-1px);
+}
+
+.calendar-day-recap-dialog,
+.calendar-mobile-activity-dialog,
+.events-modal-dialog,
+.admin-logs-dialog {
+    will-change: transform, opacity;
+}
+
+@media (max-width: 650px) {
+    .admin-section-toggle,
+    .proposal-accordion-toggle {
+        min-height: 46px;
+    }
+
+    .calendar-week-navigation {
+        gap: 7px;
+    }
+
+    .calendar-week-navigation button {
+        min-height: 44px;
+        padding-inline: 9px;
+        font-size: .72rem;
+    }
+
+    .home-today-activity,
+    .home-online-friend,
+    .friend-card,
+    .notification-item {
+        transform-origin: center;
+    }
+}
+
+/* ==================================================
+   POLISH V2 — accordéons et balayage du calendrier
+   ================================================== */
+.admin-collapsible,
+.proposal-accordion {
+    overflow: hidden;
+}
+
+.admin-section-toggle,
+.proposal-accordion-toggle {
+    position: relative;
+    min-height: 56px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+    color: #fff;
+    transition: background-color 500ms ease, border-color 500ms ease, transform 500ms cubic-bezier(.22,1,.36,1);
+}
+
+.admin-section-toggle:hover,
+.proposal-accordion-toggle:hover {
+    background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.028));
+    border-color: rgba(93,61,55,.85);
+}
+
+.admin-section-toggle:active,
+.proposal-accordion-toggle:active {
+    transform: scale(.985);
+}
+
+.admin-section-chevron,
+.proposal-accordion-chevron {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.13);
+    border-radius: 50%;
+    background: rgba(0,0,0,.16);
+    transition: transform 500ms cubic-bezier(.22,1,.36,1), background-color 500ms ease, border-color 500ms ease;
+}
+
+.admin-collapsible.is-open .admin-section-chevron,
+.proposal-accordion.is-open .proposal-accordion-chevron {
+    transform: rotate(180deg);
+    background: rgba(93,61,55,.30);
+    border-color: rgba(93,61,55,.9);
+}
+
+/* Les contenus sont animés par JS avec leur hauteur réelle. */
+.admin-collapsible .admin-section-content,
+.proposal-accordion .proposal-accordion-content {
+    max-height: none;
+    overflow: hidden;
+    opacity: 1;
+    transform: none;
+    transition: none;
+}
+
+.admin-collapsible:not(.is-open) .admin-section-content[hidden],
+.proposal-accordion .proposal-accordion-content[hidden] {
+    display: none;
+}
+
+/* Balayage horizontal de la semaine active. 500 ms pile. */
+.calendar-large-week.calendar-week-slide-from-right {
+    animation: calendar-week-from-right 500ms cubic-bezier(.22,1,.36,1) both;
+}
+
+.calendar-large-week.calendar-week-slide-from-left {
+    animation: calendar-week-from-left 500ms cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes calendar-week-from-right {
+    from { opacity: .25; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes calendar-week-from-left {
+    from { opacity: .25; transform: translateX(-100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 650px) {
+    .calendar-large-week {
+        overflow: hidden;
+    }
+}

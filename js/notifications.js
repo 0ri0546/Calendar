@@ -1,4 +1,4 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260910-1";
+import { supabase, SITE_URL } from "./supabase.js?v=20260910-51";
 
 const NOTIFICATION_TYPES = new Set([
     "place_opened",
@@ -238,9 +238,14 @@ function render() {
 }
 
 function closePanel() {
-    if (!elements) return;
-    elements.panel.hidden = true;
+    if (!elements || elements.panel.hidden) return;
+    elements.panel.classList.remove("polish-panel-open");
     elements.button.setAttribute("aria-expanded", "false");
+    window.setTimeout(() => {
+        if (elements.panel.getAttribute("data-open") !== "true") {
+            elements.panel.hidden = true;
+        }
+    }, 500);
 }
 
 function createUI(authMenu) {
@@ -314,13 +319,21 @@ function createUI(authMenu) {
 
     button.addEventListener("click", async event => {
         event.stopPropagation();
-        const isOpen = !panel.hidden;
-        panel.hidden = isOpen;
-        button.setAttribute("aria-expanded", String(!isOpen));
+        const isOpen = panel.getAttribute("data-open") === "true";
 
-        if (!isOpen) {
-            await loadNotifications();
+        if (isOpen) {
+            panel.setAttribute("data-open", "false");
+            closePanel();
+            return;
         }
+
+        panel.hidden = false;
+        panel.setAttribute("data-open", "true");
+        panel.classList.remove("polish-panel-open");
+        void panel.offsetWidth;
+        requestAnimationFrame(() => panel.classList.add("polish-panel-open"));
+        button.setAttribute("aria-expanded", "true");
+        await loadNotifications();
     });
 
     panel.addEventListener("click", event => event.stopPropagation());

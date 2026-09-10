@@ -1,6 +1,6 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260909-36";
-import { initNotifications } from "./notifications.js?v=20260910-2";
-import { initFriends } from "./friends.js?v=20260909-36";
+import { supabase, SITE_URL } from "./supabase.js?v=20260910-51";
+import { initNotifications } from "./notifications.js?v=20260910-51";
+import { initFriends } from "./friends.js?v=20260910-51";
 
 function getAvatarDisplayUrl(url) {
     if (!url) {

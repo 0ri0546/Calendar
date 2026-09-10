@@ -1,6 +1,6 @@
-import { supabase } from "./supabase.js?v=20260910-1";
-import { showUserError } from "./ui-messages.js?v=20260910-1";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260910-1";
+import { supabase } from "./supabase.js?v=20260910-51";
+import { showUserError } from "./ui-messages.js?v=20260910-51";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-51";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
@@ -637,15 +637,21 @@ function createActivityElement(activity, participants, followers, currentUser, f
         article.setAttribute("aria-label", `Voir les détails de ${activity.title}`);
 
         const openDetails = () => {
-            if (window.matchMedia("(max-width: 650px)").matches) {
-                openMobileActivityDetails(
-                    activity,
-                    participants,
-                    followers,
-                    currentUser,
-                    followedActivityIds
-                );
+            if (!window.matchMedia("(max-width: 650px)").matches) {
+                return;
             }
+
+            if (article.dataset.polishAnimating === "true") {
+                return;
+            }
+
+            openMobileActivityDetails(
+                activity,
+                participants,
+                followers,
+                currentUser,
+                followedActivityIds
+            );
         };
 
         article.addEventListener("click", openDetails);
@@ -1051,7 +1057,7 @@ function renderMiniMonth(monthDate, activities, selectedWeekStart, onSelectWeek)
 }
 
 
-function renderCalendar(activities, participations, followers, currentUser, followedActivityIds, selectedWeekStart = null) {
+function renderCalendar(activities, participations, followers, currentUser, followedActivityIds, selectedWeekStart = null, transitionDirection = null) {
     const { today, startDate, endDate } = getCalendarPeriod();
     calendarContainer.replaceChildren();
 
@@ -1064,14 +1070,29 @@ function renderCalendar(activities, participations, followers, currentUser, foll
 
     calendarState.selectedWeekStart = cloneDate(boundedWeek);
 
-    calendarContainer.appendChild(renderLargeWeek(
+    const largeWeek = renderLargeWeek(
         boundedWeek,
         activities,
         participations,
         followers,
         currentUser,
         followedActivityIds
-    ));
+    );
+
+    if (transitionDirection === "next") {
+        largeWeek.classList.add("calendar-week-slide-from-right");
+    } else if (transitionDirection === "previous") {
+        largeWeek.classList.add("calendar-week-slide-from-left");
+    }
+
+    calendarContainer.appendChild(largeWeek);
+
+    calendarContainer.classList.remove("polish-calendar-entering");
+    void calendarContainer.offsetWidth;
+    calendarContainer.classList.add("polish-calendar-entering");
+    window.setTimeout(() => {
+        calendarContainer.classList.remove("polish-calendar-entering");
+    }, 500);
 
     const navigation = document.createElement("div");
     navigation.className = "calendar-week-navigation";
@@ -1083,7 +1104,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
     previous.addEventListener("click", () => {
         const week = cloneDate(boundedWeek);
         week.setDate(week.getDate() - 7);
-        renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, week);
+        renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, week, "previous");
         scrollToActivityFromUrl();
     });
 
@@ -1094,7 +1115,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
     next.addEventListener("click", () => {
         const week = cloneDate(boundedWeek);
         week.setDate(week.getDate() + 7);
-        renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, week);
+        renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, week, "next");
         scrollToActivityFromUrl();
     });
 
