@@ -141,6 +141,44 @@
                             </div>
                         </form>
                     </div>
+
+                            <div class="form-field">
+                                <label for="free-activity-description">Description *</label>
+                                <textarea id="free-activity-description" name="description" rows="5" maxlength="5000" placeholder="Décrivez l'activité proposée." required></textarea>
+                            </div>
+
+                            <div class="form-grid free-activity-grid">
+                                <div class="form-field">
+                                    <label for="free-activity-date">Date *</label>
+                                    <input id="free-activity-date" name="date" type="date" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="free-activity-start-time">Heure de début *</label>
+                                    <input id="free-activity-start-time" name="start_time" type="time" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="free-activity-end-time">Heure de fin *</label>
+                                    <input id="free-activity-end-time" name="end_time" type="time" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="free-activity-location">Lieu *</label>
+                                    <input id="free-activity-location" name="location" type="text" maxlength="300" placeholder="Ex. Salle principale" required>
+                                </div>
+                            </div>
+
+                            <label class="form-checkbox">
+                                <input id="free-activity-is-event" name="is_event" type="checkbox">
+                                <span title="Marquer cette activité comme événement important">⭐ Activité importante</span>
+                            </label>
+
+                            <p class="free-activity-unlimited-note">Nombre de participants non limité.</p>
+
+                            <div class="activity-form-actions">
+                                <button type="submit" id="free-propose-submit-button">Proposer</button>
+                                <button type="button" id="free-approve-submit-button" class="btn-direct-approve" hidden>Valider</button>
+                            </div>
+                        </form>
+                    </div>
                 </section>
             </div>
             <p id="activity-form-message" class="form-message" aria-live="polite"></p>

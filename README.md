@@ -1,12 +1,7 @@
-# Calendar - tags de journées
+# Calendar - correctif récapitulatif quotidien
 
-## Modifications
-- Les samedis 1 à 4 gardent leur thème habituel et reçoivent le tag `privilégié`.
-- Le 5e samedi du mois reçoit `privilégié` et `activité privilégié non définie`.
-- Les tags d'une journée sont visibles dans le calendrier et dans le récapitulatif d'une journée.
-- Les administrateurs peuvent modifier les tags depuis le récapitulatif d'une journée, avec plusieurs tags séparés par des virgules.
-- Les tags personnalisés sont persistés dans Supabase.
-
-## Base de données
-La migration `supabase/calendar-day-tags.sql` crée `calendar_day_tags`, ses politiques RLS et la fonction `is_admin()`.
-La migration a été appliquée au projet Supabase utilisé par l'application.
+- Les boutons Rejoindre / Quitter / suivi ne sont plus affichés dans le récapitulatif d'une journée.
+- Les contrôles de participation restent disponibles dans la vue semaine et dans la fiche individuelle mobile.
+- Les participants des activités restent visibles pour les membres et les administrateurs.
+- Les participants aux jeux divers restent réservés aux administrateurs.
+- Le total de présence journalière reste réservé aux administrateurs.
