@@ -305,6 +305,16 @@ function createParticipantsElement(activity, participants) {
     const container = document.createElement("div");
     container.className = "calendar-participants";
 
+    // Un jeu libre n'a pas de nombre de places ni d'inscription :
+    // on affiche une information pratique à la place de la liste des participants.
+    if (activity.activity_type === "free") {
+        const info = document.createElement("p");
+        info.className = "calendar-free-participants-info";
+        info.textContent = "Nombre de places non défini, choix des activités sur place.";
+        container.appendChild(info);
+        return container;
+    }
+
     const title = document.createElement("h4");
     title.textContent = `Participants (${participants.length}/${activity.max_players})`;
     container.appendChild(title);

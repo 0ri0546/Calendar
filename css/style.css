@@ -3937,3 +3937,8 @@ body.events-modal-open { overflow: hidden; }
         grid-template-columns: 1fr;
     }
 }
+
+/* Information affichée à la place des participants pour un jeu libre. */
+.calendar-free-participants-info {
+    margin: 0;
+}
