@@ -49,7 +49,7 @@ begin
     from public.participations
     where activity_id = p_activity_id;
 
-    if v_current_players >= v_max_players then
+    if v_max_players is not null and v_current_players >= v_max_players then
         raise exception 'Activity is full';
     end if;
 
@@ -196,7 +196,7 @@ begin
     from public.participations
     where activity_id = p_activity_id;
 
-    if v_current_players >= v_max_players then
+    if v_max_players is not null and v_current_players >= v_max_players then
         raise exception 'Activity is full';
     end if;
 

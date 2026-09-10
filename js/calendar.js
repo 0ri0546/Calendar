@@ -675,11 +675,6 @@ function createWaitingQueueElement(followers) {
 function createActivityActions(activity, participants, currentUser, followedActivityIds) {
     const actions = document.createElement("div");
 
-    // Un jeu libre ne possède ni places ni inscription : il est simplement
-    // informatif dans le calendrier.
-    if (activity.activity_type === "free") {
-        return actions;
-    }
     actions.className = "calendar-actions";
 
     if (!currentUser) {
@@ -699,7 +694,8 @@ function createActivityActions(activity, participants, currentUser, followedActi
         return actions;
     }
 
-    const isFull = participants.length >= activity.max_players;
+    const isUnlimited = activity.activity_type === "free" || activity.max_players == null;
+    const isFull = !isUnlimited && participants.length >= activity.max_players;
 
     if (isFull) {
         const isFollowing = followedActivityIds.has(activity.id);
@@ -845,7 +841,7 @@ async function unfollowActivity(activityId) {
 }
 
 
-function createActivityElement(activity, participants, followers, currentUser, followedActivityIds, compactWeek = false, showActions = true) {
+function createActivityElement(activity, participants, followers, currentUser, followedActivityIds, compactWeek = false) {
     const article = document.createElement("article");
     article.className = "calendar-activity";
     article.id = `activity-${activity.id}`;
@@ -881,10 +877,14 @@ function createActivityElement(activity, participants, followers, currentUser, f
     details.className = "calendar-activity-details";
 
     if (activity.activity_type === "free") {
-        const freeLabel = document.createElement("p");
-        freeLabel.className = "calendar-free-label";
-        freeLabel.textContent = "🃏 Jeu libre";
-        details.appendChild(freeLabel);
+        const time = document.createElement("p");
+        time.textContent = `🕐 ${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`;
+        details.appendChild(time);
+
+        const unlimited = document.createElement("p");
+        unlimited.className = "calendar-availability is-open";
+        unlimited.textContent = "🟢 Participants illimités";
+        details.appendChild(unlimited);
     } else {
         const time = document.createElement("p");
         time.textContent = `🕐 ${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`;
@@ -938,9 +938,7 @@ function createActivityElement(activity, participants, followers, currentUser, f
         article.appendChild(createWaitingQueueElement(followers));
     }
 
-    if (showActions) {
-        article.appendChild(createActivityActions(activity, participants, currentUser, followedActivityIds));
-    }
+    article.appendChild(createActivityActions(activity, participants, currentUser, followedActivityIds));
 
     if (compactWeek) {
         article.classList.add("calendar-activity-compact");
@@ -1269,8 +1267,7 @@ function openDayRecap(date) {
                 followers.get(activity.id) ?? [],
                 calendarState.currentUser,
                 calendarState.followedActivityIds,
-                compact,
-                false
+                compact
             );
             // Les cartes du récapitulatif ne doivent pas entrer en collision
             // avec les IDs des cartes de la vue semaine.

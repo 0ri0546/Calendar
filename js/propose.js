@@ -207,7 +207,7 @@ async function submitPreparedActivity({ validateDirectly = false } = {}) {
 
 async function submitFreeActivity({ validateDirectly = false } = {}) {
     setButtonsDisabled([freeProposeButton, freeApproveButton], true);
-    setMessage(validateDirectly ? "Validation du jeu libre..." : "Envoi de la proposition...");
+    setMessage(validateDirectly ? "Validation de l'activité..." : "Envoi de la proposition...");
 
     let activityId = null;
 
@@ -221,15 +221,15 @@ async function submitFreeActivity({ validateDirectly = false } = {}) {
         const payload = {
             id: activityId,
             activity_type: "free",
-            title: "Jeu libre",
+            title: document.getElementById("free-activity-title").value.trim(),
             description: document.getElementById("free-activity-description").value.trim(),
             date: document.getElementById("free-activity-date").value,
-            start_time: null,
-            end_time: null,
+            start_time: document.getElementById("free-activity-start-time").value,
+            end_time: document.getElementById("free-activity-end-time").value,
             min_players: null,
             max_players: null,
             location: document.getElementById("free-activity-location").value.trim(),
-            is_event: false,
+            is_event: document.getElementById("free-activity-is-event").checked,
             image_url: null,
             created_by: user.id,
             status: "pending"
@@ -247,13 +247,13 @@ async function submitFreeActivity({ validateDirectly = false } = {}) {
         freeForm.reset();
         setMessage(
             validateDirectly
-                ? "Jeu libre validé directement et publié."
-                : "Proposition de jeu libre envoyée. Elle sera visible après validation par un administrateur.",
+                ? "Activité validée directement et publiée."
+                : "Proposition d'activité envoyée. Elle sera visible après validation par un administrateur.",
             "success"
         );
     } catch (error) {
-        console.error("Erreur proposition jeu libre :", error);
-        setMessage(error.message || "Impossible d'envoyer la proposition de jeu libre.", "error");
+        console.error("Erreur proposition activité :", error);
+        setMessage(error.message || "Impossible d'envoyer la proposition d'activité.", "error");
     } finally {
         setButtonsDisabled([freeProposeButton, freeApproveButton], false);
     }
@@ -277,7 +277,7 @@ freeForm?.addEventListener("submit", async (event) => {
 
 freeApproveButton?.addEventListener("click", async () => {
     if (!currentUserIsAdmin) return;
-    if (!confirm("Valider directement ce jeu libre ?")) return;
+    if (!confirm("Valider directement cette activité ?")) return;
     await submitFreeActivity({ validateDirectly: true });
 });
 
