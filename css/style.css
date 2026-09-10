@@ -4686,3 +4686,54 @@ button:not(.icon-button):active,
     }
 }
 
+
+/* =========================================================
+   Présence jeux divers
+   ========================================================= */
+.calendar-day-presence-section {
+    margin: 0 0 18px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+
+.calendar-day-presence-section h3 {
+    margin: 0 0 8px;
+    font-size: .95rem;
+}
+
+.calendar-day-presence-button {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--line-brand);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.calendar-day-presence-button:hover {
+    background: var(--brand-soft);
+}
+
+.calendar-day-presence-button.is-active {
+    background: var(--brand);
+    color: #fff;
+}
+
+.calendar-day-presence-button:disabled {
+    opacity: .65;
+    cursor: wait;
+}
+
+.calendar-day-presence-login {
+    margin: 0;
+    color: var(--muted);
+    font-size: .85rem;
+}
+

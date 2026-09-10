@@ -16,7 +16,8 @@ const calendarState = {
     currentUser: null,
     followedActivityIds: new Set(),
     selectedWeekStart: null,
-    dayTags: new Map()
+    dayTags: new Map(),
+    dayPresence: new Set()
 };
 
 
@@ -223,6 +224,59 @@ async function loadDayTags() {
     }
 
     return data ?? [];
+}
+
+
+async function loadMyDayPresence(currentUser) {
+    if (!currentUser) return [];
+
+    const { startDate, endDate } = getCalendarPeriod();
+    const { data, error } = await supabase
+        .from("day_presence")
+        .select("day")
+        .eq("user_id", currentUser.id)
+        .gte("day", formatDateForDatabase(startDate))
+        .lte("day", formatDateForDatabase(endDate));
+
+    if (error) {
+        console.warn("Présence jeux divers indisponible :", error);
+        return [];
+    }
+
+    return data ?? [];
+}
+
+
+async function setDayPresence(date, present) {
+    if (!calendarState.currentUser) return false;
+
+    const day = formatDateForDatabase(date);
+    let error = null;
+
+    if (present) {
+        ({ error } = await supabase
+            .from("day_presence")
+            .upsert({
+                day,
+                user_id: calendarState.currentUser.id
+            }, { onConflict: "day,user_id" }));
+    } else {
+        ({ error } = await supabase
+            .from("day_presence")
+            .delete()
+            .eq("day", day)
+            .eq("user_id", calendarState.currentUser.id));
+    }
+
+    if (error) {
+        console.error("Erreur présence jeux divers :", error);
+        showUserError(error);
+        return false;
+    }
+
+    if (present) calendarState.dayPresence.add(day);
+    else calendarState.dayPresence.delete(day);
+    return true;
 }
 
 
@@ -943,6 +997,44 @@ function openDayRecap(date) {
 
     dialog.appendChild(tagSection);
 
+    const presenceSection = document.createElement("section");
+    presenceSection.className = "calendar-day-presence-section";
+
+    const presenceTitle = document.createElement("h3");
+    presenceTitle.textContent = "Jeux divers";
+    presenceSection.appendChild(presenceTitle);
+
+    if (calendarState.currentUser) {
+        const dayKey = dateString;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "calendar-day-presence-button";
+        const updatePresenceButton = () => {
+            const present = calendarState.dayPresence.has(dayKey);
+            button.textContent = present
+                ? "✓ Je serai présent pour les jeux divers"
+                : "Je serai présent pour les jeux divers";
+            button.classList.toggle("is-active", present);
+            button.setAttribute("aria-pressed", String(present));
+        };
+        updatePresenceButton();
+        button.addEventListener("click", async () => {
+            button.disabled = true;
+            const nextPresent = !calendarState.dayPresence.has(dayKey);
+            const saved = await setDayPresence(date, nextPresent);
+            if (saved) updatePresenceButton();
+            button.disabled = false;
+        });
+        presenceSection.appendChild(button);
+    } else {
+        const message = document.createElement("p");
+        message.className = "calendar-day-presence-login";
+        message.textContent = "Connectez-vous pour indiquer votre présence aux jeux divers.";
+        presenceSection.appendChild(message);
+    }
+
+    dialog.appendChild(presenceSection);
+
     const grid = document.createElement("div");
     grid.className = "calendar-day-recap-grid";
 
@@ -1408,6 +1500,9 @@ async function init() {
         const dayTags =
             await loadDayTags();
 
+        const dayPresence =
+            await loadMyDayPresence(currentUser);
+
         const participations =
             await loadParticipations(
                 activityIds
@@ -1434,6 +1529,9 @@ async function init() {
         calendarState.activities = activities ?? [];
         calendarState.dayTags = new Map(
             dayTags.map(row => [row.day, row.tags ?? []])
+        );
+        calendarState.dayPresence = new Set(
+            dayPresence.map(row => row.day)
         );
         calendarState.participations = participations ?? [];
         calendarState.followers = followers ?? [];
@@ -1494,6 +1592,34 @@ function subscribeToParticipationChanges() {
                     const activityId = payload.new?.activity_id ?? payload.old?.activity_id;
                     if (activityId) {
                         await refreshActivityDisplay(activityId);
+                    }
+                }
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "day_presence"
+                },
+                async (payload) => {
+                    const day = payload.new?.day ?? payload.old?.day;
+                    const userId = payload.new?.user_id ?? payload.old?.user_id;
+                    if (!day || !calendarState.currentUser || userId !== calendarState.currentUser.id) return;
+
+                    if (payload.eventType === "DELETE") calendarState.dayPresence.delete(day);
+                    else calendarState.dayPresence.add(day);
+
+                    const modal = document.querySelector(".calendar-day-recap-modal");
+                    if (modal) {
+                        const title = modal.querySelector(".calendar-day-recap-header h2")?.textContent;
+                        if (title) {
+                            const dateMatch = title.match(/(\d{1,2}) ([a-zàâçéèêëîïôûùüÿ]+) (\d{4})/i);
+                            if (dateMatch) {
+                                const monthIndex = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"].indexOf(dateMatch[2].toLowerCase());
+                                if (monthIndex >= 0) openDayRecap(new Date(Number(dateMatch[3]), monthIndex, Number(dateMatch[1])));
+                            }
+                        }
                     }
                 }
             )
