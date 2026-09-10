@@ -1,6 +1,6 @@
-import { supabase } from "./supabase.js?v=20260911-01";
-import { showUserError } from "./ui-messages.js?v=20260911-01";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260911-01";
+import { supabase } from "./supabase.js?v=20260911-60";
+import { showUserError } from "./ui-messages.js?v=20260911-60";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260911-60";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
@@ -19,8 +19,7 @@ const calendarState = {
     dayTags: new Map(),
     dayPresence: new Set(),
     dayPresenceMembers: new Map(),
-    dayPresenceDesired: new Map(),
-    dayPresenceSyncing: new Set()
+    dayPresenceOps: new Map()
 };
 
 
@@ -234,20 +233,15 @@ async function loadDayPresence(currentUser) {
     if (!currentUser) return [];
 
     const { startDate, endDate } = getCalendarPeriod();
-    const start = formatDateForDatabase(startDate);
-    const end = formatDateForDatabase(endDate);
 
-    // Les admins passent par une RPC SECURITY DEFINER : cela garantit qu'ils
-    // récupèrent bien les présences + les profils, même si RLS masque les
-    // lignes de profiles sur mobile ou dans une session fraîche.
     if (currentUser.profileRole === "admin") {
-        const { data, error } = await supabase.rpc(
-            "get_day_presence_admin",
-            { p_start_date: start, p_end_date: end }
-        );
+        const { data, error } = await supabase.rpc("get_day_presence_admin", {
+            p_start: formatDateForDatabase(startDate),
+            p_end: formatDateForDatabase(endDate)
+        });
 
         if (error) {
-            console.warn("Présence jeux divers admin indisponible :", error);
+            console.error("Erreur récupération présences admin :", error);
             return [];
         }
 
@@ -255,8 +249,8 @@ async function loadDayPresence(currentUser) {
             day: row.day,
             user_id: row.user_id,
             profiles: {
-                pseudo: row.pseudo ?? "Utilisateur",
-                avatar_url: row.avatar_url ?? null
+                pseudo: row.pseudo,
+                avatar_url: row.avatar_url
             }
         }));
     }
@@ -265,12 +259,11 @@ async function loadDayPresence(currentUser) {
         .from("day_presence")
         .select("day, user_id")
         .eq("user_id", currentUser.id)
-        .gte("day", start)
-        .lte("day", end)
-        .order("day", { ascending: true });
+        .gte("day", formatDateForDatabase(startDate))
+        .lte("day", formatDateForDatabase(endDate));
 
     if (error) {
-        console.warn("Présence jeux divers indisponible :", error);
+        console.error("Erreur récupération ma présence :", error);
         return [];
     }
 
@@ -278,101 +271,101 @@ async function loadDayPresence(currentUser) {
 }
 
 
-async function setDayPresence(date, present) {
-    const user = calendarState.currentUser;
-    if (!user) return { ok: false, present: false };
+async function saveDayPresenceOnServer(day, present) {
+    const { data, error } = await supabase.rpc("set_day_presence", {
+        p_day: day,
+        p_present: present
+    });
 
-    const day = formatDateForDatabase(date);
+    if (error) throw error;
+    return Boolean(data);
+}
+
+
+function applyLocalDayPresence(day, present) {
+    if (present) calendarState.dayPresence.add(day);
+    else calendarState.dayPresence.delete(day);
+
+    updateOpenDayRecapPresence(day);
+}
+
+
+async function processDayPresence(day) {
+    const operation = calendarState.dayPresenceOps.get(day);
+    if (!operation || operation.running) return;
+
+    operation.running = true;
+    calendarState.dayPresenceOps.set(day, operation);
 
     try {
-        // On utilise directement les policies RLS de day_presence.
-        // C'est volontairement plus simple et plus fiable que de dépendre
-        // d'une RPC qui peut ne pas exister sur une base déjà installée.
-        if (present) {
-            const { error } = await supabase
-                .from("day_presence")
-                .upsert(
-                    { day, user_id: user.id },
-                    { onConflict: "day,user_id", ignoreDuplicates: true }
-                );
+        while (operation.desired !== operation.server) {
+            const desired = operation.desired;
+            const confirmed = await saveDayPresenceOnServer(day, desired);
+            operation.server = confirmed;
 
-            if (error) throw error;
-            calendarState.dayPresence.add(day);
-        } else {
-            const { error } = await supabase
-                .from("day_presence")
-                .delete()
-                .eq("day", day)
-                .eq("user_id", user.id);
-
-            if (error) throw error;
-            calendarState.dayPresence.delete(day);
+            // Un clic supplémentaire peut être arrivé pendant la requête.
+            // Dans ce cas, on envoie uniquement le dernier état demandé.
+            if (operation.desired === confirmed) {
+                applyLocalDayPresence(day, confirmed);
+            }
         }
 
-        return { ok: true, present };
+        if (calendarState.currentUser?.profileRole === "admin") {
+            await refreshDayPresenceMembers();
+        }
     } catch (error) {
         console.error("Erreur présence jeux divers :", error);
-        return { ok: false, present: !present, error };
-    }
-}
 
+        // On revient à la dernière valeur réellement connue du serveur.
+        applyLocalDayPresence(day, operation.server);
+        showUserError(error);
+    } finally {
+        operation.running = false;
+        if (calendarState.dayPresenceOps.get(day) === operation) {
+            calendarState.dayPresenceOps.delete(day);
+        }
 
-async function syncDayPresence(day) {
-    if (!calendarState.currentUser || calendarState.dayPresenceSyncing.has(day)) {
-        return;
-    }
-
-    calendarState.dayPresenceSyncing.add(day);
-
-    try {
-        while (calendarState.dayPresenceDesired.has(day)) {
-            const desired = calendarState.dayPresenceDesired.get(day);
-            const result = await setDayPresence(
-                new Date(`${day}T00:00:00`),
-                desired
-            );
-
-            if (!result.ok) {
-                // Reconciliation : en cas d'erreur, on relit l'état réel du serveur
-                // afin de ne jamais laisser le bouton afficher une fausse présence.
-                calendarState.dayPresenceDesired.delete(day);
-                const rows = await loadDayPresence(calendarState.currentUser);
-                const serverPresent = rows.some(row =>
-                    row.day === day && row.user_id === calendarState.currentUser.id
-                );
-                if (serverPresent) calendarState.dayPresence.add(day);
-                else calendarState.dayPresence.delete(day);
-                if (calendarState.currentUser.profileRole === "admin") {
-                    await refreshDayPresenceMembers();
-                }
-                updateOpenDayRecapPresence(day);
-                break;
-            }
-
-            // Si aucun nouveau clic n'est arrivé pendant la requête, le serveur
-            // est maintenant synchronisé avec l'intention locale.
-            if (calendarState.dayPresenceDesired.get(day) === desired) {
-                calendarState.dayPresenceDesired.delete(day);
-            }
-
-            // L'admin doit voir immédiatement la liste et le total exacts.
-            if (calendarState.currentUser.profileRole === "admin") {
-                await refreshDayPresenceMembers();
-            }
-
+        const button = document.querySelector(
+            `.calendar-day-presence-button[data-day="${CSS.escape(day)}"]`
+        );
+        if (button) {
+            button.disabled = false;
+            button.removeAttribute("aria-busy");
             updateOpenDayRecapPresence(day);
         }
-    } finally {
-        calendarState.dayPresenceSyncing.delete(day);
-
-        // Un clic peut arriver exactement entre la fin de la boucle et le
-        // nettoyage du verrou. On relance alors une synchronisation.
-        if (calendarState.dayPresenceDesired.has(day)) {
-            void syncDayPresence(day);
-        }
     }
 }
 
+
+function setDayPresence(date, present) {
+    const user = calendarState.currentUser;
+    if (!user) return;
+
+    const day = formatDateForDatabase(date);
+    let operation = calendarState.dayPresenceOps.get(day);
+
+    if (!operation) {
+        operation = {
+            server: calendarState.dayPresence.has(day),
+            desired: calendarState.dayPresence.has(day),
+            running: false
+        };
+        calendarState.dayPresenceOps.set(day, operation);
+    }
+
+    operation.desired = present;
+    applyLocalDayPresence(day, present);
+
+    const button = document.querySelector(
+        `.calendar-day-presence-button[data-day="${CSS.escape(day)}"]`
+    );
+    if (button) {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+    }
+
+    void processDayPresence(day);
+}
 
 async function refreshDayPresenceMembers() {
     if (!calendarState.currentUser) return;
@@ -1201,39 +1194,23 @@ function openDayRecap(date) {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "calendar-day-presence-button";
+        button.dataset.day = dayKey;
         const updatePresenceButton = () => {
-            const present = calendarState.dayPresenceDesired.has(dayKey)
-                ? calendarState.dayPresenceDesired.get(dayKey)
-                : calendarState.dayPresence.has(dayKey);
-
+            const present = calendarState.dayPresence.has(dayKey);
             button.textContent = present
                 ? "✓ Je serai présent pour les jeux divers"
                 : "Je serai présent pour les jeux divers";
             button.classList.toggle("is-active", present);
             button.setAttribute("aria-pressed", String(present));
-            button.setAttribute(
-                "aria-busy",
-                String(calendarState.dayPresenceSyncing.has(dayKey))
-            );
         };
         updatePresenceButton();
         button.addEventListener("click", event => {
             event.preventDefault();
 
-            const current = calendarState.dayPresenceDesired.has(dayKey)
-                ? calendarState.dayPresenceDesired.get(dayKey)
-                : calendarState.dayPresence.has(dayKey);
-            const nextPresent = !current;
-
-            // Optimiste + intention finale : plusieurs clics rapides sont
-            // acceptés et sont exécutés dans l'ordre, sans requêtes concurrentes.
-            calendarState.dayPresenceDesired.set(dayKey, nextPresent);
-            if (nextPresent) calendarState.dayPresence.add(dayKey);
-            else calendarState.dayPresence.delete(dayKey);
-
-            updatePresenceButton();
-            updateOpenDayRecapPresence(dayKey);
-            void syncDayPresence(dayKey);
+            const operation = calendarState.dayPresenceOps.get(dayKey);
+            const currentDesired = operation?.desired ?? calendarState.dayPresence.has(dayKey);
+            const nextPresent = !currentDesired;
+            setDayPresence(date, nextPresent);
         });
         presenceSection.appendChild(button);
     } else {
@@ -1855,21 +1832,18 @@ function subscribeToParticipationChanges() {
                     const userId = payload.new?.user_id ?? payload.old?.user_id;
                     if (!day || !calendarState.currentUser || !userId) return;
 
-                    // Pendant une série de clics, l'état local représente la dernière
-                    // intention de l'utilisateur. Un événement Realtime plus ancien ne
-                    // doit donc pas l'écraser.
-                    const ownPending = userId === calendarState.currentUser.id
-                        && calendarState.dayPresenceSyncing.has(day);
-
-                    if (userId === calendarState.currentUser.id && !ownPending) {
+                    if (userId === calendarState.currentUser.id) {
                         if (payload.eventType === "DELETE") calendarState.dayPresence.delete(day);
                         else calendarState.dayPresence.add(day);
                     }
 
                     if (calendarState.currentUser.profileRole === "admin") {
+                        // Recharger les présences pour obtenir les noms et le total exacts.
                         await refreshDayPresenceMembers();
                     }
 
+                    // Ne jamais reconstruire la modale : cela cassait le bouton sur mobile
+                    // et faisait disparaître l'état local juste après un clic.
                     updateOpenDayRecapPresence(day);
                 }
             )
