@@ -1,4 +1,4 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260910-51";
+import { supabase, SITE_URL } from "./supabase.js?v=20260910-52";
 
 let currentUserId = null;
 let elements = null;

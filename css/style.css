@@ -4302,3 +4302,11 @@ button:not(.icon-button):active,
         overflow: hidden;
     }
 }
+
+/* Journal admin : phrase d'action lisible */
+.admin-log-entry .admin-log-sentence {
+    margin: 5px 0 0;
+    color: #f2e8e4;
+    font-size: .82rem;
+    line-height: 1.45;
+}

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260910-51";
+import { supabase } from "./supabase.js?v=20260910-52";
 
 
 function getAvatarDisplayUrl(url) {
@@ -9,8 +9,8 @@ function getAvatarDisplayUrl(url) {
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${Date.now()}`;
 }
-import { showUserError } from "./ui-messages.js?v=20260910-51";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260910-51";
+import { showUserError } from "./ui-messages.js?v=20260910-52";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-52";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");
@@ -254,7 +254,7 @@ async function changeRole(member) {
 
 
 const ADMIN_ACTION_LABELS = {
-    activity_created: "Activité créée",
+    activity_created: "Proposition d'activité",
     activity_approved: "Activité approuvée",
     activity_rejected: "Activité refusée",
     activity_updated: "Activité modifiée",
@@ -297,6 +297,53 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
+function getLogActivityTitle(log) {
+    if (log.details?.title) return log.details.title;
+    if (log.details?.data?.title) return log.details.data.title;
+    return null;
+}
+
+function getLogTargetUserId(log) {
+    if (log.target_type === "user" && log.target_id) return log.target_id;
+    if (log.details?.created_by) return log.details.created_by;
+    if (log.details?.data?.user_id) return log.details.data.user_id;
+    return null;
+}
+
+function buildAdminLogSentence(log, targetPseudoById) {
+    const actor = log.actor_pseudo ?? "Le système";
+    const title = getLogActivityTitle(log);
+    const targetUserId = getLogTargetUserId(log);
+    const targetPseudo = targetUserId
+        ? targetPseudoById.get(targetUserId) ?? "membre inconnu"
+        : null;
+
+    switch (log.action) {
+        case "activity_created":
+            return `${actor} a proposé l'activité « ${title ?? "sans titre"} »`;
+        case "activity_approved":
+            return `${actor} a approuvé l'activité « ${title ?? "sans titre"} »`;
+        case "activity_rejected":
+            return `${actor} a refusé l'activité « ${title ?? "sans titre"} »`;
+        case "activity_updated":
+            return `${actor} a modifié l'activité « ${title ?? "sans titre"} »`;
+        case "activity_deleted":
+            return `${actor} a supprimé l'activité « ${title ?? "sans titre"} »`;
+        case "user_promoted":
+            return `${actor} a promu ${targetPseudo ?? "un membre"} administrateur`;
+        case "user_demoted":
+            return `${actor} a rétrogradé ${targetPseudo ?? "un administrateur"} au rôle de membre`;
+        case "notification_created":
+            return `${actor} a créé une notification${title ? ` pour « ${title} »` : ""}`;
+        case "notification_sent":
+            return `${actor} a envoyé une notification${title ? ` pour « ${title} »` : ""}`;
+        case "notification_failed":
+            return `${actor} n'a pas pu envoyer une notification${title ? ` pour « ${title} »` : ""}`;
+        default:
+            return `${actor} a effectué l'action « ${log.action} »`;
+    }
+}
+
 async function loadAdminLogs() {
     if (!adminLogsList) return;
     adminLogsList.textContent = "Chargement du journal...";
@@ -319,6 +366,31 @@ async function loadAdminLogs() {
         return;
     }
 
+    const targetUserIds = [
+        ...new Set(
+            data
+                .map(getLogTargetUserId)
+                .filter(Boolean)
+        )
+    ];
+
+    const targetPseudoById = new Map();
+
+    if (targetUserIds.length) {
+        const { data: profiles, error: profilesError } = await supabase
+            .from("profiles")
+            .select("id, pseudo")
+            .in("id", targetUserIds);
+
+        if (profilesError) {
+            console.error("Erreur récupération cibles du journal :", profilesError);
+        } else {
+            for (const profile of profiles ?? []) {
+                targetPseudoById.set(profile.id, profile.pseudo);
+            }
+        }
+    }
+
     for (const log of data) {
         const article = document.createElement("article");
         article.className = "admin-log-entry";
@@ -335,12 +407,11 @@ async function loadAdminLogs() {
 
         heading.append(action, date);
 
-        const meta = document.createElement("p");
-        meta.textContent =
-            `${log.actor_pseudo ?? "Administrateur inconnu"} · ${log.target_type}` +
-            (log.target_id ? ` · ${log.target_id}` : "");
+        const sentence = document.createElement("p");
+        sentence.className = "admin-log-sentence";
+        sentence.textContent = buildAdminLogSentence(log, targetPseudoById);
 
-        article.append(heading, meta);
+        article.append(heading, sentence);
 
         if (
             log.details &&
@@ -349,7 +420,7 @@ async function loadAdminLogs() {
         ) {
             const details = document.createElement("details");
             const summary = document.createElement("summary");
-            summary.textContent = "Voir les détails";
+            summary.textContent = "Voir les détails techniques";
 
             const pre = document.createElement("pre");
             pre.textContent = JSON.stringify(log.details, null, 2);
