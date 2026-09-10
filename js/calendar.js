@@ -17,7 +17,8 @@ const calendarState = {
     followedActivityIds: new Set(),
     selectedWeekStart: null,
     dayTags: new Map(),
-    dayPresence: new Set()
+    dayPresence: new Set(),
+    dayPresenceMembers: new Map()
 };
 
 
@@ -227,16 +228,27 @@ async function loadDayTags() {
 }
 
 
-async function loadMyDayPresence(currentUser) {
+async function loadDayPresence(currentUser) {
     if (!currentUser) return [];
 
     const { startDate, endDate } = getCalendarPeriod();
-    const { data, error } = await supabase
+    let query = supabase
         .from("day_presence")
-        .select("day")
-        .eq("user_id", currentUser.id)
+        .select(`
+            day,
+            user_id,
+            profiles (pseudo, avatar_url)
+        `)
         .gte("day", formatDateForDatabase(startDate))
         .lte("day", formatDateForDatabase(endDate));
+
+    // Un membre ne récupère que sa propre présence. Un admin peut récupérer
+    // toutes les présences afin d'afficher les noms et le total de la journée.
+    if (currentUser.profileRole !== "admin") {
+        query = query.eq("user_id", currentUser.id);
+    }
+
+    const { data, error } = await query.order("day", { ascending: true });
 
     if (error) {
         console.warn("Présence jeux divers indisponible :", error);
@@ -906,6 +918,17 @@ function openDayRecap(date) {
     const activities = calendarState.activities.filter(activity => activity.date === dateString);
     const participations = groupParticipations(calendarState.participations);
     const followers = groupFollowers(calendarState.followers);
+    const isAdmin = calendarState.currentUser?.profileRole === "admin";
+    const dayPresenceMembers = calendarState.dayPresenceMembers.get(dateString) ?? [];
+
+    // Pour un admin, le total correspond aux personnes uniques présentes
+    // aux jeux divers ou inscrites à une activité préparée ce jour-là.
+    const uniquePresentIds = new Set(dayPresenceMembers.map(member => member.user_id));
+    for (const activity of activities) {
+        for (const participant of participations.get(activity.id) ?? []) {
+            uniquePresentIds.add(participant.user_id);
+        }
+    }
 
     const overlay = document.createElement("div");
     overlay.className = "calendar-day-recap-modal";
@@ -925,7 +948,9 @@ function openDayRecap(date) {
     header.className = "calendar-day-recap-header";
 
     const title = document.createElement("h2");
-    title.textContent = formatDateForDisplay(dateString);
+    title.textContent = isAdmin
+        ? `${formatDateForDisplay(dateString)} (${uniquePresentIds.size})`
+        : formatDateForDisplay(dateString);
 
     const closeButton = document.createElement("button");
     closeButton.type = "button";
@@ -1031,6 +1056,34 @@ function openDayRecap(date) {
         message.className = "calendar-day-presence-login";
         message.textContent = "Connectez-vous pour indiquer votre présence aux jeux divers.";
         presenceSection.appendChild(message);
+    }
+
+    if (isAdmin) {
+        const adminPresence = document.createElement("div");
+        adminPresence.className = "calendar-day-presence-admin";
+
+        const adminTitle = document.createElement("h4");
+        adminTitle.textContent = `Jeux divers (${dayPresenceMembers.length})`;
+        adminPresence.appendChild(adminTitle);
+
+        if (dayPresenceMembers.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "calendar-day-presence-empty";
+            empty.textContent = "Aucune personne inscrite pour le moment.";
+            adminPresence.appendChild(empty);
+        } else {
+            const list = document.createElement("div");
+            list.className = "calendar-day-presence-members";
+            for (const member of dayPresenceMembers) {
+                const item = document.createElement("span");
+                item.className = "calendar-day-presence-member";
+                item.textContent = member.profiles?.pseudo ?? "Utilisateur";
+                list.appendChild(item);
+            }
+            adminPresence.appendChild(list);
+        }
+
+        presenceSection.appendChild(adminPresence);
     }
 
     dialog.appendChild(presenceSection);
@@ -1501,7 +1554,7 @@ async function init() {
             await loadDayTags();
 
         const dayPresence =
-            await loadMyDayPresence(currentUser);
+            await loadDayPresence(currentUser);
 
         const participations =
             await loadParticipations(
@@ -1531,8 +1584,18 @@ async function init() {
             dayTags.map(row => [row.day, row.tags ?? []])
         );
         calendarState.dayPresence = new Set(
-            dayPresence.map(row => row.day)
+            dayPresence
+                .filter(row => row.user_id === currentUser?.id)
+                .map(row => row.day)
         );
+
+        calendarState.dayPresenceMembers = new Map();
+        for (const row of dayPresence) {
+            if (!calendarState.dayPresenceMembers.has(row.day)) {
+                calendarState.dayPresenceMembers.set(row.day, []);
+            }
+            calendarState.dayPresenceMembers.get(row.day).push(row);
+        }
         calendarState.participations = participations ?? [];
         calendarState.followers = followers ?? [];
         calendarState.currentUser = currentUser;
@@ -1605,10 +1668,23 @@ function subscribeToParticipationChanges() {
                 async (payload) => {
                     const day = payload.new?.day ?? payload.old?.day;
                     const userId = payload.new?.user_id ?? payload.old?.user_id;
-                    if (!day || !calendarState.currentUser || userId !== calendarState.currentUser.id) return;
+                    if (!day || !calendarState.currentUser || !userId) return;
 
-                    if (payload.eventType === "DELETE") calendarState.dayPresence.delete(day);
-                    else calendarState.dayPresence.add(day);
+                    if (userId === calendarState.currentUser.id) {
+                        if (payload.eventType === "DELETE") calendarState.dayPresence.delete(day);
+                        else calendarState.dayPresence.add(day);
+                    }
+
+                    if (calendarState.currentUser.profileRole === "admin") {
+                        // Recharger la journée permet de récupérer le pseudo associé
+                        // aussi bien pour INSERT que pour DELETE.
+                        const refreshed = await loadDayPresence(calendarState.currentUser);
+                        calendarState.dayPresenceMembers = new Map();
+                        for (const row of refreshed) {
+                            if (!calendarState.dayPresenceMembers.has(row.day)) calendarState.dayPresenceMembers.set(row.day, []);
+                            calendarState.dayPresenceMembers.get(row.day).push(row);
+                        }
+                    }
 
                     const modal = document.querySelector(".calendar-day-recap-modal");
                     if (modal) {

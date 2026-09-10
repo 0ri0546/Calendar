@@ -4737,3 +4737,42 @@ button:not(.icon-button):active,
     font-size: .85rem;
 }
 
+
+/* =========================================================
+   ADMIN - PRESENCES JEUX DIVERS
+   ========================================================= */
+.calendar-day-presence-admin {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.calendar-day-presence-admin h4 {
+    margin: 0 0 8px;
+    font-size: .9rem;
+}
+
+.calendar-day-presence-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.calendar-day-presence-member {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 5px 9px;
+    border: 1px solid var(--line-brand);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.calendar-day-presence-empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: .82rem;
+}
