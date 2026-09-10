@@ -4310,3 +4310,248 @@ button:not(.icon-button):active,
     font-size: .82rem;
     line-height: 1.45;
 }
+/* =========================================================
+   MOBILE — TRÈS PETITS ÉCRANS
+   Les 7 jours restent visibles sans couper les libellés.
+   On utilise une abréviation courte uniquement sous 360 px.
+   ========================================================= */
+@media (max-width: 360px) {
+    .calendar-large-week-days {
+        box-sizing: border-box !important;
+        gap: 3px !important;
+        padding: 6px !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        padding: 4px !important;
+        border-radius: 6px !important;
+    }
+
+    .calendar-large-week-days .calendar-day > h2 {
+        min-height: 25px !important;
+        height: 25px !important;
+        padding-bottom: 3px !important;
+        text-align: center !important;
+    }
+
+    /* Le nom complet reste dans le DOM, mais l'écran très étroit
+       affiche une abréviation courte afin qu'aucun jour ne soit tronqué. */
+    .calendar-large-week-days .calendar-day-weekday {
+        font-size: 0 !important;
+        text-align: center !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday::after {
+        content: attr(data-short);
+        display: block;
+        font-size: .44rem !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+    }
+
+    /* Sur ces écrans, le numéro suffit : le mois reste visible dans
+       la période affichée au-dessus de la semaine. */
+    .calendar-large-week-days .calendar-day-date {
+        margin-top: 1px !important;
+        font-size: 0 !important;
+        text-align: center !important;
+    }
+
+    .calendar-large-week-days .calendar-day-date::after {
+        content: attr(data-short);
+        display: block;
+        font-size: .5rem !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+    }
+}
+
+
+/* =========================================================
+   v54 — très petits écrans : en-têtes des 7 jours
+   Correction du texte réellement tronqué dans les boutons.
+   ========================================================= */
+@media (max-width: 360px) {
+    .calendar-large-week-days {
+        gap: 2px !important;
+        padding: 5px !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        padding: 3px 2px !important;
+        min-width: 0 !important;
+        overflow: visible !important;
+    }
+
+    .calendar-large-week-days .calendar-day-heading-button {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        min-height: 27px !important;
+        height: 27px !important;
+        padding: 0 0 3px !important;
+        overflow: visible !important;
+        text-align: center !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday,
+    .calendar-large-week-days .calendar-day-date {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday {
+        font-size: 0 !important;
+        line-height: 1 !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday::after {
+        content: attr(data-short);
+        display: inline-block !important;
+        width: auto !important;
+        max-width: none !important;
+        font-size: .48rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    .calendar-large-week-days .calendar-day-date {
+        font-size: 0 !important;
+        line-height: 1 !important;
+    }
+
+    .calendar-large-week-days .calendar-day-date::after {
+        content: attr(data-short);
+        display: inline-block !important;
+        width: auto !important;
+        max-width: none !important;
+        font-size: .56rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* v55 — ultra petits écrans : rapprocher le contenu des cases de jours */
+@media (max-width: 360px) {
+    .calendar-large-week-days {
+        gap: 2px !important;
+        padding: 4px !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        padding: 3px 1px !important;
+    }
+
+    .calendar-large-week-days .calendar-day-heading-button,
+    .calendar-large-week-days button.calendar-day-heading-button {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 0 2px !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday::after,
+    .calendar-large-week-days .calendar-day-date::after {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
+
+/* =========================================================
+   v56 — MOBILE : contenu des jours plus proche des bords
+   Valable sur TOUS les écrans téléphone (<= 650px).
+   ========================================================= */
+@media (max-width: 650px) {
+    .calendar-large-week-days {
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        gap: 2px !important;
+        padding: 4px 2px !important;
+        box-sizing: border-box !important;
+    }
+
+    .calendar-large-week-days .calendar-day {
+        min-width: 0 !important;
+        width: 100% !important;
+        padding: 3px 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .calendar-large-week-days .calendar-day > h2,
+    .calendar-large-week-days .calendar-day-heading-button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday,
+    .calendar-large-week-days .calendar-day-date {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+    }
+}
+
+
+/* =========================================================
+   TELEPHONE — en-tête de la semaine compact
+   Sur téléphone : Lun/Mar/Mer/Jeu/Ven/Sam/Dim puis uniquement le numéro.
+   Aucun mois affiché dans chaque case.
+   ========================================================= */
+@media (max-width: 950px) {
+    .calendar-large-week-days .calendar-day-weekday,
+    .calendar-large-week-days .calendar-day-date {
+        font-size: 0 !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .calendar-large-week-days .calendar-day-weekday::after {
+        content: attr(data-mobile);
+        display: block;
+        font-size: .48rem !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+    }
+
+    .calendar-large-week-days .calendar-day-date::after {
+        content: attr(data-mobile);
+        display: block;
+        font-size: .58rem !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+    }
+}

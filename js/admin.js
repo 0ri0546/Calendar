@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260910-52";
+import { supabase } from "./supabase.js?v=20260910-57";
 
 
 function getAvatarDisplayUrl(url) {
@@ -9,8 +9,8 @@ function getAvatarDisplayUrl(url) {
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${Date.now()}`;
 }
-import { showUserError } from "./ui-messages.js?v=20260910-52";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260910-52";
+import { showUserError } from "./ui-messages.js?v=20260910-57";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-57";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");

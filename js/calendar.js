@@ -1,6 +1,6 @@
-import { supabase } from "./supabase.js?v=20260910-52";
-import { showUserError } from "./ui-messages.js?v=20260910-52";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260910-52";
+import { supabase } from "./supabase.js?v=20260910-55";
+import { showUserError } from "./ui-messages.js?v=20260910-55";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-55";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
@@ -854,6 +854,10 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
     weekday.textContent = new Intl.DateTimeFormat("fr-FR", {
         weekday: "long"
     }).format(date);
+    weekday.dataset.short = new Intl.DateTimeFormat("fr-FR", {
+        weekday: "short"
+    }).format(date).replace(".", "");
+    weekday.dataset.mobile = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"][date.getDay()];
 
     const dateLabel = document.createElement("span");
     dateLabel.className = "calendar-day-date";
@@ -861,6 +865,10 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
         day: "numeric",
         month: "long"
     }).format(date);
+    dateLabel.dataset.short = new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric"
+    }).format(date);
+    dateLabel.dataset.mobile = String(date.getDate());
 
     heading.append(weekday, dateLabel);
     heading.addEventListener("click", () => openDayRecap(date));

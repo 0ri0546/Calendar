@@ -1,4 +1,4 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260910-52";
+import { supabase, SITE_URL } from "./supabase.js?v=20260910-57";
 
 const NOTIFICATION_TYPES = new Set([
     "place_opened",
