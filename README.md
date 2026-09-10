@@ -2,7 +2,7 @@
 
 > Plateforme web de gestion et d'organisation des activités de l'association L'oise aux Jeux.
 
-[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-222222?logo=github)](https://L'oise auxjeux.github.io/)
+[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-222222?logo=github)](https://L'oiseauxjeux.github.io/)
 [![Frontend](https://img.shields.io/badge/Frontend-HTML%20%2F%20CSS%20%2F%20JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
 [![Database](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 
