@@ -1,6 +1,6 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260910-01";
-import { initNotifications } from "./notifications.js?v=20260910-01";
-import { initFriends } from "./friends.js?v=20260910-01";
+import { supabase, SITE_URL } from "./supabase.js?v=20260909-36";
+import { initNotifications } from "./notifications.js?v=20260910-2";
+import { initFriends } from "./friends.js?v=20260909-36";
 
 function getAvatarDisplayUrl(url) {
     if (!url) {
@@ -197,6 +197,13 @@ updateAuthUI();
 // dans le callback d'authentification.
 supabase.auth.onAuthStateChange((event, session) => {
     console.log("Auth event :", event);
+
+    // USER_UPDATED est notamment émis quand le réglage des notifications
+    // change. Ne reconstruisons surtout pas auth-menu dans ce cas : cela
+    // détruirait le panneau actuellement ouvert.
+    if (!["INITIAL_SESSION", "SIGNED_IN", "SIGNED_OUT"].includes(event)) {
+        return;
+    }
 
     if (session?.user) {
         console.log("Session active :", session.user.email);

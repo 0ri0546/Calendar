@@ -1,14 +1,14 @@
-import { supabase } from "./supabase.js?v=20260910-01";
-import { showUserError } from "./ui-messages.js?v=20260910-01";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260910-01";
+import { supabase } from "./supabase.js?v=20260910-1";
+import { showUserError } from "./ui-messages.js?v=20260910-1";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-1";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
 
 let realtimeChannel = null;
 
-// État persistant du calendrier. Les actions et Realtime mettent à jour
-// uniquement l'activité concernée au lieu de reconstruire toute la vue.
+// État persistant du calendrier. Les changements de semaine doivent
+// uniquement changer la vue, jamais repartir des anciennes données.
 const calendarState = {
     activities: [],
     participations: [],
@@ -401,74 +401,55 @@ async function refreshActivityDisplay(activityId) {
     const activity = calendarState.activities.find(item => item.id === activityId);
     if (!activity) return;
 
-    const [{ data: participations, error: participationsError }, { data: followers, error: followersError }] =
-        await Promise.all([
-            supabase
-                .from("participations")
-                .select("activity_id, user_id, joined_at, profiles (pseudo, avatar_url)")
-                .eq("activity_id", activityId)
-                .order("joined_at", { ascending: true }),
-            supabase
-                .from("followers")
-                .select("activity_id, user_id, followed_at, profiles (pseudo, avatar_url)")
-                .eq("activity_id", activityId)
-                .order("followed_at", { ascending: true })
-        ]);
-
-    if (participationsError) {
-        console.error("Erreur actualisation participants :", participationsError);
-        return;
-    }
-
-    if (followersError) {
-        console.warn("Erreur actualisation file d'attente :", followersError);
-    }
+    const [participations, followers] = await Promise.all([
+        loadParticipations([activityId]),
+        loadFollowers([activityId])
+    ]);
 
     calendarState.participations = [
         ...calendarState.participations.filter(item => item.activity_id !== activityId),
-        ...(participations ?? [])
+        ...participations
     ];
     calendarState.followers = [
         ...calendarState.followers.filter(item => item.activity_id !== activityId),
-        ...(followers ?? [])
+        ...followers
     ];
 
-    const groupedParticipations = groupParticipations(calendarState.participations);
-    const groupedFollowers = groupFollowers(calendarState.followers);
-    const participants = groupedParticipations.get(activityId) ?? [];
-    const activityFollowers = groupedFollowers.get(activityId) ?? [];
+    const nextElement = createActivityElement(
+        activity,
+        participations,
+        followers,
+        calendarState.currentUser,
+        calendarState.followedActivityIds,
+        true
+    );
 
-    const currentCard = document.getElementById(`activity-${activityId}`);
-    if (currentCard) {
-        const replacement = createActivityElement(
-            activity,
-            participants,
-            activityFollowers,
-            calendarState.currentUser,
-            calendarState.followedActivityIds,
-            currentCard.classList.contains("calendar-activity-compact")
-        );
-        currentCard.replaceWith(replacement);
+    const currentElement = document.getElementById(`activity-${activityId}`);
+    if (currentElement) {
+        currentElement.replaceWith(nextElement);
     }
 
-    const modal = document.querySelector(".calendar-mobile-activity-modal");
-    if (modal?.querySelector(".calendar-mobile-activity-modal-backdrop") && modal.dataset.activityId === activityId) {
-        const content = modal.querySelector(".calendar-mobile-activity-dialog-content");
-        if (content) {
-            const replacement = createActivityElement(
+    // Si le détail mobile est ouvert, actualise uniquement son contenu.
+    const dialog = document.querySelector(
+        ".calendar-mobile-activity-dialog[data-activity-id=\"" + activityId + "\"]"
+    );
+    if (dialog) {
+        const oldContent = dialog.querySelector(".calendar-mobile-activity-dialog-content");
+        if (oldContent) {
+            const newContent = createActivityElement(
                 activity,
-                participants,
-                activityFollowers,
+                participations,
+                followers,
                 calendarState.currentUser,
                 calendarState.followedActivityIds,
                 false
             );
-            replacement.classList.add("calendar-mobile-activity-dialog-content");
-            replacement.removeAttribute("id");
-            replacement.removeAttribute("role");
-            replacement.removeAttribute("tabindex");
-            replacement.removeAttribute("aria-label");
-            content.replaceWith(replacement);
+            newContent.classList.add("calendar-mobile-activity-dialog-content");
+            newContent.removeAttribute("id");
+            newContent.removeAttribute("role");
+            newContent.removeAttribute("tabindex");
+            newContent.removeAttribute("aria-label");
+            oldContent.replaceWith(newContent);
         }
     }
 }
@@ -478,13 +459,10 @@ async function joinActivity(activityId) {
     try {
         const { error } = await supabase.rpc("join_activity", { p_activity_id: activityId });
         if (error) {
-            // Le serveur reste la source de vérité. Si le bouton affichait
-            // un état périmé, on resynchronise avant d'afficher l'erreur.
-            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
-        calendarState.followedActivityIds.delete(activityId);
+        // Synchronisation serveur de cette seule activité.
         await refreshActivityDisplay(activityId);
     } catch (error) {
         console.error(error);
@@ -497,7 +475,6 @@ async function leaveActivity(activityId) {
     try {
         const { error } = await supabase.rpc("leave_activity", { p_activity_id: activityId });
         if (error) {
-            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
@@ -513,7 +490,6 @@ async function followActivity(activityId) {
     try {
         const { error } = await supabase.rpc("follow_activity", { p_activity_id: activityId });
         if (error) {
-            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
@@ -530,7 +506,6 @@ async function unfollowActivity(activityId) {
     try {
         const { error } = await supabase.rpc("unfollow_activity", { p_activity_id: activityId });
         if (error) {
-            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
@@ -678,6 +653,7 @@ function openMobileActivityDetails(activity, participants, followers, currentUse
     dialog.setAttribute("role", "dialog");
     dialog.setAttribute("aria-modal", "true");
     dialog.setAttribute("aria-label", `Détails de ${activity.title}`);
+    dialog.dataset.activityId = activity.id;
 
     const header = document.createElement("div");
     header.className = "calendar-mobile-activity-dialog-header";
@@ -712,7 +688,6 @@ function openMobileActivityDetails(activity, participants, followers, currentUse
     overlay.append(backdrop, dialog);
     document.body.appendChild(overlay);
     document.body.classList.add("calendar-mobile-activity-open");
-    overlay.dataset.activityId = activity.id;
 
     const close = () => {
         overlay.remove();
@@ -727,6 +702,7 @@ function openMobileActivityDetails(activity, participants, followers, currentUse
     backdrop.addEventListener("click", close);
     closeButton.addEventListener("click", close);
     document.addEventListener("keydown", onKeyDown);
+
 
     requestAnimationFrame(() => closeButton.focus());
 }
@@ -973,7 +949,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
 
     const initialWeek = selectedWeekStart ?? startOfWeek(today);
     const boundedWeek = isDateWithinPeriod(initialWeek, startDate, endDate)
-        ? initialWeek
+        ? cloneDate(initialWeek)
         : startOfWeek(startDate);
 
     calendarState.selectedWeekStart = cloneDate(boundedWeek);
@@ -997,7 +973,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
     previous.addEventListener("click", () => {
         const week = cloneDate(boundedWeek);
         week.setDate(week.getDate() - 7);
-        renderCalendar(activities, participations, followers, currentUser, followedActivityIds, week);
+        renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, week);
         scrollToActivityFromUrl();
     });
 
@@ -1008,7 +984,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
     next.addEventListener("click", () => {
         const week = cloneDate(boundedWeek);
         week.setDate(week.getDate() + 7);
-        renderCalendar(activities, participations, followers, currentUser, followedActivityIds, week);
+        renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, week);
         scrollToActivityFromUrl();
     });
 
@@ -1017,7 +993,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
     todayButton.className = "calendar-today-button";
     todayButton.textContent = "Aujourd'hui";
     todayButton.addEventListener("click", () => {
-        renderCalendar(activities, participations, followers, currentUser, followedActivityIds, startOfWeek(today));
+        renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, startOfWeek(today));
         window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
@@ -1039,7 +1015,7 @@ function renderCalendar(activities, participations, followers, currentUser, foll
             activities,
             boundedWeek,
             week => {
-                renderCalendar(activities, participations, followers, currentUser, followedActivityIds, week);
+                renderCalendar(calendarState.activities, calendarState.participations, calendarState.followers, calendarState.currentUser, calendarState.followedActivityIds, week);
                 window.scrollTo({ top: 0, behavior: "smooth" });
             }
         ));
@@ -1102,35 +1078,72 @@ function scrollToActivityFromUrl() {
  */
 async function init() {
     try {
-        calendarContainer.textContent = "Chargement du calendrier...";
+        calendarContainer.textContent =
+            "Chargement du calendrier...";
 
-        const currentUser = await getCurrentUser();
-        const activities = await loadActivities();
-        const activityIds = activities.map(activity => activity.id);
-        const participations = await loadParticipations(activityIds);
-        const followers = await loadFollowers(activityIds);
-        const follows = await loadMyFollows(currentUser, activityIds);
-        const followedActivityIds = createFollowSet(follows);
 
-        calendarState.activities = activities;
-        calendarState.participations = participations;
-        calendarState.followers = followers;
+        const currentUser =
+            await getCurrentUser();
+
+
+        const activities =
+            await loadActivities();
+
+
+        const activityIds =
+            activities.map(
+                activity => activity.id
+            );
+
+
+        const participations =
+            await loadParticipations(
+                activityIds
+            );
+
+
+        const followers =
+            await loadFollowers(
+                activityIds
+            );
+
+
+        const follows =
+            await loadMyFollows(
+                currentUser,
+                activityIds
+            );
+
+
+        const followedActivityIds =
+            createFollowSet(follows);
+
+
+        calendarState.activities = activities ?? [];
+        calendarState.participations = participations ?? [];
+        calendarState.followers = followers ?? [];
         calendarState.currentUser = currentUser;
         calendarState.followedActivityIds = followedActivityIds;
 
         renderCalendar(
-            activities,
-            participations,
-            followers,
-            currentUser,
-            followedActivityIds,
+            calendarState.activities,
+            calendarState.participations,
+            calendarState.followers,
+            calendarState.currentUser,
+            calendarState.followedActivityIds,
             calendarState.selectedWeekStart
         );
-
+        
         scrollToActivityFromUrl();
+
     } catch (error) {
-        console.error("Impossible de charger le calendrier :", error);
-        calendarContainer.textContent = "Impossible de charger le calendrier.";
+        console.error(
+            "Impossible de charger le calendrier :",
+            error
+        );
+
+        calendarContainer.textContent =
+            "Impossible de charger le calendrier.";
     }
 }
 
@@ -1158,7 +1171,10 @@ function subscribeToParticipationChanges() {
                     table: "participations"
                 },
                 async (payload) => {
-                    console.log("Changement de participation :", payload);
+                    console.log(
+                        "Changement de participation :",
+                        payload
+                    );
 
                     const activityId = payload.new?.activity_id ?? payload.old?.activity_id;
                     if (activityId) {

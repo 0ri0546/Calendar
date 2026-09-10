@@ -1,4 +1,4 @@
-import { supabase, SITE_URL } from "./supabase.js?v=20260910-01";
+import { supabase, SITE_URL } from "./supabase.js?v=20260910-1";
 
 const NOTIFICATION_TYPES = new Set([
     "place_opened",
@@ -286,18 +286,16 @@ function createUI(authMenu) {
     slider.setAttribute("aria-hidden", "true");
 
     preferences.append(preferenceText, toggle, slider);
-    const keepPanelOpen = event => {
-        event.stopPropagation();
-    };
 
-    // Le clic sur le toggle ne doit jamais être interprété comme un clic
-    // extérieur au panneau. On bloque click + pointerdown pour couvrir
-    // les comportements souris/tactile des navigateurs mobiles.
-    toggle.addEventListener("click", keepPanelOpen);
-    toggle.addEventListener("pointerdown", keepPanelOpen);
-    preferences.addEventListener("click", keepPanelOpen);
-    preferences.addEventListener("pointerdown", keepPanelOpen);
-    toggle.addEventListener("change", () => setNotificationsPreference(toggle.checked));
+    // Le réglage ne doit jamais être interprété comme un clic extérieur
+    // au panneau, y compris sur mobile/tactile.
+    for (const eventName of ["click", "pointerdown", "mousedown", "touchstart"]) {
+        preferences.addEventListener(eventName, event => event.stopPropagation());
+    }
+    toggle.addEventListener("change", event => {
+        event.stopPropagation();
+        void setNotificationsPreference(toggle.checked);
+    });
 
     const markAll = document.createElement("button");
     markAll.type = "button";
@@ -326,13 +324,8 @@ function createUI(authMenu) {
     });
 
     panel.addEventListener("click", event => event.stopPropagation());
-    panel.addEventListener("pointerdown", event => event.stopPropagation());
 
-    document.addEventListener("click", event => {
-        if (!wrapper.contains(event.target)) {
-            closePanel();
-        }
-    });
+    document.addEventListener("click", closePanel);
 
     authMenu.appendChild(wrapper);
 
