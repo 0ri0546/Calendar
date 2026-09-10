@@ -285,22 +285,34 @@ async function setDayPresence(date, present) {
     const day = formatDateForDatabase(date);
 
     try {
-        const { data, error } = await supabase.rpc(
-            "set_day_presence",
-            { p_day: day, p_present: present }
-        );
+        // On utilise directement les policies RLS de day_presence.
+        // C'est volontairement plus simple et plus fiable que de dépendre
+        // d'une RPC qui peut ne pas exister sur une base déjà installée.
+        if (present) {
+            const { error } = await supabase
+                .from("day_presence")
+                .upsert(
+                    { day, user_id: user.id },
+                    { onConflict: "day,user_id", ignoreDuplicates: true }
+                );
 
-        if (error) throw error;
+            if (error) throw error;
+            calendarState.dayPresence.add(day);
+        } else {
+            const { error } = await supabase
+                .from("day_presence")
+                .delete()
+                .eq("day", day)
+                .eq("user_id", user.id);
 
-        const actualPresent = data === true;
-        if (actualPresent) calendarState.dayPresence.add(day);
-        else calendarState.dayPresence.delete(day);
+            if (error) throw error;
+            calendarState.dayPresence.delete(day);
+        }
 
-        return { ok: true, present: actualPresent };
+        return { ok: true, present };
     } catch (error) {
         console.error("Erreur présence jeux divers :", error);
-        showUserError(error);
-        return { ok: false, present: !present };
+        return { ok: false, present: !present, error };
     }
 }
 
