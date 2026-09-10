@@ -845,7 +845,7 @@ async function unfollowActivity(activityId) {
 }
 
 
-function createActivityElement(activity, participants, followers, currentUser, followedActivityIds, compactWeek = false) {
+function createActivityElement(activity, participants, followers, currentUser, followedActivityIds, compactWeek = false, showActions = true) {
     const article = document.createElement("article");
     article.className = "calendar-activity";
     article.id = `activity-${activity.id}`;
@@ -938,7 +938,9 @@ function createActivityElement(activity, participants, followers, currentUser, f
         article.appendChild(createWaitingQueueElement(followers));
     }
 
-    article.appendChild(createActivityActions(activity, participants, currentUser, followedActivityIds));
+    if (showActions) {
+        article.appendChild(createActivityActions(activity, participants, currentUser, followedActivityIds));
+    }
 
     if (compactWeek) {
         article.classList.add("calendar-activity-compact");
@@ -1267,7 +1269,8 @@ function openDayRecap(date) {
                 followers.get(activity.id) ?? [],
                 calendarState.currentUser,
                 calendarState.followedActivityIds,
-                compact
+                compact,
+                false
             );
             // Les cartes du récapitulatif ne doivent pas entrer en collision
             // avec les IDs des cartes de la vue semaine.
