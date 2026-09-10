@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proposer une activité - Calendar</title>
-    <link rel="stylesheet" href="../css/style.css?v=20260909-35">
+    <link rel="stylesheet" href="../css/style.css?v=20260910-40">
 </head>
 <body>
     <header class="site-header">
@@ -23,70 +23,111 @@
             <h1>Proposer une activité</h1>
             <p>Votre proposition sera soumise à validation par un administrateur.</p>
 
-            <form id="activity-form" class="activity-form">
-                <div class="form-field">
-                    <label for="activity-title">Activité / jeu *</label>
-                    <input id="activity-title" name="title" type="text" maxlength="150" required>
-                </div>
+            <div class="proposal-accordions">
+                <section class="proposal-accordion">
+                    <button type="button" class="proposal-accordion-toggle" aria-expanded="false" aria-controls="prepared-proposal-content">
+                        <span>🎲 Proposer un jeu préparé</span>
+                        <span class="proposal-accordion-chevron" aria-hidden="true">⌄</span>
+                    </button>
+                    <div id="prepared-proposal-content" class="proposal-accordion-content" hidden>
+                        <form id="activity-form" class="activity-form">
+                            <div class="form-field">
+                                <label for="activity-title">Activité / jeu *</label>
+                                <input id="activity-title" name="title" type="text" maxlength="150" required>
+                            </div>
 
-                <div class="form-field">
-                    <label for="activity-description">Description</label>
-                    <textarea id="activity-description" name="description" rows="5" maxlength="5000"></textarea>
-                </div>
+                            <div class="form-field">
+                                <label for="activity-description">Description</label>
+                                <textarea id="activity-description" name="description" rows="5" maxlength="5000"></textarea>
+                            </div>
 
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="activity-date">Date *</label>
-                        <input id="activity-date" name="date" type="date" required>
+                            <div class="form-grid">
+                                <div class="form-field">
+                                    <label for="activity-date">Date *</label>
+                                    <input id="activity-date" name="date" type="date" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="activity-start-time">Début *</label>
+                                    <input id="activity-start-time" name="start_time" type="time" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="activity-end-time">Fin *</label>
+                                    <input id="activity-end-time" name="end_time" type="time" required>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-field">
+                                    <label for="activity-min-players">Joueurs minimum *</label>
+                                    <input id="activity-min-players" name="min_players" type="number" min="1" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="activity-max-players">Joueurs maximum *</label>
+                                    <input id="activity-max-players" name="max_players" type="number" min="1" required>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="activity-location">Lieu</label>
+                                <input id="activity-location" name="location" type="text" maxlength="300" placeholder="Ex. Salle principale">
+                            </div>
+
+                            <label class="form-checkbox">
+                                <input id="activity-is-event" name="is_event" type="checkbox">
+                                <span title="Marquer cette activité comme événement important">⭐ Activité importante</span>
+                            </label>
+
+                            <div class="form-field">
+                                <label for="activity-image">Image de l'activité</label>
+                                <input id="activity-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif">
+                                <small>Optionnelle · 1 image · 10 Mo maximum · JPG, PNG, WebP, GIF ou AVIF</small>
+                                <div id="activity-image-preview" class="activity-image-preview-container"></div>
+                            </div>
+
+                            <div class="activity-form-actions">
+                                <button type="submit" id="propose-submit-button">Proposer</button>
+                                <button type="button" id="approve-submit-button" class="btn-direct-approve" hidden>Valider</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-field">
-                        <label for="activity-start-time">Début *</label>
-                        <input id="activity-start-time" name="start_time" type="time" required>
+                </section>
+
+                <section class="proposal-accordion">
+                    <button type="button" class="proposal-accordion-toggle" aria-expanded="false" aria-controls="free-proposal-content">
+                        <span>🃏 Proposer un jeu libre</span>
+                        <span class="proposal-accordion-chevron" aria-hidden="true">⌄</span>
+                    </button>
+                    <div id="free-proposal-content" class="proposal-accordion-content" hidden>
+                        <form id="free-activity-form" class="activity-form">
+                            <div class="form-field">
+                                <label for="free-activity-description">Description *</label>
+                                <textarea id="free-activity-description" name="description" rows="5" maxlength="5000" placeholder="Ex. Je serai présent pour jouer librement, venez avec le jeu de votre choix." required></textarea>
+                            </div>
+
+                            <div class="form-grid free-activity-grid">
+                                <div class="form-field">
+                                    <label for="free-activity-date">Date *</label>
+                                    <input id="free-activity-date" name="date" type="date" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="free-activity-location">Lieu *</label>
+                                    <input id="free-activity-location" name="location" type="text" maxlength="300" placeholder="Ex. Salle principale" required>
+                                </div>
+                            </div>
+
+                            <div class="activity-form-actions">
+                                <button type="submit" id="free-propose-submit-button">Proposer</button>
+                                <button type="button" id="free-approve-submit-button" class="btn-direct-approve" hidden>Valider</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-field">
-                        <label for="activity-end-time">Fin *</label>
-                        <input id="activity-end-time" name="end_time" type="time" required>
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="activity-min-players">Joueurs minimum *</label>
-                        <input id="activity-min-players" name="min_players" type="number" min="1" required>
-                    </div>
-                    <div class="form-field">
-                        <label for="activity-max-players">Joueurs maximum *</label>
-                        <input id="activity-max-players" name="max_players" type="number" min="1" required>
-                    </div>
-                </div>
-
-                <div class="form-field">
-                    <label for="activity-location">Lieu</label>
-                    <input id="activity-location" name="location" type="text" maxlength="300" placeholder="Ex. Salle principale">
-                </div>
-
-                <label class="form-checkbox">
-                    <input id="activity-is-event" name="is_event" type="checkbox">
-                    <span title="Marquer cette activité comme événement important">⭐ Activité importante</span>
-                </label>
-
-                <div class="form-field">
-                    <label for="activity-image">Image de l'activité</label>
-                    <input id="activity-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif">
-                    <small>Optionnelle · 1 image · 10 Mo maximum · JPG, PNG, WebP, GIF ou AVIF</small>
-                    <div id="activity-image-preview" class="activity-image-preview-container"></div>
-                </div>
-
-                <div class="activity-form-actions">
-                    <button type="submit" id="propose-submit-button">Proposer</button>
-                    <button type="button" id="approve-submit-button" class="btn-direct-approve" hidden>Valider</button>
-                </div>
-                <p id="activity-form-message" class="form-message" aria-live="polite"></p>
-            </form>
+                </section>
+            </div>
+            <p id="activity-form-message" class="form-message" aria-live="polite"></p>
         </section>
     </main>
 
-    <script type="module" src="../js/auth.js?v=20260910-2"></script>
+    <script type="module" src="../js/auth.js?v=20260910-40"></script>
     <footer class="site-footer">
     <div class="footer-main">
         <div class="footer-brand">
@@ -102,6 +143,6 @@
     <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
 </footer>
 
-<script type="module" src="../js/propose.js?v=20260909-32"></script>
+<script type="module" src="../js/propose.js?v=20260910-3"></script>
 </body>
 </html>

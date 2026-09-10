@@ -173,7 +173,8 @@ async function loadActivities() {
             max_players,
             location,
             is_event,
-            image_url
+            image_url,
+            activity_type
         `)
         .eq("status", "approved")
         .gte("date", formatDateForDatabase(startDate))
@@ -353,6 +354,12 @@ function createWaitingQueueElement(followers) {
 
 function createActivityActions(activity, participants, currentUser, followedActivityIds) {
     const actions = document.createElement("div");
+
+    // Un jeu libre ne possède ni places ni inscription : il est simplement
+    // informatif dans le calendrier.
+    if (activity.activity_type === "free") {
+        return actions;
+    }
     actions.className = "calendar-actions";
 
     if (!currentUser) {
@@ -553,34 +560,41 @@ function createActivityElement(activity, participants, followers, currentUser, f
     const details = document.createElement("div");
     details.className = "calendar-activity-details";
 
-    const time = document.createElement("p");
-    time.textContent = `🕐 ${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`;
-    details.appendChild(time);
-
-    const players = document.createElement("p");
-    players.textContent = `👥 ${activity.min_players} à ${activity.max_players} joueurs`;
-    details.appendChild(players);
-
-    const remaining = Math.max(0, activity.max_players - participants.length);
-    const availability = document.createElement("p");
-    availability.className = "calendar-availability";
-    if (remaining === 0) {
-        availability.textContent = "🔴 Complet";
-        availability.classList.add("is-full");
-    } else if (remaining === 1) {
-        availability.textContent = "🟠 1 place restante";
-        availability.classList.add("is-last-place");
+    if (activity.activity_type === "free") {
+        const freeLabel = document.createElement("p");
+        freeLabel.className = "calendar-free-label";
+        freeLabel.textContent = "🃏 Jeu libre";
+        details.appendChild(freeLabel);
     } else {
-        availability.textContent = `🟢 ${remaining} places disponibles`;
-        availability.classList.add("is-open");
-    }
-    details.appendChild(availability);
+        const time = document.createElement("p");
+        time.textContent = `🕐 ${formatTime(activity.start_time)} → ${formatTime(activity.end_time)}`;
+        details.appendChild(time);
 
-    if (followers.length > 0) {
-        const queueSummary = document.createElement("p");
-        queueSummary.className = "calendar-queue-summary";
-        queueSummary.textContent = `👥 ${followers.length} personne${followers.length > 1 ? "s" : ""} en attente`;
-        details.appendChild(queueSummary);
+        const players = document.createElement("p");
+        players.textContent = `👥 ${activity.min_players} à ${activity.max_players} joueurs`;
+        details.appendChild(players);
+
+        const remaining = Math.max(0, activity.max_players - participants.length);
+        const availability = document.createElement("p");
+        availability.className = "calendar-availability";
+        if (remaining === 0) {
+            availability.textContent = "🔴 Complet";
+            availability.classList.add("is-full");
+        } else if (remaining === 1) {
+            availability.textContent = "🟠 1 place restante";
+            availability.classList.add("is-last-place");
+        } else {
+            availability.textContent = `🟢 ${remaining} places disponibles`;
+            availability.classList.add("is-open");
+        }
+        details.appendChild(availability);
+
+        if (followers.length > 0) {
+            const queueSummary = document.createElement("p");
+            queueSummary.className = "calendar-queue-summary";
+            queueSummary.textContent = `👥 ${followers.length} personne${followers.length > 1 ? "s" : ""} en attente`;
+            details.appendChild(queueSummary);
+        }
     }
 
     if (activity.location) {
@@ -720,6 +734,87 @@ function groupActivitiesByDate(activities) {
 }
 
 
+function openDayRecap(date) {
+    document.querySelector(".calendar-day-recap-modal")?.remove();
+
+    const dateString = formatDateForDatabase(date);
+    const activities = calendarState.activities.filter(activity => activity.date === dateString);
+    const participations = groupParticipations(calendarState.participations);
+    const followers = groupFollowers(calendarState.followers);
+
+    const overlay = document.createElement("div");
+    overlay.className = "calendar-day-recap-modal";
+
+    const backdrop = document.createElement("button");
+    backdrop.type = "button";
+    backdrop.className = "calendar-day-recap-backdrop";
+    backdrop.setAttribute("aria-label", "Fermer le récapitulatif");
+
+    const dialog = document.createElement("div");
+    dialog.className = "calendar-day-recap-dialog";
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-label", `Activités du ${formatDateForDisplay(dateString)}`);
+
+    const header = document.createElement("div");
+    header.className = "calendar-day-recap-header";
+
+    const title = document.createElement("h2");
+    title.textContent = formatDateForDisplay(dateString);
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "calendar-day-recap-close";
+    closeButton.textContent = "×";
+    closeButton.setAttribute("aria-label", "Fermer");
+    header.append(title, closeButton);
+    dialog.appendChild(header);
+
+    const grid = document.createElement("div");
+    grid.className = "calendar-day-recap-grid";
+
+    if (activities.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "calendar-day-recap-empty";
+        empty.textContent = "Aucune activité prévue ce jour.";
+        grid.appendChild(empty);
+    } else {
+        const compact = window.matchMedia("(max-width: 650px)").matches;
+        for (const activity of activities) {
+            const card = createActivityElement(
+                activity,
+                participations.get(activity.id) ?? [],
+                followers.get(activity.id) ?? [],
+                calendarState.currentUser,
+                calendarState.followedActivityIds,
+                compact
+            );
+            // Les cartes du récapitulatif ne doivent pas entrer en collision
+            // avec les IDs des cartes de la vue semaine.
+            card.removeAttribute("id");
+            grid.appendChild(card);
+        }
+    }
+
+    dialog.appendChild(grid);
+    overlay.append(backdrop, dialog);
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    backdrop.addEventListener("click", close);
+    closeButton.addEventListener("click", close);
+
+    const onKeyDown = event => {
+        if (event.key === "Escape") {
+            close();
+            document.removeEventListener("keydown", onKeyDown);
+        }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    requestAnimationFrame(() => closeButton.focus());
+}
+
+
 function createDayActivityList(date, groupedActivities, groupedParticipations, groupedFollowers, currentUser, followedActivityIds, compactWeek = false) {
     const dateString = formatDateForDatabase(date);
     const activitiesForDay = groupedActivities.get(dateString) ?? [];
@@ -732,7 +827,11 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
         dayElement.classList.add("calendar-saturday");
     }
 
-    const heading = document.createElement("h2");
+    const heading = document.createElement("button");
+    heading.type = "button";
+    heading.className = "calendar-day-heading-button";
+    heading.type = "button";
+    heading.setAttribute("aria-label", `Voir les activités du ${formatDateForDisplay(dateString)}`);
 
     const weekday = document.createElement("span");
     weekday.className = "calendar-day-weekday";
@@ -748,6 +847,7 @@ function createDayActivityList(date, groupedActivities, groupedParticipations, g
     }).format(date);
 
     heading.append(weekday, dateLabel);
+    heading.addEventListener("click", () => openDayRecap(date));
     dayElement.appendChild(heading);
 
     const today = new Date();

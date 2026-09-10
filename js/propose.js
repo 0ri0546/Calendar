@@ -1,12 +1,15 @@
-import { supabase } from "./supabase.js?v=20260909-32";
-import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260909-32";
+import { supabase } from "./supabase.js?v=20260910-3";
+import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260910-3";
 
-const form = document.getElementById("activity-form");
+const preparedForm = document.getElementById("activity-form");
+const freeForm = document.getElementById("free-activity-form");
 const message = document.getElementById("activity-form-message");
 const imageInput = document.getElementById("activity-image");
 const imagePreview = document.getElementById("activity-image-preview");
 const proposeButton = document.getElementById("propose-submit-button");
 const approveButton = document.getElementById("approve-submit-button");
+const freeProposeButton = document.getElementById("free-propose-submit-button");
+const freeApproveButton = document.getElementById("free-approve-submit-button");
 let currentUserIsAdmin = false;
 
 function setMessage(text, type = "") {
@@ -23,9 +26,7 @@ function getSixMonthCalendarLimit() {
 function showImagePreview(file) {
     imagePreview.replaceChildren();
 
-    if (!file) {
-        return;
-    }
+    if (!file) return;
 
     try {
         validateActivityImage(file);
@@ -48,6 +49,8 @@ async function loadCurrentUserRole() {
 
     if (userError || !userData.user) {
         currentUserIsAdmin = false;
+        if (approveButton) approveButton.hidden = true;
+        if (freeApproveButton) freeApproveButton.hidden = true;
         return;
     }
 
@@ -59,23 +62,19 @@ async function loadCurrentUserRole() {
 
     currentUserIsAdmin = !profileError && profile?.role === "admin";
 
-    if (approveButton) {
-        approveButton.hidden = !currentUserIsAdmin;
-    }
+    if (approveButton) approveButton.hidden = !currentUserIsAdmin;
+    if (freeApproveButton) freeApproveButton.hidden = !currentUserIsAdmin;
 }
 
 loadCurrentUserRole();
 
-// La session Supabase peut être restaurée après le chargement du module.
-// On revérifie donc le rôle dès qu'une session devient disponible ou change.
 supabase.auth.onAuthStateChange((event, session) => {
     if (session?.user) {
-        setTimeout(() => {
-            loadCurrentUserRole();
-        }, 0);
+        setTimeout(loadCurrentUserRole, 0);
     } else {
         currentUserIsAdmin = false;
         if (approveButton) approveButton.hidden = true;
+        if (freeApproveButton) freeApproveButton.hidden = true;
     }
 });
 
@@ -83,12 +82,31 @@ imageInput?.addEventListener("change", () => {
     showImagePreview(imageInput.files?.[0] || null);
 });
 
-async function submitActivity({ validateDirectly = false } = {}) {
-    const submitButton = validateDirectly ? approveButton : proposeButton;
-    const otherButton = validateDirectly ? proposeButton : approveButton;
+function setupAccordion() {
+    document.querySelectorAll(".proposal-accordion-toggle").forEach((toggle) => {
+        toggle.addEventListener("click", () => {
+            const accordion = toggle.closest(".proposal-accordion");
+            const content = accordion?.querySelector(".proposal-accordion-content");
+            if (!accordion || !content) return;
 
-    if (submitButton) submitButton.disabled = true;
-    if (otherButton) otherButton.disabled = true;
+            const shouldOpen = content.hidden;
+            content.hidden = !shouldOpen;
+            accordion.classList.toggle("is-open", shouldOpen);
+            toggle.setAttribute("aria-expanded", String(shouldOpen));
+        });
+    });
+}
+
+setupAccordion();
+
+function setButtonsDisabled(buttons, disabled) {
+    buttons.filter(Boolean).forEach((button) => {
+        button.disabled = disabled;
+    });
+}
+
+async function submitPreparedActivity({ validateDirectly = false } = {}) {
+    setButtonsDisabled([proposeButton, approveButton], true);
     setMessage(validateDirectly ? "Validation de l'activité..." : "Envoi de la proposition...");
 
     let uploadedImage = null;
@@ -96,9 +114,7 @@ async function submitActivity({ validateDirectly = false } = {}) {
 
     try {
         const { data: userData, error: userError } = await supabase.auth.getUser();
-        if (userError || !userData.user) {
-            throw new Error("Vous devez être connecté pour proposer une activité.");
-        }
+        if (userError || !userData.user) throw new Error("Vous devez être connecté pour proposer une activité.");
 
         const user = userData.user;
         activityId = crypto.randomUUID();
@@ -110,6 +126,7 @@ async function submitActivity({ validateDirectly = false } = {}) {
 
         const payload = {
             id: activityId,
+            activity_type: "prepared",
             title: document.getElementById("activity-title").value.trim(),
             description: document.getElementById("activity-description").value.trim() || null,
             date: document.getElementById("activity-date").value,
@@ -128,18 +145,12 @@ async function submitActivity({ validateDirectly = false } = {}) {
         if (insertError) throw insertError;
 
         if (validateDirectly) {
-            if (!currentUserIsAdmin) {
-                throw new Error("Seuls les administrateurs peuvent valider directement une activité.");
-            }
-
-            const { error: approveError } = await supabase.rpc("approve_activity", {
-                p_activity_id: activityId
-            });
-
+            if (!currentUserIsAdmin) throw new Error("Seuls les administrateurs peuvent valider directement une activité.");
+            const { error: approveError } = await supabase.rpc("approve_activity", { p_activity_id: activityId });
             if (approveError) throw approveError;
         }
 
-        form.reset();
+        preparedForm.reset();
         imagePreview.replaceChildren();
         setMessage(
             validateDirectly
@@ -148,35 +159,94 @@ async function submitActivity({ validateDirectly = false } = {}) {
             "success"
         );
     } catch (error) {
-        if (uploadedImage?.path) {
-            await removeActivityImage(uploadedImage.path);
-        }
-
+        if (uploadedImage?.path) await removeActivityImage(uploadedImage.path);
         console.error("Erreur proposition activité :", error);
         setMessage(error.message || "Impossible d'envoyer la proposition.", "error");
     } finally {
-        if (submitButton) submitButton.disabled = false;
-        if (otherButton) otherButton.disabled = false;
+        setButtonsDisabled([proposeButton, approveButton], false);
     }
 }
 
-form?.addEventListener("submit", async (event) => {
+async function submitFreeActivity({ validateDirectly = false } = {}) {
+    setButtonsDisabled([freeProposeButton, freeApproveButton], true);
+    setMessage(validateDirectly ? "Validation du jeu libre..." : "Envoi de la proposition...");
+
+    let activityId = null;
+
+    try {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData.user) throw new Error("Vous devez être connecté pour proposer une activité.");
+
+        const user = userData.user;
+        activityId = crypto.randomUUID();
+
+        const payload = {
+            id: activityId,
+            activity_type: "free",
+            title: "Jeu libre",
+            description: document.getElementById("free-activity-description").value.trim(),
+            date: document.getElementById("free-activity-date").value,
+            start_time: null,
+            end_time: null,
+            min_players: null,
+            max_players: null,
+            location: document.getElementById("free-activity-location").value.trim(),
+            is_event: false,
+            image_url: null,
+            created_by: user.id,
+            status: "pending"
+        };
+
+        const { error: insertError } = await supabase.from("activities").insert(payload);
+        if (insertError) throw insertError;
+
+        if (validateDirectly) {
+            if (!currentUserIsAdmin) throw new Error("Seuls les administrateurs peuvent valider directement une activité.");
+            const { error: approveError } = await supabase.rpc("approve_activity", { p_activity_id: activityId });
+            if (approveError) throw approveError;
+        }
+
+        freeForm.reset();
+        setMessage(
+            validateDirectly
+                ? "Jeu libre validé directement et publié."
+                : "Proposition de jeu libre envoyée. Elle sera visible après validation par un administrateur.",
+            "success"
+        );
+    } catch (error) {
+        console.error("Erreur proposition jeu libre :", error);
+        setMessage(error.message || "Impossible d'envoyer la proposition de jeu libre.", "error");
+    } finally {
+        setButtonsDisabled([freeProposeButton, freeApproveButton], false);
+    }
+}
+
+preparedForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await submitActivity({ validateDirectly: false });
+    await submitPreparedActivity({ validateDirectly: false });
 });
 
 approveButton?.addEventListener("click", async () => {
     if (!currentUserIsAdmin) return;
-
-    const confirmed = confirm("Valider directement cette activité ?");
-    if (!confirmed) return;
-
-    await submitActivity({ validateDirectly: true });
+    if (!confirm("Valider directement cette activité ?")) return;
+    await submitPreparedActivity({ validateDirectly: true });
 });
 
-const dateInput = document.getElementById("activity-date");
-if (dateInput) {
-    const today = new Date().toISOString().slice(0, 10);
-    dateInput.min = today;
-    dateInput.max = getSixMonthCalendarLimit();
-}
+freeForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await submitFreeActivity({ validateDirectly: false });
+});
+
+freeApproveButton?.addEventListener("click", async () => {
+    if (!currentUserIsAdmin) return;
+    if (!confirm("Valider directement ce jeu libre ?")) return;
+    await submitFreeActivity({ validateDirectly: true });
+});
+
+const today = new Date().toISOString().slice(0, 10);
+const maxDate = getSixMonthCalendarLimit();
+
+document.getElementById("activity-date")?.setAttribute("min", today);
+document.getElementById("activity-date")?.setAttribute("max", maxDate);
+document.getElementById("free-activity-date")?.setAttribute("min", today);
+document.getElementById("free-activity-date")?.setAttribute("max", maxDate);

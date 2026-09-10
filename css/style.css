@@ -592,6 +592,104 @@ button:not(.icon-button):hover { background: var(--brand-light); transform: tran
     line-height: 1.15;
 }
 
+.calendar-day-heading-button {
+    width: 100%;
+    min-height: 46px;
+    margin: 0;
+    padding: 0 0 8px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.calendar-day-heading-button:hover .calendar-day-date {
+    color: var(--brand);
+}
+
+.calendar-free-label {
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.calendar-day-recap-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.calendar-day-recap-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: rgba(0, 0, 0, .78);
+}
+
+.calendar-day-recap-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(1180px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+    padding: 22px;
+    box-sizing: border-box;
+    background: var(--surface);
+    border: 1px solid var(--line-brand);
+    border-radius: 18px;
+}
+
+.calendar-day-recap-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.calendar-day-recap-header h2 { margin: 0; text-transform: capitalize; }
+
+.calendar-day-recap-close {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.calendar-day-recap-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.calendar-day-recap-grid .calendar-activity {
+    margin-top: 0;
+}
+
+.calendar-day-recap-empty {
+    grid-column: 1 / -1;
+    color: var(--muted);
+}
+
 .calendar-day-weekday,
 .calendar-day-date {
     display: block;
@@ -3462,4 +3560,232 @@ body.events-modal-open { overflow: hidden; }
     color: var(--muted);
     font-size: .74rem;
     line-height: 1.4;
+}
+
+/* =========================================================
+   PROPOSITION — deux types d'activités déroulants
+   ========================================================= */
+.proposal-accordions {
+    display: grid;
+    gap: 14px;
+    margin-top: 1.5rem;
+}
+
+.proposal-accordion {
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    background: rgba(255,255,255,.025);
+}
+
+.proposal-accordion-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 16px 18px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+    transform: none !important;
+}
+
+.proposal-accordion-toggle:hover {
+    background: rgba(255,255,255,.045);
+}
+
+.proposal-accordion-chevron {
+    flex: 0 0 auto;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: transform .18s ease;
+}
+
+.proposal-accordion.is-open .proposal-accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.proposal-accordion-content {
+    padding: 0 18px 20px;
+}
+
+.proposal-accordion-content[hidden] {
+    display: none;
+}
+
+.free-activity-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+}
+
+@media (max-width: 700px) {
+    .proposal-accordion-toggle {
+        padding: 14px 15px;
+    }
+
+    .proposal-accordion-content {
+        padding: 0 15px 16px;
+    }
+
+    .free-activity-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Étape 10 — récapitulatif d'une journée. */
+@media (max-width: 650px) {
+    .calendar-day-heading-button {
+        min-height: 32px !important;
+        padding-bottom: 5px !important;
+    }
+
+    .calendar-day-recap-modal {
+        padding: 10px;
+    }
+
+    .calendar-day-recap-dialog {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .calendar-day-recap-header {
+        margin-bottom: 10px;
+    }
+
+    .calendar-day-recap-header h2 {
+        font-size: .95rem;
+    }
+
+    .calendar-day-recap-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    .calendar-day-recap-grid .calendar-activity {
+        min-width: 0;
+    }
+
+    .calendar-day-recap-grid .calendar-activity-compact {
+        cursor: pointer !important;
+    }
+}
+
+
+/* ==================================================
+   ÉTAPE 11 — PRÉSENCE DES AMIS
+   ================================================== */
+.friend-name-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.friend-online-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+    background: #6b6563;
+    border: 1px solid rgba(255,255,255,.18);
+    vertical-align: middle;
+}
+
+.friend-online-dot.is-online {
+    background: #55c878;
+    border-color: rgba(85,200,120,.9);
+}
+
+.home-online-section {
+    margin-top: 26px;
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+}
+
+.home-online-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 14px;
+}
+
+.home-online-header h2 {
+    margin: 2px 0 0;
+}
+
+.home-online-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+    font-size: .72rem;
+    white-space: nowrap;
+}
+
+.home-online-friends {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.home-online-friend {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 7px 11px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-2);
+}
+
+.home-online-avatar {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--brand);
+}
+
+.home-online-empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: .78rem;
+}
+
+@media (max-width: 650px) {
+    .home-online-section {
+        padding: 17px;
+    }
+
+    .home-online-header {
+        align-items: flex-start;
+    }
+
+    .home-online-friends {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-online-friend {
+        min-width: 0;
+    }
+
+    .home-online-friend strong {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
 }
