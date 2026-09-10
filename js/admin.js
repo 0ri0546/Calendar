@@ -10,7 +10,7 @@ function getAvatarDisplayUrl(url) {
     return `${url}${separator}v=${Date.now()}`;
 }
 import { showUserError } from "./ui-messages.js?v=20260909-28";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260909-35";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-01";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");

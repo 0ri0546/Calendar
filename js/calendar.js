@@ -1,18 +1,21 @@
-import { supabase } from "./supabase.js?v=20260909-35";
-import { showUserError } from "./ui-messages.js?v=20260909-35";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260909-35";
+import { supabase } from "./supabase.js?v=20260910-01";
+import { showUserError } from "./ui-messages.js?v=20260910-01";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260910-01";
 
 const calendarContainer = document.getElementById("calendar");
 const calendarPeriod = document.getElementById("calendar-period");
 
 let realtimeChannel = null;
-let calendarState = {
+
+// État persistant du calendrier. Les actions et Realtime mettent à jour
+// uniquement l'activité concernée au lieu de reconstruire toute la vue.
+const calendarState = {
     activities: [],
     participations: [],
     followers: [],
     currentUser: null,
     followedActivityIds: new Set(),
-    selectedWeekStart: null,
+    selectedWeekStart: null
 };
 
 
@@ -394,10 +397,90 @@ function createActivityActions(activity, participants, currentUser, followedActi
 }
 
 
+async function refreshActivityDisplay(activityId) {
+    const activity = calendarState.activities.find(item => item.id === activityId);
+    if (!activity) return;
+
+    const [{ data: participations, error: participationsError }, { data: followers, error: followersError }] =
+        await Promise.all([
+            supabase
+                .from("participations")
+                .select("activity_id, user_id, joined_at, profiles (pseudo, avatar_url)")
+                .eq("activity_id", activityId)
+                .order("joined_at", { ascending: true }),
+            supabase
+                .from("followers")
+                .select("activity_id, user_id, followed_at, profiles (pseudo, avatar_url)")
+                .eq("activity_id", activityId)
+                .order("followed_at", { ascending: true })
+        ]);
+
+    if (participationsError) {
+        console.error("Erreur actualisation participants :", participationsError);
+        return;
+    }
+
+    if (followersError) {
+        console.warn("Erreur actualisation file d'attente :", followersError);
+    }
+
+    calendarState.participations = [
+        ...calendarState.participations.filter(item => item.activity_id !== activityId),
+        ...(participations ?? [])
+    ];
+    calendarState.followers = [
+        ...calendarState.followers.filter(item => item.activity_id !== activityId),
+        ...(followers ?? [])
+    ];
+
+    const groupedParticipations = groupParticipations(calendarState.participations);
+    const groupedFollowers = groupFollowers(calendarState.followers);
+    const participants = groupedParticipations.get(activityId) ?? [];
+    const activityFollowers = groupedFollowers.get(activityId) ?? [];
+
+    const currentCard = document.getElementById(`activity-${activityId}`);
+    if (currentCard) {
+        const replacement = createActivityElement(
+            activity,
+            participants,
+            activityFollowers,
+            calendarState.currentUser,
+            calendarState.followedActivityIds,
+            currentCard.classList.contains("calendar-activity-compact")
+        );
+        currentCard.replaceWith(replacement);
+    }
+
+    const modal = document.querySelector(".calendar-mobile-activity-modal");
+    if (modal?.querySelector(".calendar-mobile-activity-modal-backdrop") && modal.dataset.activityId === activityId) {
+        const content = modal.querySelector(".calendar-mobile-activity-dialog-content");
+        if (content) {
+            const replacement = createActivityElement(
+                activity,
+                participants,
+                activityFollowers,
+                calendarState.currentUser,
+                calendarState.followedActivityIds,
+                false
+            );
+            replacement.classList.add("calendar-mobile-activity-dialog-content");
+            replacement.removeAttribute("id");
+            replacement.removeAttribute("role");
+            replacement.removeAttribute("tabindex");
+            replacement.removeAttribute("aria-label");
+            content.replaceWith(replacement);
+        }
+    }
+}
+
+
 async function joinActivity(activityId) {
     try {
         const { error } = await supabase.rpc("join_activity", { p_activity_id: activityId });
         if (error) {
+            // Le serveur reste la source de vérité. Si le bouton affichait
+            // un état périmé, on resynchronise avant d'afficher l'erreur.
+            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
@@ -414,6 +497,7 @@ async function leaveActivity(activityId) {
     try {
         const { error } = await supabase.rpc("leave_activity", { p_activity_id: activityId });
         if (error) {
+            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
@@ -429,6 +513,7 @@ async function followActivity(activityId) {
     try {
         const { error } = await supabase.rpc("follow_activity", { p_activity_id: activityId });
         if (error) {
+            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
@@ -445,6 +530,7 @@ async function unfollowActivity(activityId) {
     try {
         const { error } = await supabase.rpc("unfollow_activity", { p_activity_id: activityId });
         if (error) {
+            await refreshActivityDisplay(activityId);
             showUserError(error);
             return;
         }
@@ -589,7 +675,6 @@ function openMobileActivityDetails(activity, participants, followers, currentUse
 
     const dialog = document.createElement("div");
     dialog.className = "calendar-mobile-activity-dialog";
-    dialog.dataset.activityId = activity.id;
     dialog.setAttribute("role", "dialog");
     dialog.setAttribute("aria-modal", "true");
     dialog.setAttribute("aria-label", `Détails de ${activity.title}`);
@@ -627,6 +712,7 @@ function openMobileActivityDetails(activity, participants, followers, currentUse
     overlay.append(backdrop, dialog);
     document.body.appendChild(overlay);
     document.body.classList.add("calendar-mobile-activity-open");
+    overlay.dataset.activityId = activity.id;
 
     const close = () => {
         overlay.remove();
@@ -1016,46 +1102,15 @@ function scrollToActivityFromUrl() {
  */
 async function init() {
     try {
-        calendarContainer.textContent =
-            "Chargement du calendrier...";
+        calendarContainer.textContent = "Chargement du calendrier...";
 
-
-        const currentUser =
-            await getCurrentUser();
-
-
-        const activities =
-            await loadActivities();
-
-
-        const activityIds =
-            activities.map(
-                activity => activity.id
-            );
-
-
-        const participations =
-            await loadParticipations(
-                activityIds
-            );
-
-
-        const followers =
-            await loadFollowers(
-                activityIds
-            );
-
-
-        const follows =
-            await loadMyFollows(
-                currentUser,
-                activityIds
-            );
-
-
-        const followedActivityIds =
-            createFollowSet(follows);
-
+        const currentUser = await getCurrentUser();
+        const activities = await loadActivities();
+        const activityIds = activities.map(activity => activity.id);
+        const participations = await loadParticipations(activityIds);
+        const followers = await loadFollowers(activityIds);
+        const follows = await loadMyFollows(currentUser, activityIds);
+        const followedActivityIds = createFollowSet(follows);
 
         calendarState.activities = activities;
         calendarState.participations = participations;
@@ -1071,85 +1126,11 @@ async function init() {
             followedActivityIds,
             calendarState.selectedWeekStart
         );
-        
+
         scrollToActivityFromUrl();
-
     } catch (error) {
-        console.error(
-            "Impossible de charger le calendrier :",
-            error
-        );
-
-        calendarContainer.textContent =
-            "Impossible de charger le calendrier.";
-    }
-}
-
-
-async function refreshActivityDisplay(activityId) {
-    const activity = calendarState.activities.find(item => item.id === activityId);
-    if (!activity) return;
-
-    try {
-        const [participationsResult, followersResult] = await Promise.all([
-            supabase
-                .from("participations")
-                .select("activity_id, user_id, joined_at, profiles(pseudo, avatar_url)")
-                .eq("activity_id", activityId),
-            supabase
-                .from("followers")
-                .select("activity_id, user_id, followed_at, profiles(pseudo, avatar_url)")
-                .eq("activity_id", activityId),
-        ]);
-
-        if (participationsResult.error) throw participationsResult.error;
-        if (followersResult.error) throw followersResult.error;
-
-        calendarState.participations = [
-            ...calendarState.participations.filter(item => item.activity_id !== activityId),
-            ...(participationsResult.data ?? []),
-        ];
-        calendarState.followers = [
-            ...calendarState.followers.filter(item => item.activity_id !== activityId),
-            ...(followersResult.data ?? []),
-        ];
-
-        const participants = participationsResult.data ?? [];
-        const followers = followersResult.data ?? [];
-
-        document.querySelectorAll(`#activity-${activityId}`).forEach(oldArticle => {
-            const compactWeek = oldArticle.classList.contains("calendar-activity-compact");
-            const replacement = createActivityElement(
-                activity,
-                participants,
-                followers,
-                calendarState.currentUser,
-                calendarState.followedActivityIds,
-                compactWeek
-            );
-            oldArticle.replaceWith(replacement);
-        });
-
-        const modal = document.querySelector(".calendar-mobile-activity-modal");
-        if (modal) {
-            const dialogContent = modal.querySelector(".calendar-mobile-activity-dialog-content");
-            const heading = modal.querySelector(".calendar-mobile-activity-dialog-header h2");
-            if (dialogContent && heading && modal.querySelector(".calendar-mobile-activity-dialog")?.dataset.activityId === activityId) {
-                const replacement = createActivityElement(
-                    activity,
-                    participants,
-                    followers,
-                    calendarState.currentUser,
-                    calendarState.followedActivityIds,
-                    false
-                );
-                replacement.classList.add("calendar-mobile-activity-dialog-content");
-                replacement.removeAttribute("id");
-                dialogContent.replaceWith(replacement);
-            }
-        }
-    } catch (error) {
-        console.error("Impossible de mettre à jour l'activité :", error);
+        console.error("Impossible de charger le calendrier :", error);
+        calendarContainer.textContent = "Impossible de charger le calendrier.";
     }
 }
 
@@ -1177,16 +1158,9 @@ function subscribeToParticipationChanges() {
                     table: "participations"
                 },
                 async (payload) => {
-                    console.log(
-                        "Changement de participation :",
-                        payload
-                    );
+                    console.log("Changement de participation :", payload);
 
-                    const activityId =
-                        payload.new?.activity_id ??
-                        payload.old?.activity_id ??
-                        null;
-
+                    const activityId = payload.new?.activity_id ?? payload.old?.activity_id;
                     if (activityId) {
                         await refreshActivityDisplay(activityId);
                     }
