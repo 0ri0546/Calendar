@@ -4776,3 +4776,33 @@ button:not(.icon-button):active,
     color: var(--muted);
     font-size: .82rem;
 }
+
+
+/* Présence journalière : le total admin reste toujours visible, y compris sur mobile. */
+.calendar-day-recap-title {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+}
+
+.calendar-day-recap-title-date {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-day-recap-title-count {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.calendar-day-presence-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.calendar-day-presence-button[aria-busy="true"] {
+    pointer-events: none;
+}

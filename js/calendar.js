@@ -242,8 +242,8 @@ async function loadDayPresence(currentUser) {
         .gte("day", formatDateForDatabase(startDate))
         .lte("day", formatDateForDatabase(endDate));
 
-    // Un membre ne récupère que sa propre présence. Un admin peut récupérer
-    // toutes les présences afin d'afficher les noms et le total de la journée.
+    // Les membres ne chargent que leur propre présence.
+    // Les admins peuvent charger toutes les présences pour les totaux et les noms.
     if (currentUser.profileRole !== "admin") {
         query = query.eq("user_id", currentUser.id);
     }
@@ -260,35 +260,120 @@ async function loadDayPresence(currentUser) {
 
 
 async function setDayPresence(date, present) {
-    if (!calendarState.currentUser) return false;
+    const user = calendarState.currentUser;
+    if (!user) return { ok: false, present: false };
 
     const day = formatDateForDatabase(date);
-    let error = null;
 
-    if (present) {
-        ({ error } = await supabase
-            .from("day_presence")
-            .upsert({
-                day,
-                user_id: calendarState.currentUser.id
-            }, { onConflict: "day,user_id" }));
-    } else {
-        ({ error } = await supabase
-            .from("day_presence")
-            .delete()
-            .eq("day", day)
-            .eq("user_id", calendarState.currentUser.id));
-    }
+    try {
+        if (present) {
+            const { error } = await supabase
+                .from("day_presence")
+                .upsert(
+                    { day, user_id: user.id },
+                    { onConflict: "day,user_id" }
+                );
 
-    if (error) {
+            if (error) throw error;
+        } else {
+            const { error } = await supabase
+                .from("day_presence")
+                .delete()
+                .eq("day", day)
+                .eq("user_id", user.id);
+
+            if (error) throw error;
+        }
+
+        // Mise à jour locale immédiate : l'interface ne dépend pas du délai Realtime.
+        if (present) calendarState.dayPresence.add(day);
+        else calendarState.dayPresence.delete(day);
+
+        // Pour un admin, on recharge les lignes afin de garder noms + total cohérents.
+        if (user.profileRole === "admin") {
+            await refreshDayPresenceMembers();
+        }
+
+        return { ok: true, present };
+    } catch (error) {
         console.error("Erreur présence jeux divers :", error);
         showUserError(error);
-        return false;
+        return { ok: false, present: !present };
+    }
+}
+
+
+async function refreshDayPresenceMembers() {
+    if (!calendarState.currentUser) return;
+
+    const rows = await loadDayPresence(calendarState.currentUser);
+    const members = new Map();
+
+    for (const row of rows) {
+        if (!members.has(row.day)) members.set(row.day, []);
+        members.get(row.day).push(row);
     }
 
-    if (present) calendarState.dayPresence.add(day);
-    else calendarState.dayPresence.delete(day);
-    return true;
+    calendarState.dayPresenceMembers = members;
+}
+
+
+function getAdminDayTotal(dateString) {
+    const participations = groupParticipations(calendarState.participations);
+    const activities = calendarState.activities.filter(activity => activity.date === dateString);
+    const presenceMembers = calendarState.dayPresenceMembers.get(dateString) ?? [];
+    const uniqueIds = new Set(presenceMembers.map(member => member.user_id));
+
+    for (const activity of activities) {
+        for (const participant of participations.get(activity.id) ?? []) {
+            uniqueIds.add(participant.user_id);
+        }
+    }
+
+    return uniqueIds.size;
+}
+
+
+function updateOpenDayRecapPresence(dateString) {
+    const modal = document.querySelector(".calendar-day-recap-modal");
+    if (!modal || modal.dataset.date !== dateString) return;
+
+    const isAdmin = calendarState.currentUser?.profileRole === "admin";
+    const title = modal.querySelector(".calendar-day-recap-header h2");
+    if (title && isAdmin) {
+        const count = title.querySelector(".calendar-day-recap-title-count");
+        if (count) count.textContent = `(${getAdminDayTotal(dateString)})`;
+    }
+
+    const button = modal.querySelector(".calendar-day-presence-button");
+    if (button && calendarState.currentUser) {
+        const present = calendarState.dayPresence.has(dateString);
+        button.textContent = present
+            ? "✓ Je serai présent pour les jeux divers"
+            : "Je serai présent pour les jeux divers";
+        button.classList.toggle("is-active", present);
+        button.setAttribute("aria-pressed", String(present));
+    }
+
+    if (isAdmin) {
+        const adminTitle = modal.querySelector(".calendar-day-presence-admin h4");
+        if (adminTitle) {
+            const members = calendarState.dayPresenceMembers.get(dateString) ?? [];
+            adminTitle.textContent = `Jeux divers (${members.length})`;
+        }
+
+        const list = modal.querySelector(".calendar-day-presence-members");
+        if (list) {
+            list.replaceChildren();
+            const members = calendarState.dayPresenceMembers.get(dateString) ?? [];
+            for (const member of members) {
+                const item = document.createElement("span");
+                item.className = "calendar-day-presence-member";
+                item.textContent = member.profiles?.pseudo ?? "Utilisateur";
+                list.appendChild(item);
+            }
+        }
+    }
 }
 
 
@@ -932,6 +1017,7 @@ function openDayRecap(date) {
 
     const overlay = document.createElement("div");
     overlay.className = "calendar-day-recap-modal";
+    overlay.dataset.date = dateString;
 
     const backdrop = document.createElement("button");
     backdrop.type = "button";
@@ -948,9 +1034,19 @@ function openDayRecap(date) {
     header.className = "calendar-day-recap-header";
 
     const title = document.createElement("h2");
-    title.textContent = isAdmin
-        ? `${formatDateForDisplay(dateString)} (${uniquePresentIds.size})`
-        : formatDateForDisplay(dateString);
+    title.className = "calendar-day-recap-title";
+
+    const titleDate = document.createElement("span");
+    titleDate.className = "calendar-day-recap-title-date";
+    titleDate.textContent = formatDateForDisplay(dateString);
+    title.appendChild(titleDate);
+
+    if (isAdmin) {
+        const titleCount = document.createElement("span");
+        titleCount.className = "calendar-day-recap-title-count";
+        titleCount.textContent = `(${uniquePresentIds.size})`;
+        title.appendChild(titleCount);
+    }
 
     const closeButton = document.createElement("button");
     closeButton.type = "button";
@@ -1043,12 +1139,19 @@ function openDayRecap(date) {
             button.setAttribute("aria-pressed", String(present));
         };
         updatePresenceButton();
-        button.addEventListener("click", async () => {
-            button.disabled = true;
+        button.addEventListener("click", async event => {
+            event.preventDefault();
+            if (button.disabled) return;
+
             const nextPresent = !calendarState.dayPresence.has(dayKey);
-            const saved = await setDayPresence(date, nextPresent);
-            if (saved) updatePresenceButton();
+            button.disabled = true;
+            button.setAttribute("aria-busy", "true");
+
+            const result = await setDayPresence(date, nextPresent);
+            if (result.ok) updatePresenceButton();
+
             button.disabled = false;
+            button.removeAttribute("aria-busy");
         });
         presenceSection.appendChild(button);
     } else {
@@ -1676,27 +1779,13 @@ function subscribeToParticipationChanges() {
                     }
 
                     if (calendarState.currentUser.profileRole === "admin") {
-                        // Recharger la journée permet de récupérer le pseudo associé
-                        // aussi bien pour INSERT que pour DELETE.
-                        const refreshed = await loadDayPresence(calendarState.currentUser);
-                        calendarState.dayPresenceMembers = new Map();
-                        for (const row of refreshed) {
-                            if (!calendarState.dayPresenceMembers.has(row.day)) calendarState.dayPresenceMembers.set(row.day, []);
-                            calendarState.dayPresenceMembers.get(row.day).push(row);
-                        }
+                        // Recharger les présences pour obtenir les noms et le total exacts.
+                        await refreshDayPresenceMembers();
                     }
 
-                    const modal = document.querySelector(".calendar-day-recap-modal");
-                    if (modal) {
-                        const title = modal.querySelector(".calendar-day-recap-header h2")?.textContent;
-                        if (title) {
-                            const dateMatch = title.match(/(\d{1,2}) ([a-zàâçéèêëîïôûùüÿ]+) (\d{4})/i);
-                            if (dateMatch) {
-                                const monthIndex = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"].indexOf(dateMatch[2].toLowerCase());
-                                if (monthIndex >= 0) openDayRecap(new Date(Number(dateMatch[3]), monthIndex, Number(dateMatch[1])));
-                            }
-                        }
-                    }
+                    // Ne jamais reconstruire la modale : cela cassait le bouton sur mobile
+                    // et faisait disparaître l'état local juste après un clic.
+                    updateOpenDayRecapPresence(day);
                 }
             )
             .subscribe(
