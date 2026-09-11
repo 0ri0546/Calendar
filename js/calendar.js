@@ -1336,11 +1336,25 @@ function openDayRecap(date) {
     dialog.appendChild(presenceSection);
     overlay.append(backdrop, dialog);
     document.body.appendChild(overlay);
+
+    // Verrouille réellement le document derrière la fenêtre, y compris sur
+    // les navigateurs mobiles qui ignorent parfois overflow:hidden sur body.
+    const previousScrollY = window.scrollY;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyWidth = document.body.style.width;
     document.body.classList.add("calendar-day-recap-open");
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${previousScrollY}px`;
+    document.body.style.width = "100%";
 
     const close = () => {
         overlay.remove();
         document.body.classList.remove("calendar-day-recap-open");
+        document.body.style.position = previousBodyPosition;
+        document.body.style.top = previousBodyTop;
+        document.body.style.width = previousBodyWidth;
+        window.scrollTo(0, previousScrollY);
     };
     backdrop.addEventListener("click", close);
     closeButton.addEventListener("click", close);
