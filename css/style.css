@@ -4857,3 +4857,132 @@ button:not(.icon-button):active,
     .legal-header img { width: 56px; height: 56px; }
     .legal-section { padding: 1.1rem; }
 }
+
+/* =========================================================
+   POLISH — vue d'une journée : hiérarchie stable
+   ========================================================= */
+.calendar-day-recap-free-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.calendar-day-recap-free-section h3 {
+    margin: 0 0 9px;
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.calendar-day-recap-free-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.calendar-day-recap-free-card {
+    padding: 11px;
+    border-radius: 10px;
+}
+
+.calendar-day-recap-free-card .calendar-activity-header h3 {
+    font-size: .78rem;
+}
+
+.calendar-day-recap-free-card .calendar-activity-details,
+.calendar-day-recap-free-card .calendar-activity-description,
+.calendar-day-recap-free-card .calendar-participants {
+    font-size: .7rem;
+}
+
+.calendar-day-recap-free-card .calendar-actions button {
+    min-height: 34px;
+    padding: 6px 9px;
+    font-size: .72rem;
+}
+
+body.calendar-day-recap-open {
+    overflow: hidden;
+}
+
+/* Les panneaux d'amis et de notifications gardent toujours leur ordre. */
+#auth-menu .friends-wrapper {
+    order: 1;
+}
+
+#auth-menu .notifications-wrapper {
+    order: 2;
+}
+
+@media (max-width: 650px) {
+    .friends-panel,
+    .notification-panel {
+        position: fixed;
+        top: 76px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-width: none;
+        box-sizing: border-box;
+    }
+
+    .friends-panel {
+        max-height: calc(100dvh - 92px);
+    }
+
+    .notification-panel {
+        max-height: calc(100dvh - 92px);
+    }
+
+    .calendar-day-recap-dialog {
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100dvh - 20px);
+        overflow: hidden;
+    }
+
+    .calendar-day-recap-grid,
+    .calendar-day-recap-free-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Très petits écrans : le tag du samedi participe réellement à la hauteur
+   de l'en-tête au lieu d'être comprimé dans une hauteur fixe. */
+@media (max-width: 360px) {
+    .calendar-large-week-days .calendar-day-heading-button {
+        min-height: 0 !important;
+        height: auto !important;
+        padding-bottom: 3px !important;
+        overflow: visible !important;
+    }
+
+    .calendar-large-week-days .calendar-day-heading-button .calendar-day-weekday,
+    .calendar-large-week-days .calendar-day-heading-button .calendar-day-date {
+        flex: 0 0 auto;
+    }
+
+    .calendar-large-week-days .calendar-day-tags-inline {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    .calendar-large-week-days .calendar-day-tags-inline .calendar-day-tag {
+        height: auto !important;
+        min-height: 0 !important;
+        white-space: normal !important;
+        overflow: visible !important;
+    }
+
+    /* Sur 320 px, le formulaire historique ne doit jamais redevenir visible. */
+    .proposal-accordion[data-legacy-free-form="true"],
+    #legacy-free-proposal-form,
+    #free-game-proposal-form {
+        display: none !important;
+    }
+
+    .calendar-day-recap-free-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1191,8 +1191,6 @@ function openDayRecap(date) {
         tagSection.appendChild(editor);
     }
 
-    dialog.appendChild(tagSection);
-
     const presenceSection = document.createElement("section");
     presenceSection.className = "calendar-day-presence-section";
 
@@ -1259,19 +1257,20 @@ function openDayRecap(date) {
         presenceSection.appendChild(adminPresence);
     }
 
-    dialog.appendChild(presenceSection);
+    const compact = window.matchMedia("(max-width: 650px)").matches;
+    const preparedActivities = activities.filter(activity => activity.activity_type !== "free");
+    const freeActivities = activities.filter(activity => activity.activity_type === "free");
 
     const grid = document.createElement("div");
     grid.className = "calendar-day-recap-grid";
 
-    if (activities.length === 0) {
+    if (preparedActivities.length === 0) {
         const empty = document.createElement("p");
         empty.className = "calendar-day-recap-empty";
-        empty.textContent = "Aucune activité prévue ce jour.";
+        empty.textContent = "Aucune activité préparée prévue ce jour.";
         grid.appendChild(empty);
     } else {
-        const compact = window.matchMedia("(max-width: 650px)").matches;
-        for (const activity of activities) {
+        for (const activity of preparedActivities) {
             const card = createActivityElement(
                 activity,
                 participations.get(activity.id) ?? [],
@@ -1281,18 +1280,53 @@ function openDayRecap(date) {
                 compact,
                 false
             );
-            // Les cartes du récapitulatif ne doivent pas entrer en collision
-            // avec les IDs des cartes de la vue semaine.
             card.removeAttribute("id");
             grid.appendChild(card);
         }
     }
 
     dialog.appendChild(grid);
+    dialog.appendChild(tagSection);
+
+    if (freeActivities.length > 0) {
+        const freeSection = document.createElement("section");
+        freeSection.className = "calendar-day-recap-free-section";
+
+        const freeTitle = document.createElement("h3");
+        freeTitle.textContent = "Rejoindre une activité libre";
+        freeSection.appendChild(freeTitle);
+
+        const freeGrid = document.createElement("div");
+        freeGrid.className = "calendar-day-recap-free-grid";
+
+        for (const activity of freeActivities) {
+            const card = createActivityElement(
+                activity,
+                participations.get(activity.id) ?? [],
+                followers.get(activity.id) ?? [],
+                calendarState.currentUser,
+                calendarState.followedActivityIds,
+                false,
+                false
+            );
+            card.removeAttribute("id");
+            card.classList.add("calendar-day-recap-free-card");
+            freeGrid.appendChild(card);
+        }
+
+        freeSection.appendChild(freeGrid);
+        dialog.appendChild(freeSection);
+    }
+
+    dialog.appendChild(presenceSection);
     overlay.append(backdrop, dialog);
     document.body.appendChild(overlay);
+    document.body.classList.add("calendar-day-recap-open");
 
-    const close = () => overlay.remove();
+    const close = () => {
+        overlay.remove();
+        document.body.classList.remove("calendar-day-recap-open");
+    };
     backdrop.addEventListener("click", close);
     closeButton.addEventListener("click", close);
 
