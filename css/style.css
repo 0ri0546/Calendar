@@ -2711,8 +2711,14 @@ body.admin-logs-open {
         position: relative;
         z-index: 1;
         width: min(100%, 390px);
-        max-height: calc(100vh - 28px);
-        overflow: auto;
+        height: calc(100dvh - 28px);
+        max-height: calc(100dvh - 28px);
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
         box-sizing: border-box;
         padding: 14px;
         background: var(--surface);
@@ -2758,10 +2764,6 @@ body.admin-logs-open {
     .calendar-mobile-activity-dialog-content:hover {
         transform: none !important;
     }
-}
-
-body.calendar-mobile-activity-open {
-    overflow: hidden;
 }
 
 /* v11 — textes de la semaine mobile encore plus compacts, sans couper les libellés. */
@@ -3650,6 +3652,7 @@ body.events-modal-open { overflow: hidden; }
         padding: 10px;
         overflow: hidden;
         overscroll-behavior: none;
+        touch-action: none;
     }
 
     .calendar-day-recap-dialog {
@@ -4911,10 +4914,6 @@ button:not(.icon-button):active,
     font-size: .72rem;
 }
 
-body.calendar-day-recap-open {
-    overflow: hidden;
-}
-
 /* Les panneaux d'amis et de notifications gardent toujours leur ordre. */
 #auth-menu .friends-wrapper {
     order: 1;
@@ -4947,8 +4946,14 @@ body.calendar-day-recap-open {
     .calendar-day-recap-dialog {
         display: flex;
         flex-direction: column;
+        height: calc(100dvh - 20px);
         max-height: calc(100dvh - 20px);
-        overflow: hidden;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
     }
 
     .calendar-day-recap-grid,

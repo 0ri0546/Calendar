@@ -1038,11 +1038,25 @@ function openMobileActivityDetails(activity, participants, followers, currentUse
 
     overlay.append(backdrop, dialog);
     document.body.appendChild(overlay);
+
+    // Le document derrière reste immobile : seul le contenu de la fenêtre
+    // d'activité possède une zone de défilement.
+    const previousScrollY = window.scrollY;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyWidth = document.body.style.width;
     document.body.classList.add("calendar-mobile-activity-open");
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${previousScrollY}px`;
+    document.body.style.width = "100%";
 
     const close = () => {
         overlay.remove();
         document.body.classList.remove("calendar-mobile-activity-open");
+        document.body.style.position = previousBodyPosition;
+        document.body.style.top = previousBodyTop;
+        document.body.style.width = previousBodyWidth;
+        window.scrollTo(0, previousScrollY);
         document.removeEventListener("keydown", onKeyDown);
     };
 
@@ -1257,7 +1271,9 @@ function openDayRecap(date) {
         presenceSection.appendChild(adminPresence);
     }
 
-    const compact = window.matchMedia("(max-width: 650px)").matches;
+    // Les cartes de cette fenêtre sont informatives : leur clic ne doit pas
+    // ouvrir une seconde fenêtre d'activité derrière le récapitulatif.
+    const compact = false;
     const preparedActivities = activities.filter(activity => activity.activity_type !== "free");
     const freeActivities = activities.filter(activity => activity.activity_type === "free");
 
