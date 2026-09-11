@@ -3646,14 +3646,24 @@ body.events-modal-open { overflow: hidden; }
     }
 
     .calendar-day-recap-modal {
+        height: 100dvh;
         padding: 10px;
+        overflow: hidden;
+        overscroll-behavior: none;
     }
 
     .calendar-day-recap-dialog {
         width: 100%;
-        max-height: calc(100vh - 20px);
+        height: calc(100dvh - 20px);
+        max-height: calc(100dvh - 20px);
+        min-height: 0;
         padding: 12px;
         border-radius: 12px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
     }
 
     .calendar-day-recap-header {
@@ -5115,5 +5125,18 @@ body.calendar-day-recap-open {
         min-height: 32px;
         padding: 6px 8px;
         font-size: .64rem;
+    }
+}
+
+@supports not (height: 100dvh) {
+    @media (max-width: 650px) {
+        .calendar-day-recap-modal {
+            height: 100vh;
+        }
+
+        .calendar-day-recap-dialog {
+            height: calc(100vh - 20px);
+            max-height: calc(100vh - 20px);
+        }
     }
 }
