@@ -1,8 +1,8 @@
-# Loiseaux Jeux
+# L'oise aux Jeux
 
-> Plateforme web de gestion et d'organisation des activités de l'association Loiseaux Jeux.
+> Plateforme web de gestion et d'organisation des activités de l'association L'oise aux Jeux.
 
-[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-222222?logo=github)](https://loiseauxjeux.github.io/)
+[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-222222?logo=github)](https://L'oiseauxjeux.github.io/)
 [![Frontend](https://img.shields.io/badge/Frontend-HTML%20%2F%20CSS%20%2F%20JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
 [![Database](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 
@@ -10,7 +10,7 @@
 
 ## À propos
 
-**Loiseaux Jeux** est une application web conçue pour faciliter l'organisation des activités de l'association et permettre à ses membres de retrouver facilement les événements et activités proposés.
+**L'oise aux Jeux** est une application web conçue pour faciliter l'organisation des activités de l'association et permettre à ses membres de retrouver facilement les événements et activités proposés.
 
 La plateforme centralise notamment :
 
@@ -295,7 +295,7 @@ Les informations propres à l'association doivent être complétées avant la mi
 
 ## Projet
 
-Développé pour l'association **Loiseaux Jeux**.
+Développé pour l'association **L'oise aux Jeux**.
 
 L'objectif du projet est de proposer un outil simple, moderne et accessible permettant aux membres de l'association de découvrir les activités, organiser leur participation et rester informés de la vie de l'association.
 
@@ -303,6 +303,6 @@ L'objectif du projet est de proposer un outil simple, moderne et accessible perm
 
 ## Licence
 
-Ce projet est destiné à l'association **Loiseaux Jeux**.
+Ce projet est destiné à l'association **L'oise aux Jeux**.
 
 Les conditions de réutilisation, modification et redistribution du code sont définies par les responsables du dépôt.
