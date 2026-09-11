@@ -1261,6 +1261,14 @@ function openDayRecap(date) {
     const preparedActivities = activities.filter(activity => activity.activity_type !== "free");
     const freeActivities = activities.filter(activity => activity.activity_type === "free");
 
+    const preparedSection = document.createElement("section");
+    preparedSection.className = "calendar-day-recap-prepared-section";
+
+    const preparedTitle = document.createElement("h3");
+    preparedTitle.className = "calendar-day-recap-section-title";
+    preparedTitle.textContent = "Jeux prévus";
+    preparedSection.appendChild(preparedTitle);
+
     const grid = document.createElement("div");
     grid.className = "calendar-day-recap-grid";
 
@@ -1285,7 +1293,9 @@ function openDayRecap(date) {
         }
     }
 
-    dialog.appendChild(grid);
+    preparedSection.appendChild(grid);
+    dialog.appendChild(preparedSection);
+
     dialog.appendChild(tagSection);
 
     if (freeActivities.length > 0) {
@@ -1293,8 +1303,13 @@ function openDayRecap(date) {
         freeSection.className = "calendar-day-recap-free-section";
 
         const freeTitle = document.createElement("h3");
-        freeTitle.textContent = "Rejoindre une activité libre";
+        freeTitle.textContent = "Activités";
         freeSection.appendChild(freeTitle);
+
+        const freeSubtitle = document.createElement("p");
+        freeSubtitle.className = "calendar-day-recap-free-subtitle";
+        freeSubtitle.textContent = "Rejoindre une activité libre";
+        freeSection.appendChild(freeSubtitle);
 
         const freeGrid = document.createElement("div");
         freeGrid.className = "calendar-day-recap-free-grid";

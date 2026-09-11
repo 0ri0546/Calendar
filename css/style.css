@@ -4986,3 +4986,134 @@ body.calendar-day-recap-open {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================================================
+   POLISH — hiérarchie de la vue d'une journée
+   ========================================================= */
+.calendar-day-recap-prepared-section {
+    margin: 0;
+}
+
+.calendar-day-recap-section-title {
+    margin: 0 0 10px;
+    color: var(--text);
+    font-size: .88rem;
+    font-weight: 800;
+}
+
+.calendar-day-recap-prepared-section + .calendar-day-tags-section {
+    margin-top: 22px;
+}
+
+.calendar-day-recap-free-section {
+    margin-top: 24px;
+    padding-top: 18px;
+}
+
+.calendar-day-recap-free-section h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: .88rem;
+    font-weight: 800;
+}
+
+.calendar-day-recap-free-subtitle {
+    margin: 3px 0 9px;
+    color: var(--muted);
+    font-size: .68rem;
+    font-weight: 700;
+}
+
+.calendar-day-recap-free-section + .calendar-day-presence-section {
+    margin-top: 26px;
+}
+
+/* Tags : information secondaire, visuellement plus discrète. */
+.calendar-day-recap-dialog .calendar-day-tags-section {
+    margin-bottom: 0;
+    padding: 9px 10px;
+}
+
+.calendar-day-recap-dialog .calendar-day-tag {
+    padding: 2px 6px;
+    font-size: .58rem;
+    line-height: 1.05;
+}
+
+/* Jeux divers : bloc secondaire, plus compact que les jeux prévus. */
+.calendar-day-recap-dialog .calendar-day-presence-section {
+    margin-bottom: 0;
+    padding: 9px 10px;
+}
+
+.calendar-day-recap-dialog .calendar-day-presence-section h3 {
+    margin-bottom: 6px;
+    font-size: .78rem;
+}
+
+.calendar-day-recap-dialog .calendar-day-presence-button {
+    min-height: 34px;
+    padding: 7px 9px;
+    font-size: .68rem;
+    line-height: 1.2;
+}
+
+.calendar-day-recap-dialog .calendar-day-presence-login {
+    font-size: .7rem;
+    line-height: 1.3;
+}
+
+.calendar-day-recap-dialog .calendar-day-presence-admin {
+    margin-top: 9px;
+    padding-top: 9px;
+}
+
+.calendar-day-recap-dialog .calendar-day-presence-admin h4,
+.calendar-day-recap-dialog .calendar-day-presence-empty {
+    font-size: .68rem;
+}
+
+.calendar-day-recap-dialog .calendar-day-presence-member {
+    min-height: 25px;
+    padding: 4px 7px;
+    font-size: .68rem;
+}
+
+@media (max-width: 650px) {
+    .calendar-day-recap-section-title,
+    .calendar-day-recap-free-section h3 {
+        font-size: .8rem;
+    }
+
+    .calendar-day-recap-prepared-section + .calendar-day-tags-section {
+        margin-top: 24px;
+    }
+
+    .calendar-day-recap-free-section {
+        margin-top: 26px;
+        padding-top: 16px;
+    }
+
+    .calendar-day-recap-free-section + .calendar-day-presence-section {
+        margin-top: 28px;
+    }
+
+    .calendar-day-recap-dialog .calendar-day-tag {
+        font-size: .52rem;
+        padding: 2px 5px;
+    }
+
+    .calendar-day-recap-dialog .calendar-day-presence-section {
+        padding: 8px 9px;
+    }
+
+    .calendar-day-recap-dialog .calendar-day-presence-section h3 {
+        font-size: .72rem;
+    }
+
+    .calendar-day-recap-dialog .calendar-day-presence-button {
+        min-height: 32px;
+        padding: 6px 8px;
+        font-size: .64rem;
+    }
+}
