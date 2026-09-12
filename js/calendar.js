@@ -798,7 +798,7 @@ async function joinActivity(activityId) {
         await refreshActivityDisplay(activityId);
     } catch (error) {
         console.error(error);
-        showUserError(error);
+        alert("Une erreur est survenue.");
     }
 }
 
@@ -813,7 +813,7 @@ async function leaveActivity(activityId) {
         await refreshActivityDisplay(activityId);
     } catch (error) {
         console.error(error);
-        showUserError(error);
+        alert("Une erreur est survenue.");
     }
 }
 
@@ -829,7 +829,7 @@ async function followActivity(activityId) {
         await refreshActivityDisplay(activityId);
     } catch (error) {
         console.error(error);
-        showUserError(error);
+        alert("Une erreur est survenue.");
     }
 }
 
@@ -845,7 +845,7 @@ async function unfollowActivity(activityId) {
         await refreshActivityDisplay(activityId);
     } catch (error) {
         console.error(error);
-        showUserError(error);
+        alert("Une erreur est survenue.");
     }
 }
 
@@ -1900,6 +1900,11 @@ function subscribeToParticipationChanges() {
                     table: "participations"
                 },
                 async (payload) => {
+                    console.log(
+                        "Changement de participation :",
+                        payload
+                    );
+
                     const activityId = payload.new?.activity_id ?? payload.old?.activity_id;
                     if (activityId) {
                         await refreshActivityDisplay(activityId);
@@ -1935,6 +1940,10 @@ function subscribeToParticipationChanges() {
             )
             .subscribe(
                 (status) => {
+                    console.log(
+                        "Statut Realtime :",
+                        status
+                    );
                 }
             );
 }

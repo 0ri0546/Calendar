@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260910-57";
+import { supabase } from "./supabase.js?v=20260913-stats";
 
 
 function getAvatarDisplayUrl(url) {
@@ -9,8 +9,8 @@ function getAvatarDisplayUrl(url) {
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${Date.now()}`;
 }
-import { showUserError } from "./ui-messages.js?v=20260910-57";
-import { renderDescriptionWithLinks } from "./ui.js?v=20260910-57";
+import { showUserError } from "./ui-messages.js?v=20260913-stats";
+import { renderDescriptionWithLinks } from "./ui.js?v=20260913-stats";
 
 const membersList = document.getElementById("members-list");
 const proposalsList = document.getElementById("proposals-list");
@@ -22,6 +22,135 @@ const adminLogsList = document.getElementById("admin-logs-list");
 const openAdminLogsButton = document.getElementById("open-admin-logs");
 const closeAdminLogsButton = document.getElementById("close-admin-logs");
 const adminLogsModal = document.getElementById("admin-logs-modal");
+const activitiesStatsChart = document.getElementById("activities-stats-chart");
+const participationsStatsChart = document.getElementById("participations-stats-chart");
+
+const statsCache = new Map();
+
+function escapeSvgText(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function formatStatsBucket(value, period) {
+    const date = new Date(`${value}T12:00:00`);
+
+    if (period === "month") {
+        return date.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "");
+    }
+
+    if (period === "week") {
+        return `S${getIsoWeek(date)}`;
+    }
+
+    return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+}
+
+function getIsoWeek(date) {
+    const copy = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = copy.getUTCDay() || 7;
+    copy.setUTCDate(copy.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(copy.getUTCFullYear(), 0, 1));
+    return Math.ceil((((copy - yearStart) / 86400000) + 1) / 7);
+}
+
+function renderStatsChart(container, rows, period, valueKey, label) {
+    if (!container) return;
+
+    if (!rows?.length) {
+        container.innerHTML = `<p class="admin-stats-empty">Aucune donnée disponible.</p>`;
+        return;
+    }
+
+    const width = 760;
+    const height = 300;
+    const padding = { top: 22, right: 18, bottom: 48, left: 42 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    const values = rows.map(row => Number(row[valueKey]) || 0);
+    const max = Math.max(...values, 1);
+    const niceMax = Math.max(1, Math.ceil(max));
+    const step = chartWidth / Math.max(rows.length, 1);
+    const barWidth = Math.min(34, step * 0.62);
+    const gridCount = 4;
+    const yScale = chartHeight / niceMax;
+
+    const grid = [];
+    for (let i = 0; i <= gridCount; i++) {
+        const value = Math.round((niceMax / gridCount) * i);
+        const y = padding.top + chartHeight - value * yScale;
+        grid.push(`<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="admin-chart-grid-line"/>`);
+        grid.push(`<text x="${padding.left - 9}" y="${y + 4}" text-anchor="end" class="admin-chart-axis-label">${value}</text>`);
+    }
+
+    const bars = rows.map((row, index) => {
+        const value = Number(row[valueKey]) || 0;
+        const x = padding.left + index * step + (step - barWidth) / 2;
+        const barHeight = value * yScale;
+        const y = padding.top + chartHeight - barHeight;
+        const labelX = padding.left + index * step + step / 2;
+        const bucket = formatStatsBucket(row.bucket_start, period);
+        return `
+            <g class="admin-chart-bar-group">
+                <rect x="${x}" y="${y}" width="${barWidth}" height="${Math.max(barHeight, value ? 2 : 0)}" rx="5" class="admin-chart-bar">
+                    <title>${escapeSvgText(bucket)} : ${value} ${escapeSvgText(label.toLowerCase())}</title>
+                </rect>
+                <text x="${labelX}" y="${height - 18}" text-anchor="middle" class="admin-chart-axis-label">${escapeSvgText(bucket)}</text>
+            </g>`;
+    }).join("");
+
+    container.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+            <g>${grid.join("")}</g>
+            <g>${bars}</g>
+        </svg>
+        <p class="admin-chart-caption">${escapeSvgText(label)}</p>`;
+}
+
+async function loadStatistics(period) {
+    const cacheKey = period;
+    if (statsCache.has(cacheKey)) {
+        const data = statsCache.get(cacheKey);
+        renderStatsChart(activitiesStatsChart, data, period, "activity_count", "activité validée");
+        renderStatsChart(participationsStatsChart, data, period, "participation_count", "participation");
+        return;
+    }
+
+    if (activitiesStatsChart) activitiesStatsChart.innerHTML = '<p class="admin-stats-loading">Chargement...</p>';
+    if (participationsStatsChart) participationsStatsChart.innerHTML = '<p class="admin-stats-loading">Chargement...</p>';
+
+    const { data, error } = await supabase.rpc("get_admin_statistics", { p_period: period });
+
+    if (error) {
+        console.error("Erreur récupération statistiques :", error);
+        const message = "Impossible de charger les statistiques.";
+        if (activitiesStatsChart) activitiesStatsChart.innerHTML = `<p class="admin-stats-empty">${message}</p>`;
+        if (participationsStatsChart) participationsStatsChart.innerHTML = `<p class="admin-stats-empty">${message}</p>`;
+        return;
+    }
+
+    statsCache.set(cacheKey, data ?? []);
+    renderStatsChart(activitiesStatsChart, data ?? [], period, "activity_count", "Activités validées");
+    renderStatsChart(participationsStatsChart, data ?? [], period, "participation_count", "Participations");
+}
+
+document.querySelectorAll("[data-stats-period]").forEach(button => {
+    button.addEventListener("click", () => {
+        const type = button.dataset.statsType;
+        const period = button.dataset.statsPeriod;
+
+        document.querySelectorAll(`[data-stats-type="${type}"]`).forEach(item => {
+            item.setAttribute("aria-pressed", String(item === button));
+        });
+
+        loadStatistics(period);
+    });
+});
+
 
 // Sections administrateur repliables : toutes fermées par défaut.
 function animateCollapsible(content, open) {
@@ -1400,6 +1529,7 @@ async function init() {
     }
 
     await loadMembers(user);
+    await loadStatistics("day");
     await loadAdminLogs();
     await loadProposals();
     await loadApprovedActivities();

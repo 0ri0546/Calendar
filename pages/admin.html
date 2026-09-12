@@ -7,11 +7,7 @@
 
     <title>Administration - Calendar</title>
 
-    <link rel="stylesheet" href="../css/foundation.css?v=20260912-css-split">
-<link rel="stylesheet" href="../css/components.css?v=20260912-css-split">
-<link rel="stylesheet" href="../css/pages.css?v=20260912-css-split">
-<link rel="stylesheet" href="../css/overrides.css?v=20260912-css-split">
-<link rel="stylesheet" href="../css/responsive.css?v=20260912-css-split">
+    <link rel="stylesheet" href="../css/style.css?v=20260913-stats">
     <link rel="icon" type="image/png" href="../assets/images/logo.png">
     <link rel="apple-touch-icon" href="../assets/images/logo.png">
 </head>
@@ -42,6 +38,50 @@
                 <p>Chargement des membres...</p>
             </div>
             <p id="admin-message"></p>
+        </section>
+
+        <section id="admin-stats-section" class="admin-collapsible">
+            <button class="admin-section-toggle" type="button" aria-expanded="false" aria-controls="admin-stats-panel">
+                <span>Statistiques</span><span class="admin-section-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="admin-stats-panel" class="admin-section-content">
+                <div class="admin-stats-grid">
+                    <article class="admin-stat-card">
+                        <div class="admin-stat-card-header">
+                            <div>
+                                <h2>Activités validées</h2>
+                                <p>Nombre d'activités validées sur chaque période.</p>
+                            </div>
+                            <div class="admin-stat-toggle" role="group" aria-label="Période des activités validées">
+                                <button type="button" data-stats-type="activities" data-stats-period="day" aria-pressed="true">Jour</button>
+                                <button type="button" data-stats-type="activities" data-stats-period="week" aria-pressed="false">Semaine</button>
+                                <button type="button" data-stats-type="activities" data-stats-period="month" aria-pressed="false">Mois</button>
+                            </div>
+                        </div>
+                        <div class="admin-chart-wrap">
+                            <div id="activities-stats-chart" class="admin-stats-chart" role="img" aria-label="Graphique du nombre d'activités validées"></div>
+                        </div>
+                    </article>
+
+                    <article class="admin-stat-card">
+                        <div class="admin-stat-card-header">
+                            <div>
+                                <h2>Participations</h2>
+                                <p>Nombre de participations enregistrées sur chaque période.</p>
+                            </div>
+                            <div class="admin-stat-toggle" role="group" aria-label="Période des participations">
+                                <button type="button" data-stats-type="participations" data-stats-period="day" aria-pressed="true">Jour</button>
+                                <button type="button" data-stats-type="participations" data-stats-period="week" aria-pressed="false">Semaine</button>
+                                <button type="button" data-stats-type="participations" data-stats-period="month" aria-pressed="false">Mois</button>
+                            </div>
+                        </div>
+                        <div class="admin-chart-wrap">
+                            <div id="participations-stats-chart" class="admin-stats-chart" role="img" aria-label="Graphique du nombre de participations"></div>
+                        </div>
+                    </article>
+                </div>
+                <p class="admin-stats-note">Les statistiques sont conservées indépendamment du journal administrateur et des activités supprimées.</p>
+            </div>
         </section>
 
         <section id="admin-logs-section" class="admin-collapsible">
@@ -96,7 +136,7 @@
     </main>
 
 
-    <script type="module" src="../js/auth.js?v=20260910-58"></script>
+    <script type="module" src="../js/auth.js?v=20260913-stats"></script>
     <footer class="site-footer">
     <div class="footer-main">
         <div class="footer-brand">
@@ -112,7 +152,7 @@
     <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
 </footer>
 
-<script type="module" src="../js/admin.js?v=20260910-58"></script>
+<script type="module" src="../js/admin.js?v=20260913-stats"></script>
 
 </body>
 

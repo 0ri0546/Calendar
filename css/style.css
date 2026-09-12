@@ -5595,3 +5595,165 @@ button:not(.icon-button):active,
         object-fit: contain !important;
     }
 }
+
+
+/* ==================================================
+   ADMIN — statistiques
+   ================================================== */
+#admin-stats-section {
+    width: 100%;
+    margin-top: 22px;
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--brand);
+    border-radius: 18px;
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.admin-stat-card {
+    min-width: 0;
+    padding: 18px;
+    background: var(--surface-2);
+    border: 1px solid rgba(93,61,55,.55);
+    border-radius: 14px;
+}
+
+.admin-stat-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.admin-stat-card h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.admin-stat-card p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: .75rem;
+}
+
+.admin-stat-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+    padding: 3px;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+}
+
+.admin-stat-toggle button {
+    border: 0;
+    border-radius: 6px;
+    padding: 6px 9px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: .7rem;
+    cursor: pointer;
+}
+
+.admin-stat-toggle button[aria-pressed="true"] {
+    background: var(--brand);
+    color: #fff;
+}
+
+.admin-chart-wrap {
+    width: 100%;
+    margin-top: 18px;
+    overflow-x: auto;
+}
+
+.admin-stats-chart {
+    min-width: 0;
+    min-height: 300px;
+}
+
+.admin-stats-chart svg {
+    display: block;
+    width: 100%;
+    min-width: 520px;
+    height: 300px;
+}
+
+.admin-chart-grid-line {
+    stroke: var(--line);
+    stroke-width: 1;
+    opacity: .65;
+}
+
+.admin-chart-axis-label {
+    fill: var(--muted);
+    font-size: 11px;
+}
+
+.admin-chart-bar {
+    fill: var(--brand);
+    opacity: .9;
+}
+
+.admin-chart-bar-group:hover .admin-chart-bar {
+    opacity: 1;
+}
+
+.admin-chart-caption {
+    margin: -8px 0 0 !important;
+    text-align: center;
+    font-size: .7rem !important;
+}
+
+.admin-stats-loading,
+.admin-stats-empty {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+}
+
+.admin-stats-note {
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: .72rem;
+    text-align: center;
+}
+
+@media (max-width: 850px) {
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    #admin-stats-section {
+        padding: 16px;
+    }
+
+    .admin-stat-card {
+        padding: 14px;
+    }
+
+    .admin-stat-card-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .admin-stat-toggle {
+        align-self: stretch;
+    }
+
+    .admin-stat-toggle button {
+        flex: 1;
+    }
+}
