@@ -5773,3 +5773,34 @@ button:not(.icon-button):active,
         height: 240px;
     }
 }
+
+
+/* Statistiques : correction finale du débordement horizontal mobile. */
+@media (max-width: 760px) {
+    #admin-stats-section,
+    #admin-stats-section .admin-stat-card,
+    #admin-stats-section .admin-chart-wrap,
+    #admin-stats-section .admin-stats-chart {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        box-sizing: border-box;
+    }
+
+    #admin-stats-section .admin-chart-wrap {
+        overflow-x: hidden !important;
+    }
+
+    #admin-stats-section .admin-stats-chart {
+        overflow: hidden;
+    }
+
+    #admin-stats-section .admin-stats-chart svg {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: 240px;
+        box-sizing: border-box;
+    }
+}
