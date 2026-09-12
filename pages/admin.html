@@ -79,6 +79,23 @@
                             <div id="participations-stats-chart" class="admin-stats-chart" role="img" aria-label="Graphique du nombre de participations"></div>
                         </div>
                     </article>
+
+                    <article class="admin-stat-card">
+                        <div class="admin-stat-card-header">
+                            <div>
+                                <h2>Remplissage moyen</h2>
+                                <p>Taux moyen de remplissage des activités à capacité définie.</p>
+                            </div>
+                            <div class="admin-stat-toggle" role="group" aria-label="Période du remplissage moyen">
+                                <button type="button" data-stats-type="fill-rate" data-stats-period="day" aria-pressed="true">Jour</button>
+                                <button type="button" data-stats-type="fill-rate" data-stats-period="week" aria-pressed="false">Semaine</button>
+                                <button type="button" data-stats-type="fill-rate" data-stats-period="month" aria-pressed="false">Mois</button>
+                            </div>
+                        </div>
+                        <div class="admin-chart-wrap">
+                            <div id="fill-rate-stats-chart" class="admin-stats-chart" role="img" aria-label="Graphique du taux moyen de remplissage des activités"></div>
+                        </div>
+                    </article>
                 </div>
                 <p class="admin-stats-note">Les statistiques sont conservées indépendamment du journal administrateur et des activités supprimées.</p>
             </div>

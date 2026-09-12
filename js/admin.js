@@ -24,6 +24,7 @@ const closeAdminLogsButton = document.getElementById("close-admin-logs");
 const adminLogsModal = document.getElementById("admin-logs-modal");
 const activitiesStatsChart = document.getElementById("activities-stats-chart");
 const participationsStatsChart = document.getElementById("participations-stats-chart");
+const fillRateStatsChart = document.getElementById("fill-rate-stats-chart");
 
 const statsCache = new Map();
 
@@ -58,7 +59,7 @@ function getIsoWeek(date) {
     return Math.ceil((((copy - yearStart) / 86400000) + 1) / 7);
 }
 
-function renderStatsChart(container, rows, period, valueKey, label) {
+function renderStatsChart(container, rows, period, valueKey, label, options = {}) {
     if (!container) return;
 
     if (!rows?.length) {
@@ -73,7 +74,7 @@ function renderStatsChart(container, rows, period, valueKey, label) {
     const chartHeight = height - padding.top - padding.bottom;
     const values = rows.map(row => Number(row[valueKey]) || 0);
     const max = Math.max(...values, 1);
-    const niceMax = Math.max(1, Math.ceil(max));
+    const niceMax = options.fixedMax ?? Math.max(1, Math.ceil(max));
     const step = chartWidth / Math.max(rows.length, 1);
     const barWidth = Math.min(34, step * 0.62);
     const gridCount = 4;
@@ -97,7 +98,7 @@ function renderStatsChart(container, rows, period, valueKey, label) {
         return `
             <g class="admin-chart-bar-group">
                 <rect x="${x}" y="${y}" width="${barWidth}" height="${Math.max(barHeight, value ? 2 : 0)}" rx="5" class="admin-chart-bar">
-                    <title>${escapeSvgText(bucket)} : ${value} ${escapeSvgText(label.toLowerCase())}</title>
+                    <title>${escapeSvgText(bucket)} : ${escapeSvgText(options.formatValue ? options.formatValue(value) : `${value} ${label.toLowerCase()}`)}</title>
                 </rect>
                 <text x="${labelX}" y="${height - 18}" text-anchor="middle" class="admin-chart-axis-label">${escapeSvgText(bucket)}</text>
             </g>`;
@@ -111,17 +112,26 @@ function renderStatsChart(container, rows, period, valueKey, label) {
         <p class="admin-chart-caption">${escapeSvgText(label)}</p>`;
 }
 
+function renderFillRateChart(container, rows, period) {
+    renderStatsChart(container, rows, period, "fill_rate", "Remplissage moyen", {
+        fixedMax: 100,
+        formatValue: value => `${value.toFixed(1)} %`
+    });
+}
+
 async function loadStatistics(period) {
     const cacheKey = period;
     if (statsCache.has(cacheKey)) {
         const data = statsCache.get(cacheKey);
         renderStatsChart(activitiesStatsChart, data, period, "activity_count", "activité validée");
         renderStatsChart(participationsStatsChart, data, period, "participation_count", "participation");
+        renderFillRateChart(fillRateStatsChart, data, period);
         return;
     }
 
     if (activitiesStatsChart) activitiesStatsChart.innerHTML = '<p class="admin-stats-loading">Chargement...</p>';
     if (participationsStatsChart) participationsStatsChart.innerHTML = '<p class="admin-stats-loading">Chargement...</p>';
+    if (fillRateStatsChart) fillRateStatsChart.innerHTML = '<p class="admin-stats-loading">Chargement...</p>';
 
     const { data, error } = await supabase.rpc("get_admin_statistics", { p_period: period });
 
@@ -130,12 +140,14 @@ async function loadStatistics(period) {
         const message = "Impossible de charger les statistiques.";
         if (activitiesStatsChart) activitiesStatsChart.innerHTML = `<p class="admin-stats-empty">${message}</p>`;
         if (participationsStatsChart) participationsStatsChart.innerHTML = `<p class="admin-stats-empty">${message}</p>`;
+        if (fillRateStatsChart) fillRateStatsChart.innerHTML = `<p class="admin-stats-empty">${message}</p>`;
         return;
     }
 
     statsCache.set(cacheKey, data ?? []);
     renderStatsChart(activitiesStatsChart, data ?? [], period, "activity_count", "Activités validées");
     renderStatsChart(participationsStatsChart, data ?? [], period, "participation_count", "Participations");
+    renderFillRateChart(fillRateStatsChart, data ?? [], period);
 }
 
 document.querySelectorAll("[data-stats-period]").forEach(button => {
