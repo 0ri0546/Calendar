@@ -5553,3 +5553,45 @@ button:not(.icon-button):active,
         height: 17px;
     }
 }
+
+
+/* =========================================================
+   FIX MOBILE - images complètes dans la vue d'une journée
+   Les anciennes règles mobiles utilisent une hauteur fixe et
+   object-fit: cover, ce qui rogne les images verticalement.
+   Dans la fenêtre "Voir le jour", on conserve désormais le
+   ratio naturel de chaque image.
+   ========================================================= */
+@media (max-width: 650px) {
+    .calendar-day-recap-dialog .calendar-activity-image {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        aspect-ratio: auto !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        margin: 0 0 8px !important;
+    }
+
+    .calendar-day-recap-dialog .calendar-day-recap-free-card .calendar-activity-image {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        aspect-ratio: auto !important;
+        object-fit: contain !important;
+    }
+}
+
+/* Très petits écrans : aucune hauteur d'image imposée dans le récapitulatif. */
+@media (max-width: 360px) {
+    .calendar-day-recap-dialog .calendar-activity-image,
+    .calendar-day-recap-dialog .calendar-day-recap-free-card .calendar-activity-image {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        aspect-ratio: auto !important;
+        object-fit: contain !important;
+    }
+}

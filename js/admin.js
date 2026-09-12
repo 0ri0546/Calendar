@@ -263,7 +263,19 @@ const ADMIN_ACTION_LABELS = {
     user_demoted: "Admin rétrogradé",
     notification_created: "Notification créée",
     notification_sent: "Notification envoyée",
-    notification_failed: "Notification échouée"
+    notification_failed: "Notification échouée",
+    activity_status_changed: "Statut d'activité modifié",
+    activity_joined: "Participation à une activité",
+    activity_left: "Départ d'une activité",
+    activity_waitlist_joined: "Entrée en file d'attente",
+    activity_waitlist_left: "Sortie de file d'attente",
+    friend_request_sent: "Demande d'ami envoyée",
+    friend_request_accepted: "Demande d'ami acceptée",
+    friend_request_rejected: "Demande d'ami refusée",
+    day_presence_added: "Présence aux jeux divers",
+    day_presence_removed: "Présence aux jeux divers retirée",
+    calendar_day_tags_updated: "Tags de journée modifiés",
+    profile_updated: "Profil modifié"
 };
 
 function openAdminLogs() {
@@ -310,6 +322,18 @@ function getLogTargetUserId(log) {
     return null;
 }
 
+function formatLogDay(day) {
+    if (!day) return "jour inconnu";
+
+    const date = new Date(`${day}T12:00:00`);
+    return date.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+}
+
+
 function buildAdminLogSentence(log, targetPseudoById) {
     const actor = log.actor_pseudo ?? "Le système";
     const title = getLogActivityTitle(log);
@@ -339,6 +363,30 @@ function buildAdminLogSentence(log, targetPseudoById) {
             return `${actor} a envoyé une notification${title ? ` pour « ${title} »` : ""}`;
         case "notification_failed":
             return `${actor} n'a pas pu envoyer une notification${title ? ` pour « ${title} »` : ""}`;
+        case "activity_joined":
+            return `${actor} a rejoint l'activité « ${title ?? "sans titre"} »`;
+        case "activity_left":
+            return `${actor} a quitté l'activité « ${title ?? "sans titre"} »`;
+        case "activity_waitlist_joined":
+            return `${actor} a rejoint la file d'attente de « ${title ?? "sans titre"} »`;
+        case "activity_waitlist_left":
+            return `${actor} a quitté la file d'attente de « ${title ?? "sans titre"} »`;
+        case "friend_request_sent":
+            return `${actor} a demandé ${targetPseudo ?? "un membre"} en ami`;
+        case "friend_request_accepted":
+            return `${actor} a accepté la demande d'ami de ${targetPseudo ?? "un membre"}`;
+        case "friend_request_rejected":
+            return `${actor} a refusé la demande d'ami de ${targetPseudo ?? "un membre"}`;
+        case "day_presence_added":
+            return `${actor} a indiqué être présent aux jeux divers le ${formatLogDay(log.details?.day)}`;
+        case "day_presence_removed":
+            return `${actor} a retiré sa présence aux jeux divers le ${formatLogDay(log.details?.day)}`;
+        case "calendar_day_tags_updated":
+            return `${actor} a modifié les tags du ${formatLogDay(log.details?.day)}`;
+        case "profile_updated":
+            return `${actor} a modifié son profil`;
+        case "activity_status_changed":
+            return `${actor} a changé le statut de l'activité « ${title ?? "sans titre"} »`;
         default:
             return `${actor} a effectué l'action « ${log.action} »`;
     }
