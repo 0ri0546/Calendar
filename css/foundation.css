@@ -1,0 +1,235 @@
+@import url("https://fonts.googleapis.com/css2?family=Griffy&display=swap");
+
+:root {
+    --brand: #5d3d37;
+    --brand-light: #765149;
+    --brand-dark: #432d29;
+    --brand-soft: rgba(93, 61, 55, 0.18);
+    --bg: #100e0e;
+    --surface: #1a1515;
+    --surface-2: #241b1a;
+    --surface-3: #30211f;
+    --text: #ffffff;
+    --text-soft: #d7cecc;
+    --muted: #a59b99;
+    --line: rgba(255, 255, 255, 0.09);
+    --line-brand: rgba(93, 61, 55, 0.75);
+    --success: #a9d7b2;
+    --danger: #e5aaaa;
+    --warning: #e5c98f;
+    --radius: 16px;
+    --shadow: none;
+    --display-font: "Griffy", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 18% 18%, rgba(126, 92, 124, .28), transparent 32%),
+        radial-gradient(circle at 82% 34%, rgba(93, 61, 55, .22), transparent 34%),
+        linear-gradient(155deg, #080f20 0%, #17142a 38%, #2b1d28 72%, #39201e 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+}
+
+/* Ciel étoilé discret : les surfaces du site restent lisibles par-dessus. */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .72;
+    background-image:
+        radial-gradient(circle at 8% 16%, rgba(255,255,255,.85) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 17% 42%, rgba(255,255,255,.58) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 29% 11%, rgba(255,255,255,.72) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 38% 31%, rgba(255,255,255,.48) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 49% 13%, rgba(255,255,255,.72) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 58% 39%, rgba(255,255,255,.55) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 67% 19%, rgba(255,255,255,.8) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 76% 48%, rgba(255,255,255,.5) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 86% 14%, rgba(255,255,255,.72) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 94% 36%, rgba(255,255,255,.58) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 12% 72%, rgba(255,255,255,.5) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 26% 86%, rgba(255,255,255,.7) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 44% 67%, rgba(255,255,255,.45) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 61% 82%, rgba(255,255,255,.7) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 73% 69%, rgba(255,255,255,.52) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 89% 84%, rgba(255,255,255,.65) 0 1px, transparent 1.8px);
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(4, 5, 12, .28) 100%);
+}
+
+body::selection { background: var(--brand); color: #fff; }
+
+/* Griffy : identité visuelle réservée aux grands titres et au header. */
+h1,
+.hero-copy h1,
+.next-saturday-card h2,
+.events-section > h2,
+.site-brand-text strong,
+.site-links a,
+.site-links button,
+#auth-menu > a,
+#auth-menu > button {
+    font-family: var(--display-font);
+    font-weight: 400;
+}
+
+/* Les informations, dates, heures, nombres et détails restent dans la police normale. */
+.calendar-day > h2,
+.calendar-activity,
+.event-card,
+.event-card h3,
+.event-card-details,
+.event-card-description,
+input,
+textarea,
+select,
+button:not(.site-links button) {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+img { max-width: 100%; }
+
+a { color: inherit; }
+
+button,
+input,
+textarea,
+select { font: inherit; }
+
+button { cursor: pointer; }
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+}
+
+/* ==================================================
+   HEADER / NAVIGATION
+   ================================================== */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(16, 14, 14, 0.96);
+    border-bottom: 1px solid var(--line-brand);
+}
+
+.site-nav {
+    width: min(1180px, calc(100% - 32px));
+    min-height: 76px;
+    margin: 0 auto;
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.site-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    text-decoration: none;
+}
+
+.site-brand img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.site-brand-text strong {
+    display: block;
+    color: #fff;
+    font-size: 0.95rem;
+    line-height: 1.15;
+}
+
+.site-brand-text span {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+.site-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.site-links a,
+.site-links button,
+#auth-menu > a,
+#auth-menu > button {
+    border: 0;
+    border-radius: 10px;
+    padding: 9px 11px;
+    background: transparent;
+    color: var(--text-soft);
+    text-decoration: none;
+    font-size: 0.86rem;
+}
+
+.site-links a:hover,
+.site-links a.active,
+#auth-menu > a:hover,
+#auth-menu > button:hover {
+    background: var(--brand);
+    color: #fff;
+}
+
+#auth-menu {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 4px;
+}
+
+.auth-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #fff;
+    font-size: 0.84rem;
+}
+
+.auth-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--brand);
+}
+

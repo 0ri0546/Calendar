@@ -1,0 +1,558 @@
+/* Détails de l'événement : ouverture au clic de la carte. */
+.events-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.events-modal[hidden] { display: none; }
+
+.events-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 5, 12, .78);
+}
+
+.events-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    background: var(--surface);
+    border: 1px solid var(--line-brand);
+    border-radius: 18px;
+}
+
+.events-modal-image {
+    display: block;
+    width: 100%;
+    max-height: 380px;
+    object-fit: cover;
+}
+
+.events-modal-content { padding: 22px; }
+.events-modal-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.events-modal-header h2 { margin: 0; font-family: var(--display-font); font-weight: 400; }
+.events-modal-close {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 1.2rem;
+    line-height: 1;
+    text-align: center;
+}
+.events-modal-details { display: grid; gap: 5px; margin: 18px 0 0; }
+.events-modal-details p { margin: 0; color: var(--text-soft); }
+.events-modal-description { margin: 18px 0 0; color: var(--text-soft); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.events-modal-link { display: inline-block; margin-top: 18px; color: #e5d0ca; font-weight: 800; }
+
+/* ==================================================
+   FORMS / PROFILE / ADMIN
+   ================================================== */
+
+.activity-form-section,
+#admin-content,
+#proposals-section,
+#activities-section,
+#profile-form,
+.avatar-preview {
+    width: min(860px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.activity-form-section {
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--line-brand);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+}
+
+.activity-form {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.6rem;
+}
+
+.form-field { display: grid; gap: .42rem; }
+.form-field label,
+#profile-form label { color: #fff; font-weight: 800; font-size: .82rem; }
+
+.form-field input,
+.form-field textarea,
+.form-field select,
+#profile-form input {
+    width: 100%;
+    padding: .72rem .8rem;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 9px;
+    background: #121010;
+    color: #fff;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+#profile-form input:focus { border-color: var(--brand-light); outline: none; }
+.form-field textarea { resize: vertical; min-height: 120px; }
+.form-field small { color: var(--muted); }
+
+.form-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; }
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .8rem;
+    border: 1px solid rgba(93,61,55,.65);
+    border-radius: 9px;
+    background: var(--brand-soft);
+    color: #fff;
+    cursor: pointer;
+}
+.form-checkbox input { width: auto; }
+
+.activity-image-preview {
+    display: block;
+    width: min(100%, 520px);
+    max-height: 320px;
+    margin-top: .75rem;
+    object-fit: cover;
+    border: 1px solid var(--line-brand);
+    border-radius: 10px;
+}
+
+.form-message { min-height: 1.4em; margin: 0; }
+.form-message.success { color: var(--success); }
+
+#profile-form {
+    display: grid;
+    gap: 18px;
+    width: min(680px, 100%);
+    margin: 0 auto;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.avatar-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin-bottom: 24px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.avatar-preview-item { text-align: center; }
+.avatar-preview-item p { margin: 0 0 8px; color: var(--muted); font-size: .75rem; }
+.avatar-preview-item img { width: 145px; height: 145px; object-fit: cover; border-radius: 50%; border: 3px solid var(--brand); background: var(--surface-3); }
+
+#admin-content,
+#proposals-section,
+#activities-section {
+    width: 100%;
+    margin-top: 22px;
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--brand);
+    border-radius: 18px;
+}
+
+#members-list,
+#proposals-list,
+#activities-list { display: grid; gap: 12px; }
+
+.admin-member,
+.admin-proposal,
+.admin-activity {
+    padding: 16px;
+    background: var(--surface-2);
+    border: 1px solid rgba(93,61,55,.62);
+    border-radius: 13px;
+}
+
+.admin-member { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.admin-member .auth-avatar { width: 42px; height: 42px; }
+.admin-proposal h3,
+.admin-activity h3 { margin-bottom: 8px; }
+.admin-proposal p,
+.admin-activity p { color: var(--muted); font-size: .8rem; }
+
+.admin-activity-image {
+    display: block;
+    width: min(100%, 340px);
+    max-height: 220px;
+    object-fit: cover;
+    margin: 10px 0;
+    border-radius: 10px;
+}
+
+.admin-edit-checkbox { margin: 10px 0; }
+
+.admin-edit-form {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.admin-edit-form input,
+.admin-edit-form textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    background: #121010;
+    color: #fff;
+}
+
+/* Login */
+body:has(#google-login) main {
+    width: min(620px, calc(100% - 32px));
+    margin-top: 60px;
+    padding: 36px;
+    background: var(--surface);
+    border: 1px solid var(--line-brand);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+}
+
+#google-login { width: 100%; margin-top: 15px; }
+
+/* ==================================================
+   FOOTER
+   ================================================== */
+
+.site-footer {
+    width: min(1180px, calc(100% - 32px));
+    margin: auto auto 28px;
+    border-top: 1px solid var(--line-brand);
+}
+
+.footer-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    padding: 24px 0 20px;
+}
+
+.footer-brand { display: flex; align-items: center; gap: 12px; }
+.footer-brand img { width: 48px; height: 48px; object-fit: contain; }
+.footer-brand strong { display: block; color: #fff; font-size: .84rem; }
+.footer-brand span { display: block; margin-top: 3px; color: #847b79; font-size: .72rem; }
+
+.footer-links { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+.footer-links a { padding: 8px 10px; border-radius: 9px; color: var(--text-soft); text-decoration: none; font-size: .76rem; }
+.footer-links a:hover { background: var(--brand); color: #fff; }
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    color: #6f6765;
+    font-size: .68rem;
+}
+
+
+/* ==================================================
+   FINITIONS V1 — LISIBILITÉ / ESPACEMENT
+   ================================================== */
+
+/* Footer posé naturellement en bas quand le contenu est court. */
+.site-footer {
+    margin-top: auto;
+}
+
+/* Une seule lecture visuelle : pas de cascade d'ombres. */
+.surface,
+main > section:not(.hero-section),
+.hero-copy,
+.next-saturday-card,
+.calendar-large-week,
+.activity-form-section,
+#admin-content,
+#proposals-section,
+#activities-section,
+.notification-panel,
+body:has(#google-login) main {
+    box-shadow: none;
+}
+
+/* Notifications : bandes séparées, plutôt qu'une pile de gros blocs. */
+.notification-list {
+    display: grid;
+    gap: 8px;
+}
+
+.notification-item {
+    margin: 0;
+}
+
+/* Les membres de l'administration gardent un espace net entre nom et rôle. */
+.admin-member-info {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 9px;
+    row-gap: 3px;
+}
+
+.admin-member-info strong {
+    display: block;
+}
+
+.admin-member-role {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: #e8d8d3;
+    font-size: .68rem;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+/* Profil : une seule grande zone, sans petites boîtes imbriquées. */
+.profile-page-section {
+    width: min(760px, 100%);
+    margin: 24px auto 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.profile-page-section #profile-message {
+    width: min(680px, 100%);
+    margin: 16px auto 0;
+}
+
+.profile-page-section #profile-form > div {
+    display: grid;
+    gap: 7px;
+}
+
+.profile-page-section #profile-form button {
+    width: fit-content;
+    min-width: 150px;
+    margin-top: 4px;
+}
+
+/* Date du calendrier : chaque jour a exactement la même hauteur de titre. */
+.calendar-day > h2 {
+    white-space: normal;
+}
+
+.calendar-day-weekday,
+.calendar-day-date {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-today .calendar-day-date {
+    color: #fff;
+}
+
+.calendar-mini-activity-dot {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+@media (max-width: 950px) {
+    .site-nav { flex-wrap: wrap; gap: 10px; }
+    .site-links { order: 3; width: 100%; overflow-x: auto; margin-left: 0; padding-bottom: 3px; flex-wrap: nowrap; }
+    #auth-menu { margin-left: auto; }
+    .hero-section { grid-template-columns: 1fr; }
+    .calendar-large-week-days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .calendar-day:last-child { grid-column: span 2; }
+    .calendar-mini-months { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .events-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+@media (max-width: 650px) {
+    .site-nav { min-height: 66px; }
+    .site-brand img { width: 44px; height: 44px; }
+    .site-brand-text strong { font-size: .82rem; }
+    .site-brand-text span { display: none; }
+    #auth-menu > a,
+    #auth-menu > button { padding: 8px 8px; font-size: .75rem; }
+    .auth-user span:not(.auth-avatar) { display: none; }
+
+    main { padding: 26px 0 52px; }
+    .hero-copy { padding: 28px 22px; }
+    .next-saturday-card { padding: 24px 20px; }
+    .calendar-large-week-days { grid-template-columns: 1fr; }
+    .calendar-day:last-child { grid-column: auto; }
+    .calendar-mini-months,
+    .events-grid,
+    .form-grid { grid-template-columns: 1fr; }
+    .calendar-week-navigation { flex-direction: column; }
+    .calendar-week-navigation button { max-width: none; }
+    .activity-form-section { padding: 20px 16px; }
+    .avatar-preview { flex-direction: column; }
+    .admin-member { align-items: flex-start; flex-direction: column; }
+    body:has(#google-login) main { margin-top: 30px; padding: 25px 20px; }
+    .footer-main { align-items: flex-start; flex-direction: column; }
+    .footer-links { justify-content: flex-start; }
+    .footer-bottom { flex-direction: column; gap: 4px; }
+}
+
+
+/* ==================================================
+   CORRECTIONS V2 — CALENDRIER / NOTIFICATIONS / ADMIN
+   ================================================== */
+
+/* Les actions de navigation ont une largeur naturelle, jamais 100 %. */
+.calendar-week-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.calendar-week-navigation button,
+.calendar-today-button {
+    flex: 0 0 auto !important;
+    width: fit-content !important;
+    max-width: none !important;
+    padding: 10px 16px;
+}
+
+.calendar-availability,
+.calendar-queue-summary {
+    margin: 0 !important;
+    font-size: .72rem !important;
+    font-weight: 800;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.calendar-availability.is-open { color: var(--success); }
+.calendar-availability.is-last-place { color: var(--warning); }
+.calendar-availability.is-full { color: var(--danger); }
+.calendar-queue-summary { color: var(--text-soft); }
+
+/* Les pastilles des mini-calendriers sont volontairement très contrastées. */
+.calendar-mini-day.has-activity {
+    background: transparent;
+    color: #fff;
+}
+
+.calendar-mini-activity-dot {
+    width: 6px;
+    height: 6px;
+    background: #f2ddd5;
+    box-shadow: 0 0 0 2px var(--brand);
+}
+
+/* Cadre de la semaine actuellement affichée dans chaque mini-calendrier. */
+.calendar-mini-day.is-selected-week {
+    background: rgba(93,61,55,.16);
+    border: 1px solid rgba(93,61,55,.75);
+    border-radius: 6px;
+}
+
+.calendar-mini-day.is-selected-week.has-activity {
+    background: rgba(93,61,55,.16);
+}
+
+/* Jour actuel : même langage visuel que la DA du samedi, sans surcharge. */
+.calendar-day.calendar-today {
+    border: 2px solid var(--brand);
+    background: rgba(93,61,55,.13);
+}
+
+/* Cloche sobre par défaut ; la mise en avant n'existe que s'il reste des non-lues. */
+.notification-button {
+    background: #121010;
+    border-color: rgba(255,255,255,.10);
+}
+
+.notification-button.has-unread {
+    background: var(--brand);
+    border-color: var(--brand);
+}
+
+.notification-button:hover {
+    background: var(--brand);
+}
+
+.notification-item {
+    background: var(--surface);
+    border-color: rgba(255,255,255,.08);
+}
+
+.notification-item.is-unread {
+    background: rgba(93,61,55,.24);
+    border-color: rgba(93,61,55,.85);
+}
+
+.notification-item:not(.is-unread) {
+    background: var(--surface);
+    border-color: rgba(255,255,255,.08);
+}
+
+/* Toasts d'erreur lisibles et non bloquants. */
+.app-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 2000;
+    width: min(520px, calc(100% - 32px));
+    padding: 13px 16px;
+    border: 1px solid var(--brand);
+    border-radius: 12px;
+    background: #241b1a;
+    color: #fff;
+    transform: translate(-50%, 20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+.app-toast.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* Journal administrateur */

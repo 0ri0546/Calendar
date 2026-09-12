@@ -196,7 +196,6 @@ updateAuthUI();
 // Le setTimeout évite de faire des appels Supabase imbriqués directement
 // dans le callback d'authentification.
 supabase.auth.onAuthStateChange((event, session) => {
-    console.log("Auth event :", event);
 
     // USER_UPDATED est notamment émis quand le réglage des notifications
     // change. Ne reconstruisons surtout pas auth-menu dans ce cas : cela
@@ -206,9 +205,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
 
     if (session?.user) {
-        console.log("Session active :", session.user.email);
     } else {
-        console.log("Utilisateur déconnecté");
     }
 
     setTimeout(() => {
