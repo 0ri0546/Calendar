@@ -124,6 +124,7 @@ as $$
 declare
     v_period text := lower(trim(p_period));
     v_start timestamptz;
+    v_end timestamptz;
     v_local_now timestamp;
 begin
     if (select auth.uid()) is null then
@@ -142,25 +143,39 @@ begin
     end if;
 
     v_local_now := now() at time zone 'Europe/Paris';
+
+    -- 15 colonnes : la période précédente, la période en cours, puis
+    -- les 13 prochaines périodes. La période en cours est donc toujours
+    -- la deuxième colonne du graphique.
     v_start := case v_period
-        when 'day' then (date_trunc('day', v_local_now) - interval '13 days') at time zone 'Europe/Paris'
-        when 'week' then (date_trunc('week', v_local_now) - interval '11 weeks') at time zone 'Europe/Paris'
-        else (date_trunc('month', v_local_now) - interval '11 months') at time zone 'Europe/Paris'
+        when 'day' then (date_trunc('day', v_local_now) - interval '1 day') at time zone 'Europe/Paris'
+        when 'week' then (date_trunc('week', v_local_now) - interval '1 week') at time zone 'Europe/Paris'
+        else (date_trunc('month', v_local_now) - interval '1 month') at time zone 'Europe/Paris'
+    end;
+
+    v_end := case v_period
+        when 'day' then (date_trunc('day', v_local_now) + interval '14 days') at time zone 'Europe/Paris'
+        when 'week' then (date_trunc('week', v_local_now) + interval '14 weeks') at time zone 'Europe/Paris'
+        else (date_trunc('month', v_local_now) + interval '14 months') at time zone 'Europe/Paris'
     end;
 
     return query
     with periods as (
         select generate_series(
-            date_trunc(v_period, v_local_now),
             date_trunc(v_period, v_local_now) - case v_period
+                when 'day' then interval '1 day'
+                when 'week' then interval '1 week'
+                else interval '1 month'
+            end,
+            date_trunc(v_period, v_local_now) + case v_period
                 when 'day' then interval '13 days'
-                when 'week' then interval '11 weeks'
-                else interval '11 months'
+                when 'week' then interval '13 weeks'
+                else interval '13 months'
             end,
             case v_period
-                when 'day' then interval '-1 day'
-                when 'week' then interval '-1 week'
-                else interval '-1 month'
+                when 'day' then interval '1 day'
+                when 'week' then interval '1 week'
+                else interval '1 month'
             end
         )::date as bucket_start
     ), counts as (
@@ -170,6 +185,7 @@ begin
             count(*) filter (where event_type = 'activity_joined') as participation_count
         from public.admin_statistics_events
         where occurred_at >= v_start
+          and occurred_at < v_end
         group by 1
     ), activity_fill as (
         select
@@ -191,6 +207,7 @@ begin
           and a.max_players is not null
           and a.max_players > 0
           and a.date >= v_start::date
+          and a.date < v_end::date
         group by 1
     )
     select
