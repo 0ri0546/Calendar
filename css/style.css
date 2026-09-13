@@ -5804,8 +5804,3 @@ button:not(.icon-button):active,
         box-sizing: border-box;
     }
 }
-
-/* Statistiques : remplissage moyen des activités. */
-.admin-stat-card .admin-chart-caption {
-    min-height: 1em;
-}
