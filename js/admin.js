@@ -1365,9 +1365,9 @@ async function saveActivityChanges(
     }
 
 
-    if (startTime >= endTime) {
+    if (startTime === endTime) {
         adminMessage.textContent =
-            "L'heure de début doit être avant l'heure de fin.";
+            "L'heure de début et l'heure de fin ne peuvent pas être identiques.";
 
         return;
     }
@@ -1484,49 +1484,6 @@ async function deleteActivity(activity) {
         return;
     }
 
-
-    /*
-     * Supabase interdit les DELETE directs sur storage.objects.
-     * L'image est donc supprimée via la Storage API après la suppression
-     * réussie de l'activité.
-     */
-    if (activity.image_url) {
-        try {
-            const marker =
-                "/storage/v1/object/public/activity-images/";
-
-            const markerIndex =
-                activity.image_url.indexOf(marker);
-
-            if (markerIndex !== -1) {
-                const imagePath =
-                    decodeURIComponent(
-                        activity.image_url
-                            .slice(markerIndex + marker.length)
-                            .split("?")[0]
-                    );
-
-                if (imagePath) {
-                    const { error: imageError } =
-                        await supabase.storage
-                            .from("activity-images")
-                            .remove([imagePath]);
-
-                    if (imageError) {
-                        console.error(
-                            "Erreur suppression image activité :",
-                            imageError
-                        );
-                    }
-                }
-            }
-        } catch (imageError) {
-            console.error(
-                "Erreur suppression image activité :",
-                imageError
-            );
-        }
-    }
 
     adminMessage.textContent =
         `L'activité "${activity.title}" a été supprimée.`;
