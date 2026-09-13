@@ -7,7 +7,7 @@
 
     <title>Administration - Calendar</title>
 
-    <link rel="stylesheet" href="../css/style.css?v=20260913-stats">
+    <link rel="stylesheet" href="../css/style.css?v=20260913-stats-fill">
     <link rel="icon" type="image/png" href="../assets/images/logo.png">
     <link rel="apple-touch-icon" href="../assets/images/logo.png">
 </head>
@@ -79,6 +79,23 @@
                             <div id="participations-stats-chart" class="admin-stats-chart" role="img" aria-label="Graphique du nombre de participations"></div>
                         </div>
                     </article>
+
+                    <article class="admin-stat-card">
+                        <div class="admin-stat-card-header">
+                            <div>
+                                <h2>Remplissage moyen</h2>
+                                <p>Taux moyen de remplissage des jeux et activités à capacité limitée.</p>
+                            </div>
+                            <div class="admin-stat-toggle" role="group" aria-label="Période du remplissage moyen">
+                                <button type="button" data-stats-type="fill" data-stats-period="day" aria-pressed="true">Jour</button>
+                                <button type="button" data-stats-type="fill" data-stats-period="week" aria-pressed="false">Semaine</button>
+                                <button type="button" data-stats-type="fill" data-stats-period="month" aria-pressed="false">Mois</button>
+                            </div>
+                        </div>
+                        <div class="admin-chart-wrap">
+                            <div id="fill-stats-chart" class="admin-stats-chart" role="img" aria-label="Graphique du taux moyen de remplissage"></div>
+                        </div>
+                    </article>
                 </div>
                 <p class="admin-stats-note">Les statistiques sont conservées indépendamment du journal administrateur et des activités supprimées.</p>
             </div>
@@ -136,7 +153,7 @@
     </main>
 
 
-    <script type="module" src="../js/auth.js?v=20260913-stats"></script>
+    <script type="module" src="../js/auth.js?v=20260913-stats-fill"></script>
     <footer class="site-footer">
     <div class="footer-main">
         <div class="footer-brand">
@@ -152,7 +169,7 @@
     <div class="footer-bottom"><span>© L'oise aux jeux - ludothèque associative</span><span>Calendrier associatif</span></div>
 </footer>
 
-<script type="module" src="../js/admin.js?v=20260913-stats"></script>
+<script type="module" src="../js/admin.js?v=20260913-stats-fill"></script>
 
 </body>
 
