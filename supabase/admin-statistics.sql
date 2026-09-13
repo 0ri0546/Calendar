@@ -144,8 +144,8 @@ begin
 
     v_local_now := now() at time zone 'Europe/Paris';
 
-    -- 15 colonnes : la période précédente, la période en cours, puis
-    -- les 13 prochaines périodes. La période en cours est donc toujours
+    -- 8 colonnes : la période précédente, la période en cours, puis
+    -- les 6 prochaines périodes. La période en cours est donc toujours
     -- la deuxième colonne du graphique.
     v_start := case v_period
         when 'day' then (date_trunc('day', v_local_now) - interval '1 day') at time zone 'Europe/Paris'
@@ -154,9 +154,9 @@ begin
     end;
 
     v_end := case v_period
-        when 'day' then (date_trunc('day', v_local_now) + interval '14 days') at time zone 'Europe/Paris'
-        when 'week' then (date_trunc('week', v_local_now) + interval '14 weeks') at time zone 'Europe/Paris'
-        else (date_trunc('month', v_local_now) + interval '14 months') at time zone 'Europe/Paris'
+        when 'day' then (date_trunc('day', v_local_now) + interval '7 days') at time zone 'Europe/Paris'
+        when 'week' then (date_trunc('week', v_local_now) + interval '7 weeks') at time zone 'Europe/Paris'
+        else (date_trunc('month', v_local_now) + interval '7 months') at time zone 'Europe/Paris'
     end;
 
     return query
@@ -168,9 +168,9 @@ begin
                 else interval '1 month'
             end,
             date_trunc(v_period, v_local_now) + case v_period
-                when 'day' then interval '13 days'
-                when 'week' then interval '13 weeks'
-                else interval '13 months'
+                when 'day' then interval '6 days'
+                when 'week' then interval '6 weeks'
+                else interval '6 months'
             end,
             case v_period
                 when 'day' then interval '1 day'
