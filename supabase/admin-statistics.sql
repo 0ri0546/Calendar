@@ -114,8 +114,7 @@ create or replace function public.get_admin_statistics(p_period text)
 returns table (
     bucket_start date,
     activity_count bigint,
-    participation_count bigint,
-    fill_rate numeric
+    participation_count bigint
 )
 language plpgsql
 security definer
@@ -124,7 +123,6 @@ as $$
 declare
     v_period text := lower(trim(p_period));
     v_start timestamptz;
-    v_end timestamptz;
     v_local_now timestamp;
 begin
     if (select auth.uid()) is null then
@@ -143,39 +141,25 @@ begin
     end if;
 
     v_local_now := now() at time zone 'Europe/Paris';
-
-    -- 8 colonnes : la période précédente, la période en cours, puis
-    -- les 6 prochaines périodes. La période en cours est donc toujours
-    -- la deuxième colonne du graphique.
     v_start := case v_period
-        when 'day' then (date_trunc('day', v_local_now) - interval '1 day') at time zone 'Europe/Paris'
-        when 'week' then (date_trunc('week', v_local_now) - interval '1 week') at time zone 'Europe/Paris'
-        else (date_trunc('month', v_local_now) - interval '1 month') at time zone 'Europe/Paris'
-    end;
-
-    v_end := case v_period
-        when 'day' then (date_trunc('day', v_local_now) + interval '7 days') at time zone 'Europe/Paris'
-        when 'week' then (date_trunc('week', v_local_now) + interval '7 weeks') at time zone 'Europe/Paris'
-        else (date_trunc('month', v_local_now) + interval '7 months') at time zone 'Europe/Paris'
+        when 'day' then (date_trunc('day', v_local_now) - interval '13 days') at time zone 'Europe/Paris'
+        when 'week' then (date_trunc('week', v_local_now) - interval '11 weeks') at time zone 'Europe/Paris'
+        else (date_trunc('month', v_local_now) - interval '11 months') at time zone 'Europe/Paris'
     end;
 
     return query
     with periods as (
         select generate_series(
+            date_trunc(v_period, v_local_now),
             date_trunc(v_period, v_local_now) - case v_period
-                when 'day' then interval '1 day'
-                when 'week' then interval '1 week'
-                else interval '1 month'
-            end,
-            date_trunc(v_period, v_local_now) + case v_period
-                when 'day' then interval '6 days'
-                when 'week' then interval '6 weeks'
-                else interval '6 months'
+                when 'day' then interval '13 days'
+                when 'week' then interval '11 weeks'
+                else interval '11 months'
             end,
             case v_period
-                when 'day' then interval '1 day'
-                when 'week' then interval '1 week'
-                else interval '1 month'
+                when 'day' then interval '-1 day'
+                when 'week' then interval '-1 week'
+                else interval '-1 month'
             end
         )::date as bucket_start
     ), counts as (
@@ -185,40 +169,14 @@ begin
             count(*) filter (where event_type = 'activity_joined') as participation_count
         from public.admin_statistics_events
         where occurred_at >= v_start
-          and occurred_at < v_end
-        group by 1
-    ), activity_fill as (
-        select
-            date_trunc(v_period, a.date::timestamp)::date as bucket_start,
-            avg(
-                least(
-                    100::numeric,
-                    (coalesce(p.participant_count, 0)::numeric * 100)
-                    / nullif(a.max_players, 0)
-                )
-            ) as fill_rate
-        from public.activities a
-        left join (
-            select activity_id, count(*) as participant_count
-            from public.participations
-            group by activity_id
-        ) p on p.activity_id = a.id
-        where a.status = 'approved'
-          and a.max_players is not null
-          and a.max_players > 0
-          and a.date >= v_start::date
-          and a.date < v_end::date
         group by 1
     )
-    select
-        periods.bucket_start,
-        coalesce(counts.activity_count, 0)::bigint,
-        coalesce(counts.participation_count, 0)::bigint,
-        coalesce(activity_fill.fill_rate, 0)::numeric
-    from periods
-    left join counts using (bucket_start)
-    left join activity_fill using (bucket_start)
-    order by periods.bucket_start;
+    select p.bucket_start,
+           coalesce(c.activity_count, 0)::bigint,
+           coalesce(c.participation_count, 0)::bigint
+    from periods p
+    left join counts c using (bucket_start)
+    order by p.bucket_start;
 end;
 $$;
 

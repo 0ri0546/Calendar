@@ -141,7 +141,7 @@ export async function uploadActivityImage(file, userId, activityId) {
         .from(ACTIVITY_IMAGE_BUCKET)
         .upload(path, optimizedFile, {
             cacheControl: "31536000",
-            upsert: true,
+            upsert: false,
             contentType: optimizedFile.type
         });
 
