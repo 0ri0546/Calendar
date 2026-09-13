@@ -4871,6 +4871,103 @@ button:not(.icon-button):active,
     .legal-section { padding: 1.1rem; }
 }
 
+
+/* =========================================================
+   PAGES COOKIES — responsive mobile
+   ========================================================= */
+.cookies-page {
+    width: min(960px, calc(100% - 32px));
+}
+
+.cookies-page .legal-header,
+.cookies-page .legal-section {
+    box-sizing: border-box;
+}
+
+.cookies-page .legal-section a {
+    color: var(--brand-light);
+}
+
+@media (max-width: 720px) {
+    .cookies-page {
+        width: calc(100% - 24px);
+        padding: 2rem 0 3rem;
+    }
+
+    .cookies-page .legal-header {
+        gap: 12px;
+        padding: 1rem;
+    }
+
+    .cookies-page .legal-header img {
+        width: 56px;
+        height: 56px;
+        flex: 0 0 56px;
+    }
+
+    .cookies-page .legal-header h1 {
+        font-size: clamp(1.55rem, 7vw, 2.1rem);
+        overflow-wrap: anywhere;
+    }
+
+    .cookies-page .legal-section {
+        padding: 1.05rem;
+        margin-bottom: .8rem;
+    }
+
+    .cookies-page .legal-section h2 {
+        font-size: 1.12rem;
+    }
+
+    .cookies-page .legal-section p {
+        font-size: .9rem;
+        line-height: 1.55;
+    }
+}
+
+@media (max-width: 360px) {
+    .cookies-page {
+        width: calc(100% - 16px);
+        padding-top: 1.25rem;
+    }
+
+    .cookies-page .legal-header {
+        align-items: flex-start;
+        padding: .85rem;
+        gap: 10px;
+        border-radius: 14px;
+    }
+
+    .cookies-page .legal-header img {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+        border-radius: 10px;
+    }
+
+    .cookies-page .legal-header h1 {
+        font-size: 1.45rem;
+    }
+
+    .cookies-page .legal-header p {
+        font-size: .72rem;
+    }
+
+    .cookies-page .legal-section {
+        padding: .9rem;
+        border-radius: 13px;
+    }
+
+    .cookies-page .legal-section h2 {
+        font-size: 1rem;
+    }
+
+    .cookies-page .legal-section p {
+        font-size: .84rem;
+        line-height: 1.5;
+    }
+}
+
 /* =========================================================
    POLISH — vue d'une journée : hiérarchie stable
    ========================================================= */
