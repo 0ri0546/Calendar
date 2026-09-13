@@ -203,18 +203,142 @@ async function loadFillStatistics(period) {
         return;
     }
 
-    const { data, error } = await supabase.rpc("get_admin_fill_statistics", { p_period: period });
+    if (fillStatsChart) {
+        fillStatsChart.innerHTML = '<p class="admin-stats-loading">Chargement...</p>';
+    }
 
-    if (error) {
-        console.error("Erreur récupération statistiques de remplissage :", error);
+    /*
+     * Le remplissage est calculé directement à partir des activités
+     * et des participations. Cela évite de dépendre d'une RPC séparée
+     * uniquement pour ce graphique.
+     */
+    const { data: activities, error: activitiesError } = await supabase
+        .from("activities")
+        .select("id, date, max_players, status")
+        .eq("status", "approved")
+        .gt("max_players", 0);
+
+    if (activitiesError) {
+        console.error("Erreur récupération activités pour le remplissage :", activitiesError);
         if (fillStatsChart) {
             fillStatsChart.innerHTML = '<p class="admin-stats-empty">Impossible de charger les statistiques.</p>';
         }
         return;
     }
 
-    statsCache.set(cacheKey, data ?? []);
-    renderFillStatsChart(fillStatsChart, data ?? [], period);
+    const activityIds = (activities ?? []).map(activity => activity.id);
+    let participations = [];
+
+    if (activityIds.length > 0) {
+        const { data, error: participationsError } = await supabase
+            .from("participations")
+            .select("activity_id")
+            .in("activity_id", activityIds);
+
+        if (participationsError) {
+            console.error("Erreur récupération participations pour le remplissage :", participationsError);
+            if (fillStatsChart) {
+                fillStatsChart.innerHTML = '<p class="admin-stats-empty">Impossible de charger les statistiques.</p>';
+            }
+            return;
+        }
+
+        participations = data ?? [];
+    }
+
+    const participationCounts = new Map();
+    for (const participation of participations) {
+        participationCounts.set(
+            participation.activity_id,
+            (participationCounts.get(participation.activity_id) ?? 0) + 1
+        );
+    }
+
+    function periodStart(date, type) {
+        const value = new Date(`${date}T12:00:00`);
+
+        if (type === "month") {
+            return new Date(value.getFullYear(), value.getMonth(), 1);
+        }
+
+        if (type === "week") {
+            const day = value.getDay() || 7;
+            value.setDate(value.getDate() - day + 1);
+        }
+
+        value.setHours(0, 0, 0, 0);
+        return value;
+    }
+
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    const currentStart = periodStart(
+        now.toISOString().slice(0, 10),
+        period
+    );
+
+    const previousStart = new Date(currentStart);
+    const nextStarts = [];
+
+    if (period === "day") {
+        previousStart.setDate(previousStart.getDate() - 1);
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(currentStart);
+            date.setDate(date.getDate() + i);
+            nextStarts.push(date);
+        }
+    } else if (period === "week") {
+        previousStart.setDate(previousStart.getDate() - 7);
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(currentStart);
+            date.setDate(date.getDate() + i * 7);
+            nextStarts.push(date);
+        }
+    } else {
+        previousStart.setMonth(previousStart.getMonth() - 1);
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(currentStart);
+            date.setMonth(date.getMonth() + i);
+            nextStarts.push(date);
+        }
+    }
+
+    const periodDates = [previousStart, ...nextStarts];
+    const rows = periodDates.map(date => ({
+        bucket_start: date.toISOString().slice(0, 10),
+        average_fill_rate: 0
+    }));
+
+    const grouped = new Map();
+
+    for (const activity of activities ?? []) {
+        const start = periodStart(activity.date, period);
+        const bucket = start.toISOString().slice(0, 10);
+
+        if (!grouped.has(bucket)) {
+            grouped.set(bucket, []);
+        }
+
+        const participants = participationCounts.get(activity.id) ?? 0;
+        const fillRate = Math.max(
+            0,
+            Math.min(100, (participants / activity.max_players) * 100)
+        );
+
+        grouped.get(bucket).push(fillRate);
+    }
+
+    for (const row of rows) {
+        const values = grouped.get(row.bucket_start) ?? [];
+        if (values.length > 0) {
+            row.average_fill_rate = Number(
+                (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1)
+            );
+        }
+    }
+
+    statsCache.set(cacheKey, rows);
+    renderFillStatsChart(fillStatsChart, rows, period);
 }
 
 document.querySelectorAll("[data-stats-period]").forEach(button => {
