@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js?v=20260910-57";
+import { sfx } from "./sfx.js?v=20260913-sfx";
 import { uploadActivityImage, removeActivityImage, validateActivityImage } from "./activity-media.js?v=20260913-01";
 
 const preparedForm = document.getElementById("activity-form");
@@ -190,6 +191,9 @@ async function submitPreparedActivity({ validateDirectly = false } = {}) {
 
         preparedForm.reset();
         imagePreview.replaceChildren();
+
+        if (validateDirectly) sfx.activityValidated();
+        else sfx.activityProposed();
         setMessage(
             validateDirectly
                 ? "Activité validée directement et publiée."
@@ -245,6 +249,10 @@ async function submitFreeActivity({ validateDirectly = false } = {}) {
         }
 
         freeForm.reset();
+
+        if (validateDirectly) sfx.activityValidated();
+        else sfx.activityProposed();
+
         setMessage(
             validateDirectly
                 ? "Activité validée directement et publiée."

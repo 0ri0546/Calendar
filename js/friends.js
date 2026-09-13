@@ -1,10 +1,12 @@
 import { supabase, SITE_URL } from "./supabase.js?v=20260910-57";
+import { sfx } from "./sfx.js?v=20260913-sfx";
 
 let currentUserId = null;
 let elements = null;
 let friendsData = [];
 let onlineFriendIds = new Set();
 let presenceChannel = null;
+let friendRequestChannel = null;
 
 function siteUrl(path = "") {
     return new URL(path, SITE_URL).href;
@@ -491,6 +493,31 @@ export async function initFriends(authMenu, user) {
 
     // La page d'accueil possède sa propre case "Amis en ligne".
     // On charge donc les amis immédiatement uniquement lorsqu'elle existe.
+    if (!friendRequestChannel) {
+        friendRequestChannel = supabase
+            .channel(`friend-requests-${currentUserId}`)
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "friend_requests",
+                    filter: `addressee_id=eq.${currentUserId}`
+                },
+                payload => {
+                    if (payload.new?.status === "pending") {
+                        sfx.friendRequest();
+                        loadRequests();
+                    }
+                }
+            )
+            .subscribe(status => {
+                if (status === "CHANNEL_ERROR") {
+                    console.error("Erreur Realtime demandes d'amis");
+                }
+            });
+    }
+
     if (document.getElementById("home-online-friends")) {
         await loadFriends();
     }

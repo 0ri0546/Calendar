@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js?v=20260911-60";
+import { sfx } from "./sfx.js?v=20260913-sfx";
 import { showUserError } from "./ui-messages.js?v=20260911-60";
 import { renderDescriptionWithLinks } from "./ui.js?v=20260911-60";
 
@@ -307,6 +308,8 @@ async function processDayPresence(day) {
             // Dans ce cas, on envoie uniquement le dernier état demandé.
             if (operation.desired === confirmed) {
                 applyLocalDayPresence(day, confirmed);
+                if (confirmed) sfx.joinMisc();
+                else sfx.leaveMisc();
             }
         }
 
@@ -796,6 +799,10 @@ async function joinActivity(activityId) {
         }
         // Synchronisation serveur de cette seule activité.
         await refreshActivityDisplay(activityId);
+
+        const activity = calendarState.activities.find(item => item.id === activityId);
+        if (activity?.activity_type === "free") sfx.joinActivity();
+        else sfx.joinGame();
     } catch (error) {
         console.error(error);
         alert("Une erreur est survenue.");
@@ -811,6 +818,10 @@ async function leaveActivity(activityId) {
             return;
         }
         await refreshActivityDisplay(activityId);
+
+        const activity = calendarState.activities.find(item => item.id === activityId);
+        if (activity?.activity_type === "free") sfx.leaveActivity();
+        else sfx.leaveGame();
     } catch (error) {
         console.error(error);
         alert("Une erreur est survenue.");

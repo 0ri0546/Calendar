@@ -1,4 +1,5 @@
 import { supabase, SITE_URL } from "./supabase.js?v=20260910-57";
+import { sfx } from "./sfx.js?v=20260913-sfx";
 
 const NOTIFICATION_TYPES = new Set([
     "place_opened",
@@ -373,6 +374,7 @@ function subscribeRealtime() {
                     )
                     .slice(0, 20);
 
+                sfx.notification();
                 render();
             }
         )

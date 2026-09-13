@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js?v=20260913-stats-fill";
+import { sfx } from "./sfx.js?v=20260913-sfx";
 
 
 function getAvatarDisplayUrl(url) {
@@ -1600,7 +1601,7 @@ async function saveActivityChanges(
     adminMessage.textContent =
         "Activité modifiée avec succès.";
 
-
+    sfx.activityModified();
     await loadApprovedActivities();
 }
 
@@ -1652,7 +1653,7 @@ async function deleteActivity(activity) {
     adminMessage.textContent =
         `L'activité "${activity.title}" a été supprimée.`;
 
-
+    sfx.activityDeleted();
     await loadApprovedActivities();
 }
 
