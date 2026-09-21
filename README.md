@@ -1,6 +1,6 @@
-# Loiseaux Jeux
+# L'oise aux Jeux
 
-> Plateforme web de gestion et d'organisation des activités de l'association Loiseaux Jeux.
+> Plateforme web de gestion et d'organisation des activités de l'association L'oise aux Jeux.
 
 [![Website](https://img.shields.io/badge/Website-GitHub%20Pages-222222?logo=github)](https://loiseauxjeux.github.io/)
 [![Frontend](https://img.shields.io/badge/Frontend-HTML%20%2F%20CSS%20%2F%20JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
@@ -10,7 +10,7 @@
 
 ## À propos
 
-**Loiseaux Jeux** est une application web conçue pour faciliter l'organisation des activités de l'association et permettre à ses membres de retrouver facilement les événements et activités proposés.
+**L'oise aux Jeux** est une application web conçue pour faciliter l'organisation des activités de l'association et permettre à ses membres de retrouver facilement les événements et activités proposés.
 
 La plateforme centralise notamment :
 
