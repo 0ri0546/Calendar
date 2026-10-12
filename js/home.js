@@ -1,4 +1,4 @@
-import { supabase } from "./supabase.js?v=20260910-57";
+import { supabase } from "./supabase.js?v=20261012-59";
 
 const activitiesContainer = document.getElementById("home-today-activities");
 const dateLabel = document.getElementById("home-today-date");
@@ -132,3 +132,66 @@ async function loadTodayActivities() {
 }
 
 loadTodayActivities();
+
+
+const nextSaturdayTitle = document.getElementById("next-saturday-title");
+const nextSaturdayDate = document.getElementById("next-saturday-date");
+const nextSaturdayTheme = document.getElementById("next-saturday-theme");
+
+function getNextSaturday(fromDate = new Date()) {
+    const date = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+    const daysUntilSaturday = (6 - date.getDay() + 7) % 7;
+    date.setDate(date.getDate() + daysUntilSaturday);
+    return date;
+}
+
+function getSaturdayTheme(date) {
+    const rank = Math.ceil(date.getDate() / 7);
+    const themes = {
+        1: "Familial",
+        2: "Peinture figurines / Wargames",
+        3: "Gros jeu",
+        4: "Jeu de rôle"
+    };
+    return themes[rank] ?? "Activité privilégiée à définir";
+}
+
+async function renderNextSaturday() {
+    if (!nextSaturdayDate || !nextSaturdayTheme) return;
+
+    const saturday = getNextSaturday();
+    const saturdayString = formatDateForDatabase(saturday);
+
+    nextSaturdayTitle.textContent = "Samedi";
+    nextSaturdayDate.textContent = new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric",
+        month: "long"
+    }).format(saturday);
+
+    // Utilise les tags réellement enregistrés par les administrateurs,
+    // comme le calendrier. Les valeurs par défaut ne servent que si aucun
+    // enregistrement n'existe pour cette date.
+    const { data, error } = await supabase
+        .from("calendar_day_tags")
+        .select("tags")
+        .eq("day", saturdayString)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Erreur récupération des tags du prochain samedi :", error);
+        nextSaturdayTheme.textContent = getSaturdayTheme(saturday);
+        return;
+    }
+
+    if (data) {
+        const tags = Array.isArray(data.tags) ? data.tags : [];
+        nextSaturdayTheme.textContent = tags.length > 0
+            ? tags.join(" / ")
+            : "Aucune thématique définie";
+        return;
+    }
+
+    nextSaturdayTheme.textContent = getSaturdayTheme(saturday);
+}
+
+renderNextSaturday();
